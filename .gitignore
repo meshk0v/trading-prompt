@@ -1,0 +1,27 @@
+node_modules/
+dist/
+build/
+.cache/
+.env*
+.vite/
+vite.config.*.timestamp-*
+*.tsbuildinfo
+*-debug.log*
+logs/
+*.log
+.claude-replay.*
+.tmp-*
+
+# Client specs and reference screenshots (not part of the app code)
+src/imports/*
+!src/imports/logo_yellow_white_48.png
+
+# Figma Make tooling (only site.json is needed by vite.config.ts)
+.figma/*
+!.figma/make/
+.figma/make/*
+!.figma/make/site.json
+CLAUDE.md
+AGENTS.md
+pnpm-lock.yaml
+.gitattributes
