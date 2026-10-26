@@ -20,3 +20,5 @@ export const PAIR_CATEGORIES = {
 export const CURRENCY_PAIRS = Object.values(PAIR_CATEGORIES).flat()
 export const TIMEFRAME_OPTIONS = ['M1', 'M2', 'M3', 'M4', 'M5', 'M10', 'M12', 'M15', 'M20', 'M30', 'H1', 'H2', 'H3', 'H4', 'H6', 'H8', 'H12', 'D1', 'W1', 'MN']
   .map(period => ({ label: period, value: period }))
+
+export const ASSET_TYPE_OPTIONS = ['Crypto', 'Major', 'Minor', 'Exotic'].map(type => ({ label: type, value: type }))

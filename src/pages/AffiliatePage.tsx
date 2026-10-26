@@ -325,7 +325,6 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
                       ...affiliateLinks.map(link => ({ label: link.name, value: link.id })),
                     ]}
                     dropDown
-                    subdued
                   />
                 </div>
               </div>
@@ -479,7 +478,6 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
                           { label: 'Polygon', value: 'Polygon' },
                         ]}
                         dropDown
-                        subdued
                       />
                     </div>
                     <div style={{ display: 'flex', gap: '10px' }}>

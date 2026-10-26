@@ -1,4 +1,6 @@
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useI18n } from '../i18n/context'
+import './PromptPanelResizeHandle.css'
 
 type PromptPanelResizeHandleProps = {
   width: number
@@ -14,9 +16,10 @@ function clampPanelWidth(width: number, containerWidth: number) {
 }
 
 export default function PromptPanelResizeHandle({ width, onResize }: PromptPanelResizeHandleProps) {
+  const { t } = useI18n()
   const dragState = useRef<{ startX: number; startWidth: number } | null>(null)
   const [resizing, setResizing] = useState(false)
-  const getContainerWidth = (element: HTMLDivElement) => element.closest<HTMLElement>('.chat-main')?.clientWidth ?? window.innerWidth
+  const getContainerWidth = (element: HTMLDivElement) => element.closest<HTMLElement>('.app-main')?.clientWidth ?? window.innerWidth
 
   const finishResize = (event: ReactPointerEvent<HTMLDivElement>) => {
     dragState.current = null
@@ -33,13 +36,13 @@ export default function PromptPanelResizeHandle({ width, onResize }: PromptPanel
       className="prompt-panel-resize-handle"
       data-resizing={resizing}
       role="separator"
-      aria-label="Изменить ширину конструктора промпта"
+      aria-label={t('Изменить ширину конструктора промпта')}
       aria-orientation="vertical"
       aria-valuemin={MIN_PANEL_WIDTH}
       aria-valuemax={680}
       aria-valuenow={Math.round(width)}
       tabIndex={0}
-      title="Потяните, чтобы изменить ширину. Двойной клик — сбросить."
+      title={t('Потяните, чтобы изменить ширину. Двойной клик — сбросить.')}
       onPointerDown={event => {
         dragState.current = { startX: event.clientX, startWidth: width }
         setResizing(true)

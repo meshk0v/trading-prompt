@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useI18n } from '../i18n/context'
 import PairFlag from './PairFlag'
+import './TradingViewChart.css'
 
 const TV_SYMBOL: Record<string, string> = {
   'BTC/USD': 'BINANCE:BTCUSDT', 'ETH/USD': 'BINANCE:ETHUSDT',
@@ -50,7 +52,7 @@ function TradingViewWidget({ pair, timeframe = 'D1' }: { pair: string; timeframe
   return (
     <iframe
       src={src}
-      style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+      className="tradingview-frame"
       scrolling="no"
       allowFullScreen={true}
       title={`TradingView ${pair}`}
@@ -58,7 +60,9 @@ function TradingViewWidget({ pair, timeframe = 'D1' }: { pair: string; timeframe
   )
 }
 
+/** TradingView chart in the prompt result, with a full-screen mode. */
 export default function PromptTradingView({ pair, timeframe }: { pair: string; timeframe: string }) {
+  const { t } = useI18n()
   const [fullscreen, setFullscreen] = useState(false)
 
   useEffect(() => {
@@ -83,8 +87,8 @@ export default function PromptTradingView({ pair, timeframe }: { pair: string; t
           type="button"
           className="prompt-chart-open"
           onClick={() => setFullscreen(true)}
-          aria-label={`Открыть график ${pair} на всю страницу`}
-          title="Открыть график на всю страницу"
+          aria-label={t('Открыть график {pair} на всю страницу', { pair })}
+          title={t('Открыть график на всю страницу')}
         >
           <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M6 2H2v4M10 2h4v4M6 14H2v-4M10 14h4v-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
@@ -93,7 +97,7 @@ export default function PromptTradingView({ pair, timeframe }: { pair: string; t
       </div>
 
       {fullscreen && (
-        <div className="prompt-chart-fullscreen" role="dialog" aria-modal="true" aria-label={`График TradingView ${pair}`}>
+        <div className="prompt-chart-fullscreen" role="dialog" aria-modal="true" aria-label={t('График TradingView {pair}', { pair })}>
           <div className="prompt-chart-fullscreen-header">
             <div className="prompt-chart-fullscreen-title">
               <PairFlag pair={pair} size={18} />
@@ -104,8 +108,8 @@ export default function PromptTradingView({ pair, timeframe }: { pair: string; t
               type="button"
               className="prompt-chart-close"
               onClick={() => setFullscreen(false)}
-              aria-label="Закрыть полноэкранный график"
-              title="Свернуть график"
+              aria-label={t('Закрыть полноэкранный график')}
+              title={t('Свернуть график')}
             >
               <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M2 6h4V2M14 6h-4V2M2 10h4v4M14 10h-4v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>

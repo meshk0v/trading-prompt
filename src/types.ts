@@ -1,11 +1,12 @@
-export type Message = {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  timestamp: Date
-  prompt?: string
-  chart?: {
-    pair: string
-    timeframe: string
-  }
+export type ChartRef = {
+  pair: string
+  timeframe: string
 }
+
+export type Message =
+  /** Welcome text, revealed character by character. */
+  | { id: string; kind: 'greeting'; greetingIndex: number; visibleChars: number; timestamp: Date }
+  /** The user's "build a prompt" request. */
+  | { id: string; kind: 'request'; pair: string; timeframe: string; timestamp: Date }
+  /** The generated prompt with its chart and export buttons. */
+  | { id: string; kind: 'prompt'; prompt: string; chart: ChartRef; timestamp: Date }

@@ -1,0 +1,68 @@
+/* Drag handle on the left edge of the desktop prompt panel. */
+.prompt-panel-resize-handle {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .prompt-panel-resize-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -1px;
+    z-index: 20;
+    display: flex;
+    width: 16px;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    background: var(--border);
+    cursor: col-resize;
+    touch-action: none;
+    transition: background 0.16s ease;
+  }
+
+  .prompt-panel-resize-grip {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    width: 8px;
+    height: 48px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-color: #34344f;
+    border-radius: 6px;
+    background: var(--border);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+  }
+
+  .prompt-panel-resize-grip > span {
+    width: 5px;
+    height: 1px;
+    border-radius: 1px;
+    background: var(--muted2);
+    transition: background 0.16s ease;
+  }
+
+  .prompt-panel-resize-handle:hover,
+  .prompt-panel-resize-handle:focus-visible,
+  .prompt-panel-resize-handle[data-resizing='true'] {
+    background: var(--accent);
+  }
+
+  .prompt-panel-resize-handle:hover .prompt-panel-resize-grip,
+  .prompt-panel-resize-handle:focus-visible .prompt-panel-resize-grip,
+  .prompt-panel-resize-handle[data-resizing='true'] .prompt-panel-resize-grip {
+    border-color: var(--accent);
+    background: var(--accent-soft-2);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38), 0 0 0 2px var(--accent-glow);
+  }
+
+  .prompt-panel-resize-handle:hover .prompt-panel-resize-grip > span,
+  .prompt-panel-resize-handle:focus-visible .prompt-panel-resize-grip > span,
+  .prompt-panel-resize-handle[data-resizing='true'] .prompt-panel-resize-grip > span {
+    background: var(--accent);
+  }
+}

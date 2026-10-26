@@ -1,0 +1,57 @@
+.app-header {
+  z-index: 10;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  backdrop-filter: blur(12px);
+}
+
+/* Right padding leaves room for the fixed menu button (36px + 12px offset + gap). */
+.app-header__row {
+  display: flex;
+  height: 52px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 58px 0 16px;
+}
+
+.app-header__brand {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  letter-spacing: -0.2px;
+}
+
+.language-switcher {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.language-switcher:hover,
+.language-switcher:focus-visible {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+}
+
+.language-switcher:active {
+  transform: scale(0.96);
+}
+
+.language-switcher .fi {
+  width: 19px;
+  height: 14px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}

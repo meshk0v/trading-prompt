@@ -1,0 +1,146 @@
+.prompt-chart {
+  position: relative;
+  height: 360px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--card);
+  box-shadow: var(--panel-shadow);
+}
+
+.prompt-chart::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(10, 10, 10, 0.12), transparent 30%);
+}
+
+.prompt-chart-open,
+.prompt-chart-close {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  box-shadow: none;
+  transition: none;
+}
+
+.prompt-chart-open {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.prompt-chart-close:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  transform: scale(1.06);
+}
+
+.prompt-chart-open:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+.prompt-chart-open:active {
+  transform: translate(-50%, -50%);
+}
+
+.prompt-chart-close:active {
+  transform: scale(1);
+}
+
+.prompt-chart-fullscreen {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  animation: chartFullscreenIn 0.22s ease-out;
+}
+
+.prompt-chart-fullscreen-header {
+  display: flex;
+  min-height: 58px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--header-bg);
+  backdrop-filter: blur(12px);
+}
+
+.prompt-chart-fullscreen-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.prompt-chart-timeframe {
+  padding: 3px 7px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.prompt-chart-close {
+  flex-shrink: 0;
+}
+
+.prompt-chart-fullscreen-body {
+  min-height: 0;
+  flex: 1;
+}
+
+@keyframes chartFullscreenIn {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 640px) {
+  .prompt-chart {
+    height: 280px;
+  }
+
+  .prompt-chart-close {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+.tradingview-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-chart-open,
+  .prompt-chart-close,
+  .prompt-chart-fullscreen {
+    animation: none;
+    transition: none;
+  }
+}

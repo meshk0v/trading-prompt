@@ -1,6 +1,5 @@
-export type AppLanguage = 'ru' | 'en'
-
-const RU_TO_EN: Record<string, string> = {
+// English translations. Keys are the Russian source strings used in the UI.
+export const en: Record<string, string> = {
   'Аккаунт': 'Account',
   'Аккаунт активен': 'Account active',
   'Аккаунт и безопасность': 'Account & security',
@@ -266,60 +265,61 @@ const RU_TO_EN: Record<string, string> = {
   'Для изменения основного email или удаления аккаунта обратитесь в поддержку с адреса, привязанного к профилю.': 'To change the primary email or delete the account, contact support from the address linked to your profile.',
   'Где найти условия использования и политику конфиденциальности?': 'Where can I find the terms of use and privacy policy?',
   'Все документы, предупреждения о рисках и правила обработки данных собраны на странице «Правовая информация».': 'All documents, risk notices and data processing rules are available on the Legal Information page.',
-}
-
-const EN_TO_RU = Object.fromEntries(Object.entries(RU_TO_EN).map(([ru, en]) => [en, ru]))
-const ATTRIBUTES = ['aria-label', 'title', 'placeholder', 'src'] as const
-
-function translateValue(value: string, language: AppLanguage) {
-  const dictionary = language === 'en' ? RU_TO_EN : EN_TO_RU
-  const leading = value.match(/^\s*/)?.[0] ?? ''
-  const trailing = value.match(/\s*$/)?.[0] ?? ''
-  const core = value.trim()
-  if (!core) return value
-  if (dictionary[core]) return `${leading}${dictionary[core]}${trailing}`
-
-  let translated = core
-  for (const [source, target] of Object.entries(dictionary).sort((a, b) => b[0].length - a[0].length)) {
-    if (translated.includes(source)) translated = translated.split(source).join(target)
-  }
-  return translated === core ? value : `${leading}${translated}${trailing}`
-}
-
-function translateNode(node: Node, language: AppLanguage) {
-  if (node.nodeType === Node.TEXT_NODE && node.textContent) {
-    const next = translateValue(node.textContent, language)
-    if (next !== node.textContent) node.textContent = next
-    return
-  }
-  if (!(node instanceof Element)) return
-
-  for (const attribute of ATTRIBUTES) {
-    const value = node.getAttribute(attribute)
-    if (!value) continue
-    const next = translateValue(value, language)
-    if (next !== value) node.setAttribute(attribute, next)
-  }
-  for (const child of Array.from(node.childNodes)) translateNode(child, language)
-}
-
-export function applyAppLanguage(language: AppLanguage) {
-  document.documentElement.lang = language
-  translateNode(document.body, language)
-
-  const observer = new MutationObserver(mutations => {
-    for (const mutation of mutations) {
-      if (mutation.type === 'characterData') translateNode(mutation.target, language)
-      if (mutation.type === 'attributes') translateNode(mutation.target, language)
-      for (const node of Array.from(mutation.addedNodes)) translateNode(node, language)
-    }
-  })
-  observer.observe(document.body, {
-    subtree: true,
-    childList: true,
-    characterData: true,
-    attributes: true,
-    attributeFilter: [...ATTRIBUTES],
-  })
-  return () => observer.disconnect()
+  'Текущий баланс {balance}, доступно промптов {remaining}': 'Current balance {balance}, prompts available: {remaining}',
+  'Регистрация': 'Sign up',
+  'Я принимаю': 'I accept the',
+  ', включая Пользовательское соглашение и Политику конфиденциальности': ', including the User Agreement and the Privacy Policy',
+  'Уже есть аккаунт?': 'Already have an account?',
+  'Нет аккаунта?': 'Don\'t have an account?',
+  'Лимит запросов исчерпан': 'Request limit reached',
+  'Пробный пакет завершён': 'Trial package used up',
+  'Вы собрали 3 бесплатных промпта. Чтобы продолжить, зарегистрируйтесь.': 'You\'ve built 3 free prompts. Sign up to continue.',
+  'Вы использовали все 3 тестовых промпта. Для продолжения выберите подходящий пакет промптов.': 'You\'ve used all 3 trial prompts. Choose a prompt package to continue.',
+  'Выбрать пакет': 'Choose a package',
+  'Изменить ширину конструктора промпта': 'Resize the prompt builder',
+  'Потяните, чтобы изменить ширину. Двойной клик — сбросить.': 'Drag to resize. Double-click to reset.',
+  'Открыть график {pair} на всю страницу': 'Open the {pair} chart full screen',
+  'Открыть график на всю страницу': 'Open the chart full screen',
+  'График TradingView {pair}': 'TradingView chart {pair}',
+  'Вы': 'You',
+  'Запрос промпта: **{pair}** · Период графика **{timeframe}**': 'Prompt request: **{pair}** · Chart period **{timeframe}**',
+  'Добавьте собственную задачу для AI': 'Add your own task for the AI',
+  'Настройки конструктора промпта': 'Prompt builder settings',
+  'Дополнительные требования к анализу': 'Additional analysis requirements',
+  'Например: оцени вероятность роста или падения по данному активу в ближайший час': 'For example: estimate the probability of this asset rising or falling within the next hour',
+  'Текст скопирован': 'Text copied',
+  'Копировать текст': 'Copy text',
+  'Открыть {name} в новой вкладке': 'Open {name} in a new tab',
+  'Навигация в подвале': 'Footer navigation',
+  '• {name} ({param}): {value}; оценка {signal}': '• {name} ({param}): {value}; rating {signal}',
+  '• Свеча {index}: O {o}, H {h}, L {l}, C {c}': '• Candle {index}: O {o}, H {h}, L {l}, C {c}',
+  '• {exchange} / {instrument}: объём {volume}, изменение {change}': '• {exchange} / {instrument}: volume {volume}, change {change}',
+  '• {country}: {name} ({period}) — значение {actual}, прогноз {forecast}, ранее {previous}': '• {country}: {name} ({period}) — actual {actual}, forecast {forecast}, previous {previous}',
+  'Инструмент: {value}': 'Instrument: {value}',
+  'Тип актива: {value}': 'Asset type: {value}',
+  'Таймфреймы: {value}': 'Timeframes: {value}',
+  'История цены: {count} баров': 'Price history: {count} bars',
+  'История индикаторов: {count} баров': 'Indicator history: {count} bars',
+  'Индикаторы (учебные, вымышленные):': 'Indicators (educational, fictional):',
+  'Свечи OHLC (учебные, вымышленные, условный индекс):': 'OHLC candles (educational, fictional, notional index):',
+  'Объёмы (учебные, вымышленные):': 'Volumes (educational, fictional):',
+  'Фундаментальные показатели (учебные, вымышленные):': 'Fundamental indicators (educational, fictional):',
+  'Укажите корректный email': 'Enter a valid email',
+  'Пароль должен быть от 6 до 72 символов': 'The password must be 6 to 72 characters',
+  'Пользователь с таким email уже зарегистрирован': 'A user with this email is already registered',
+  'Неверный email или пароль': 'Wrong email or password',
+  'Слишком много неудачных попыток. Попробуйте через 15 минут': 'Too many failed attempts. Try again in 15 minutes',
+  'Текущий пароль указан неверно': 'The current password is wrong',
+  'Новый пароль совпадает с текущим': 'The new password is the same as the current one',
+  'Имя не может быть пустым': 'The name can\'t be empty',
+  'Имя должно быть не длиннее 100 символов': 'The name must be 100 characters or less',
+  'Войдите в аккаунт': 'Please sign in',
+  'Чтобы завершить текущую сессию, выйдите из аккаунта': 'To end the current session, sign out',
+  'Нет связи с сервером': 'No connection to the server',
+  'Сервер авторизации недоступен': 'The sign-in server is unavailable',
+  'Ошибка сервера': 'Server error',
+  'База данных недоступна': 'The database is unavailable',
+  'Сервер не настроен': 'The server is not configured',
+  'История цены': 'Price history',
+  'История индикаторов': 'Indicator history',
 }
