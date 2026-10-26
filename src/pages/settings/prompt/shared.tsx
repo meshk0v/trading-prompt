@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useI18n } from '../../../i18n/context'
 
 /** Small square checkbox used in the prompt settings lists. */
@@ -52,14 +51,3 @@ export function TabHeader({ title, active, total, actionLabel, onAction, outline
     </div>
   )
 }
-
-/** On/off state for a list of ids; everything starts enabled. */
-export function useToggleSet() {
-  const [disabled, setDisabled] = useState<Record<string, boolean>>({})
-  return {
-    isOn: (id: string) => !disabled[id],
-    setMany: (ids: string[], on: boolean) => setDisabled(current => ({ ...current, ...Object.fromEntries(ids.map(id => [id, !on])) })),
-  }
-}
-
-export type ToggleSet = ReturnType<typeof useToggleSet>

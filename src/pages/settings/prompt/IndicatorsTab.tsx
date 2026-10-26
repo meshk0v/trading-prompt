@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react'
 import { INDICATOR_GROUPS } from '../../../data/promptSettings'
 import { useI18n } from '../../../i18n/context'
-import { Checkbox, TabHeader, type ToggleSet } from './shared'
+import { Checkbox, TabHeader } from './shared'
+import type { ToggleSet } from './useToggleSet'
 
 const ALL_INDICATORS = INDICATOR_GROUPS.flatMap(group => group.indicators)
 

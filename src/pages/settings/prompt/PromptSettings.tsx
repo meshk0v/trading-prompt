@@ -3,7 +3,7 @@ import SectionLayout, { type SectionItem } from '../../../components/SectionLayo
 import { useI18n } from '../../../i18n/context'
 import FundamentalsTab from './FundamentalsTab'
 import IndicatorsTab from './IndicatorsTab'
-import { useToggleSet } from './shared'
+import { useToggleSet } from './useToggleSet'
 import WatchlistTab from './WatchlistTab'
 import './PromptSettings.css'
 

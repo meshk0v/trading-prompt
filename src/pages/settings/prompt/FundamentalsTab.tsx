@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react'
 import { FUNDAMENTAL_GROUPS } from '../../../data/promptSettings'
 import { useI18n } from '../../../i18n/context'
-import { Checkbox, TabHeader, type ToggleSet } from './shared'
+import { Checkbox, TabHeader } from './shared'
+import type { ToggleSet } from './useToggleSet'
 
 const ALL_ITEMS = FUNDAMENTAL_GROUPS.flatMap(group => group.items)
 
