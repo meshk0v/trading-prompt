@@ -534,4 +534,7 @@ export const en: Record<string, string> = {
   'Фундамент': 'Fundamentals',
   'из': 'of',
   'Открыть Telegram-канал Trading Prompt': 'Open the Trading Prompt Telegram channel',
+  'Управление профилем и данными аккаунта': 'Manage your profile and account details',
+  'Общие настройки и настройки генерации промптов': 'General and prompt generation settings',
+  'Пополнение баланса для создания готовых промптов': 'Top up your balance to build prompts',
 }

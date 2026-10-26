@@ -2,6 +2,7 @@ import { useEffect, useState, type Dispatch, type ReactElement, type SetStateAct
 import type { AuthUser } from '../../api/auth'
 import PageHeader from '../../components/PageHeader'
 import { useI18n } from '../../i18n/context'
+import { tr } from '../../i18n/translate'
 import type { SettingsSection } from '../../navigation'
 import AccountSettings from './AccountSettings'
 import CreditsSettings from './CreditsSettings'
@@ -19,8 +20,8 @@ type SettingsPageProps = {
 
 const SECTIONS: Record<SettingsSection, { title: string; description: string; icon: ReactElement }> = {
   account: {
-    title: 'Аккаунт',
-    description: 'Управление профилем и данными аккаунта',
+    title: tr('Аккаунт'),
+    description: tr('Управление профилем и данными аккаунта'),
     icon: (
       <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
         <circle cx="7.5" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.3" />
@@ -29,8 +30,8 @@ const SECTIONS: Record<SettingsSection, { title: string; description: string; ic
     ),
   },
   'prompt-settings': {
-    title: 'Настройки',
-    description: 'Общие настройки и настройки генерации промптов',
+    title: tr('Настройки'),
+    description: tr('Общие настройки и настройки генерации промптов'),
     icon: (
       <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
         <circle cx="7.5" cy="7.5" r="2" stroke="currentColor" strokeWidth="1.3" />
@@ -44,8 +45,8 @@ const SECTIONS: Record<SettingsSection, { title: string; description: string; ic
     ),
   },
   subscription: {
-    title: 'Кредиты',
-    description: 'Пополнение баланса для создания готовых промптов',
+    title: tr('Кредиты'),
+    description: tr('Пополнение баланса для создания готовых промптов'),
     icon: (
       <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
         <rect x="1.5" y="3.5" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
