@@ -26,14 +26,17 @@ const API_URL = `${import.meta.env.BASE_URL}api`
 async function request<T>(endpoint: string, body?: object): Promise<T> {
   let response: Response
   try {
-    response = await fetch(`${API_URL}/${endpoint}.php`, body === undefined
-      ? { credentials: 'same-origin' }
-      : {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        })
+    response = await fetch(
+      `${API_URL}/${endpoint}.php`,
+      body === undefined
+        ? { credentials: 'same-origin' }
+        : {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          },
+    )
   } catch {
     throw new Error('Нет связи с сервером')
   }

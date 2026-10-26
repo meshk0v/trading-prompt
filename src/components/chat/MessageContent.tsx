@@ -15,7 +15,8 @@ export default function MessageContent({ text, muted = false, compactParagraphs 
       {lines.map((line, lineIndex) => (
         <span key={lineIndex}>
           {line.split(/(\*\*.*?\*\*|`.*?`)/g).map((part, partIndex) => {
-            if (part.startsWith('**') && part.endsWith('**')) return <strong key={partIndex}>{part.slice(2, -2)}</strong>
+            if (part.startsWith('**') && part.endsWith('**'))
+              return <strong key={partIndex}>{part.slice(2, -2)}</strong>
             if (part.startsWith('`') && part.endsWith('`')) return <code key={partIndex}>{part.slice(1, -1)}</code>
             return <span key={partIndex}>{part}</span>
           })}

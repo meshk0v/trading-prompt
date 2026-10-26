@@ -16,7 +16,15 @@ type CustomSelectProps = {
 }
 
 /** Styled replacement for <select> with optional icons next to the options. */
-export default function CustomSelect({ value, onChange, options, placeholder, menuWidth, menuAlign = 'left', dropDown }: CustomSelectProps) {
+export default function CustomSelect({
+  value,
+  onChange,
+  options,
+  placeholder,
+  menuWidth,
+  menuAlign = 'left',
+  dropDown,
+}: CustomSelectProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -31,12 +39,21 @@ export default function CustomSelect({ value, onChange, options, placeholder, me
 
   const selected = options.find(option => String(option.value) === String(value))
   const menuStyle: CSSProperties | undefined = menuWidth
-    ? { width: menuWidth, [menuAlign === 'right' ? 'right' : 'left']: 0, [menuAlign === 'right' ? 'left' : 'right']: 'auto' }
+    ? {
+        width: menuWidth,
+        [menuAlign === 'right' ? 'right' : 'left']: 0,
+        [menuAlign === 'right' ? 'left' : 'right']: 'auto',
+      }
     : undefined
 
   return (
     <div ref={ref} className="custom-select">
-      <button type="button" aria-expanded={open} onClick={() => setOpen(current => !current)} className="custom-select__field">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(current => !current)}
+        className="custom-select__field"
+      >
         {selected?.icon && <span className="custom-select__icon custom-select__icon--muted">{selected.icon}</span>}
         <span className={`custom-select__value${!selected && placeholder ? ' custom-select__value--placeholder' : ''}`}>
           {selected?.label ?? placeholder ?? String(value)}

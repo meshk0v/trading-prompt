@@ -128,7 +128,10 @@
   border: 1px solid var(--border);
   border-radius: 9px;
   background: var(--card2);
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
 }
 
 .support-contact:hover {
@@ -193,7 +196,10 @@
   font-size: 10px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .support-contact__copy:hover {
@@ -267,7 +273,9 @@
   font-size: 14px;
   outline: none;
   resize: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 .support-input--single {
@@ -297,7 +305,10 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .support-ticket-form__submit:hover {

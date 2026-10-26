@@ -48,7 +48,10 @@
   font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .credits-tab:hover:not(.active) {
@@ -67,9 +70,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  background:
-    radial-gradient(circle at 85% 0%, rgba(139, 124, 255, 0.045), transparent 28%),
-    var(--bg);
+  background: radial-gradient(circle at 85% 0%, rgba(139, 124, 255, 0.045), transparent 28%), var(--bg);
 }
 
 .credits-page-inner {
@@ -85,7 +86,7 @@
   gap: 7px 20px;
   overflow: hidden;
   padding: 20px;
-  border: 1px solid #2E2E46;
+  border: 1px solid #2e2e46;
   border-radius: 10px;
   background: linear-gradient(135deg, var(--card2) 0%, var(--card) 72%);
 }
@@ -148,7 +149,9 @@
   border: 1px solid rgba(139, 124, 255, 0.38);
   border-radius: 10px;
   background: linear-gradient(145deg, rgba(139, 124, 255, 0.14), rgba(139, 124, 255, 0.035));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 12px 32px rgba(0, 0, 0, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 12px 32px rgba(0, 0, 0, 0.18);
   text-align: center;
 }
 
@@ -216,7 +219,7 @@
 
 .credits-selected-value {
   margin-top: 5px;
-  color: #F0F0F0;
+  color: #f0f0f0;
   font-size: clamp(26px, 4vw, 36px);
   font-weight: 700;
   letter-spacing: -0.05em;
@@ -225,7 +228,7 @@
 
 .credits-selected-caption {
   margin-top: 2px;
-  color: #7C7A98;
+  color: #7c7a98;
   font-size: 10px;
 }
 
@@ -270,7 +273,9 @@
   border-radius: 50%;
   appearance: none;
   background: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-glow), 0 3px 10px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 0 0 4px var(--accent-glow),
+    0 3px 10px rgba(0, 0, 0, 0.5);
 }
 
 .credits-slider::-moz-range-thumb {
@@ -279,7 +284,9 @@
   border-color: var(--on-accent);
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 0 5px var(--accent-glow), 0 4px 14px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 0 0 5px var(--accent-glow),
+    0 4px 14px rgba(0, 0, 0, 0.5);
 }
 
 .credits-slider:focus-visible::-webkit-slider-thumb {
@@ -303,7 +310,7 @@
 }
 
 .credits-slider-scale strong {
-  color: #A0A0A0;
+  color: #a0a0a0;
   font-size: 11px;
 }
 
@@ -326,14 +333,18 @@
 .credits-quick-button {
   height: 31px;
   padding: 0 8px;
-  border: 1px solid #2E2E46;
+  border: 1px solid #2e2e46;
   border-radius: 6px;
   background: var(--card2);
   color: var(--muted);
   font-size: 10px;
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s,
+    transform 0.15s;
 }
 
 .credits-quick-button:hover {
@@ -353,7 +364,7 @@
   display: flex;
   flex-direction: column;
   padding: 18px;
-  background: linear-gradient(145deg, rgba(139,124,255,0.12) 0%, var(--card) 60%);
+  background: linear-gradient(145deg, rgba(139, 124, 255, 0.12) 0%, var(--card) 60%);
   border-color: var(--accent-border);
 }
 
@@ -381,7 +392,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  color: #7C7A98;
+  color: #7c7a98;
   font-size: 11px;
 }
 
@@ -426,7 +437,10 @@
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
 }
 
 .credits-buy-button:hover {
@@ -447,7 +461,7 @@
   justify-content: center;
   gap: 6px;
   margin-top: 11px;
-  color: #5F5F5F;
+  color: #5f5f5f;
   font-size: 9px;
 }
 
@@ -524,7 +538,7 @@
 
 .credits-history-count {
   padding: 4px 7px;
-  border: 1px solid #2E2E46;
+  border: 1px solid #2e2e46;
   border-radius: 5px;
   background: var(--card2);
 }
@@ -541,7 +555,7 @@
   min-height: 42px;
   padding: 0 10px;
   border-bottom: 1px solid var(--card2);
-  color: #7C7A98;
+  color: #7c7a98;
   font-size: 11px;
 }
 

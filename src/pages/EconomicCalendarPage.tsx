@@ -20,14 +20,25 @@ export default function EconomicCalendarPage({ onClose }: { onClose: () => void 
       <div className="calendar-page__header">
         <button type="button" onClick={onClose} className="calendar-page__back" aria-label={t('Закрыть')}>
           <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M9 2L4 7l5 5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
         <div className="calendar-page__title">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="currentColor" strokeWidth="1.3" />
             <path d="M5 1v3M11 1v3M1.5 6.5h13" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-            <path d="M4.5 10h2M4.5 12.5h2M9.5 10h2M9.5 12.5h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            <path
+              d="M4.5 10h2M4.5 12.5h2M9.5 10h2M9.5 12.5h2"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+            />
           </svg>
           <span>{t('Экономический календарь')}</span>
         </div>

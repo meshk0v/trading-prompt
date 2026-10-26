@@ -28,7 +28,13 @@ const BENEFIT_ICONS: ReactNode[] = [
     <path d="m5 17 12-12" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" />
   </>,
   <path d="m12.5 2-7 9h5L9.5 20l7-9h-5l1-9Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />,
-  <path d="M18.5 8A8 8 0 0 0 4 6M3.5 3.5V7H7M3.5 14A8 8 0 0 0 18 16m.5 2.5V15H15" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />,
+  <path
+    d="M18.5 8A8 8 0 0 0 4 6M3.5 3.5V7H7M3.5 14A8 8 0 0 0 18 16m.5 2.5V15H15"
+    stroke="currentColor"
+    strokeWidth="1.25"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />,
   <>
     <rect x="2.5" y="5" width="17" height="12" rx="2.5" stroke="currentColor" strokeWidth="1.25" />
     <path d="M2.5 9h17" stroke="currentColor" strokeWidth="1.25" />
@@ -36,7 +42,12 @@ const BENEFIT_ICONS: ReactNode[] = [
   </>,
   <path d="M3 18V9m5 9V4m5 14v-6m5 6V7M2 18.5h18" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />,
   <>
-    <path d="M4 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 3v-3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" />
+    <path
+      d="M4 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 3v-3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
+      stroke="currentColor"
+      strokeWidth="1.25"
+      strokeLinejoin="round"
+    />
     <path d="M7 9h8M7 12h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
   </>,
 ]
@@ -53,7 +64,8 @@ function heroWavePath(index: number) {
   ].join('')
 }
 
-const formatNumber = (value: number, maximumFractionDigits = 0) => value.toLocaleString('en-US', { maximumFractionDigits })
+const formatNumber = (value: number, maximumFractionDigits = 0) =>
+  value.toLocaleString('en-US', { maximumFractionDigits })
 
 /** Public affiliate program page for guests: terms, steps, benefits and an income calculator. */
 export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffiliatePageProps) {
@@ -65,7 +77,8 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
   const [averageDeposit, setAverageDeposit] = useState<number>(AFFILIATE_TERMS.defaultDeposit)
   const income = useMemo(() => clients * averageDeposit * AFFILIATE_TERMS.rewardRate, [clients, averageDeposit])
 
-  const scrollTo = (ref: RefObject<HTMLElement | null>) => () => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const scrollTo = (ref: RefObject<HTMLElement | null>) => () =>
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   const termTiles = [
     { value: t('Мгновенно'), label: t('выплата на кошелёк') },
@@ -78,10 +91,16 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
     { title: t('Зарегистрируйтесь'), text: t('Это занимает минуту, отдельной заявки не нужно') },
     {
       title: t('Укажите кошелёк'),
-      text: t('Добавьте {currency} {network} и скопируйте реферальную ссылку в кабинете', { currency: payoutCurrency, network: payoutNetwork }),
+      text: t('Добавьте {currency} {network} и скопируйте реферальную ссылку в кабинете', {
+        currency: payoutCurrency,
+        network: payoutNetwork,
+      }),
     },
     { title: t('Приглашайте'), text: t('Делитесь ссылкой с аудиторией, друзьями и подписчиками') },
-    { title: t('Получайте'), text: t('{percent}% от пополнения реферала приходят на ваш кошелёк сразу', { percent: rewardPercent }) },
+    {
+      title: t('Получайте'),
+      text: t('{percent}% от пополнения реферала приходят на ваш кошелёк сразу', { percent: rewardPercent }),
+    },
   ]
 
   const ranges = [
@@ -93,7 +112,10 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
       min: AFFILIATE_TERMS.minClients,
       max: AFFILIATE_TERMS.maxClients,
       onChange: setClients,
-      scale: [t('{count} клиент', { count: AFFILIATE_TERMS.minClients }), t('{count} клиентов', { count: AFFILIATE_TERMS.maxClients })],
+      scale: [
+        t('{count} клиент', { count: AFFILIATE_TERMS.minClients }),
+        t('{count} клиентов', { count: AFFILIATE_TERMS.maxClients }),
+      ],
     },
     {
       id: 'affiliate-deposit-range',
@@ -116,7 +138,12 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
               <circle cx="5" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.4" />
               <circle cx="15" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.4" />
               <circle cx="10" cy="15" r="2.5" stroke="currentColor" strokeWidth="1.4" />
-              <path d="m7.2 7.3 1.6 5M12.8 7.3l-1.6 5M7.5 6h5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              <path
+                d="m7.2 7.3 1.6 5M12.8 7.3l-1.6 5M7.5 6h5"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+              />
             </svg>
           </div>
           <div className="public-affiliate__heading-text">
@@ -165,7 +192,8 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
                     {t('Партнёрство без ожидания выплат')}
                   </div>
                   <h1 className="pa-hero__title">
-                    {t('Получайте')} <span className="pa-hero__percent">{rewardPercent}%</span> {t('с каждого пополнения приглашённых Вами клиентов')}
+                    {t('Получайте')} <span className="pa-hero__percent">{rewardPercent}%</span>{' '}
+                    {t('с каждого пополнения приглашённых Вами клиентов')}
                   </h1>
                   <p className="pa-hero__lead">
                     {t('Деньги приходят на ваш кошелёк')} <strong>{t('мгновенно')}</strong>
@@ -176,7 +204,13 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
                       {t('Стать партнёром')}
                       <span className="pa-hero__cta-arrow">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                          <path d="M3 8h10M9.5 4.5 13 8l-3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <path
+                            d="M3 8h10M9.5 4.5 13 8l-3.5 3.5"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                       </span>
                     </button>
@@ -187,10 +221,21 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
                         { label: t('Преимущества'), ref: benefitsRef },
                         { label: t('Рассчитать доход'), ref: calculatorRef },
                       ].map(item => (
-                        <button key={item.label} type="button" onClick={scrollTo(item.ref)} className="pa-hero__nav-link">
+                        <button
+                          key={item.label}
+                          type="button"
+                          onClick={scrollTo(item.ref)}
+                          className="pa-hero__nav-link"
+                        >
                           <span>{item.label}</span>
                           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                            <path d="M6 3h7v7M13 3 4 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                            <path
+                              d="M6 3h7v7M13 3 4 12"
+                              stroke="currentColor"
+                              strokeWidth="1.4"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
                           </svg>
                         </button>
                       ))}
@@ -231,7 +276,9 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
                   <span className="pa-pill__line" />
                 </div>
                 <h2 className="pa-section-title pa-section-title--upper">{t('Как это работает')}</h2>
-                <p className="pa-steps__text">{t('От регистрации до первого вознаграждения — четыре понятных шага без заявок и ожидания.')}</p>
+                <p className="pa-steps__text">
+                  {t('От регистрации до первого вознаграждения — четыре понятных шага без заявок и ожидания.')}
+                </p>
               </div>
 
               <div className="pa-ribbons">
@@ -302,7 +349,13 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
                       <div className="pa-benefit__included">
                         <span className="pa-benefit__check">
                           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                            <path d="m3 8 3 3 7-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                            <path
+                              d="m3 8 3 3 7-7"
+                              stroke="currentColor"
+                              strokeWidth="1.6"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
                           </svg>
                         </span>
                         {t('Включено')}
@@ -347,9 +400,12 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
                     {t('зарабатывать?')}
                   </h2>
                   <p className="pa-calculator__text">
-                    {t('Передвигайте ползунки — доход обновится автоматически. Ваша комиссия составляет {percent}% от пополнений.', {
-                      percent: rewardPercent,
-                    })}
+                    {t(
+                      'Передвигайте ползунки — доход обновится автоматически. Ваша комиссия составляет {percent}% от пополнений.',
+                      {
+                        percent: rewardPercent,
+                      },
+                    )}
                   </p>
 
                   <div className="pa-calculator__ranges" aria-label={t('Настройки расчёта')}>
@@ -386,7 +442,8 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
                       <div className="pa-result__note">{t('за пополнения')}</div>
                     </div>
                     <p className="pa-result__formula">
-                      <strong>{t('{count} клиентов', { count: formatNumber(clients) })}</strong> × <strong>${formatNumber(averageDeposit)}</strong> ×{' '}
+                      <strong>{t('{count} клиентов', { count: formatNumber(clients) })}</strong> ×{' '}
+                      <strong>${formatNumber(averageDeposit)}</strong> ×{' '}
                       <strong>{t('{percent}% комиссии', { percent: rewardPercent })}</strong>
                     </p>
                   </div>
@@ -394,7 +451,13 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
                   <div className="pa-result__example">
                     <div className="pa-result__example-icon">
                       <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                        <path d="M6 4h8v8M14 4 4 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                        <path
+                          d="M6 4h8v8M14 4 4 14"
+                          stroke="currentColor"
+                          strokeWidth="1.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     </div>
                     <div className="pa-result__example-text">
@@ -406,7 +469,9 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
                     </div>
                   </div>
                   <p className="pa-result__disclaimer">
-                    {t('Расчёт ориентировочный и не гарантирует доход. Фактический результат зависит от пополнений приглашённых клиентов.')}
+                    {t(
+                      'Расчёт ориентировочный и не гарантирует доход. Фактический результат зависит от пополнений приглашённых клиентов.',
+                    )}
                   </p>
                 </div>
               </div>
@@ -424,7 +489,13 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
                 <button type="button" onClick={onSignUp} className="pa-cta__button">
                   {t('Стать партнёром')}
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M3 8h10M9.5 4.5 13 8l-3.5 3.5" stroke="#B9AFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M3 8h10M9.5 4.5 13 8l-3.5 3.5"
+                      stroke="#B9AFFF"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
               </div>
@@ -437,7 +508,9 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
               />
             </div>
             <p className="pa-cta__disclaimer">
-              {t('«Трейдинг Промпт» не является инвестиционным советом. Сервис создаёт промпты и не гарантирует прибыль от торговли.')}
+              {t(
+                '«Трейдинг Промпт» не является инвестиционным советом. Сервис создаёт промпты и не гарантирует прибыль от торговли.',
+              )}
             </p>
           </section>
         </main>

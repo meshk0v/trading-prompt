@@ -63,3 +63,8 @@ docker run -d --name tpdb --network tpnet -e MARIADB_ROOT_PASSWORD=root \
 
 Serve `public/` with PHP + `pdo_mysql` on port 8090 (with `tp-config.php` two levels above `api/`),
 then `npm run dev` — Vite proxies `/api` to `http://localhost:8090`.
+
+## Preview on GitHub Pages
+
+`.github/workflows/deploy.yml` builds every push to `main` with `BASE_PATH=/<repo-name>` and publishes
+`dist/` to GitHub Pages. Pages serves static files only, so the PHP API (sign-in) does not work there.

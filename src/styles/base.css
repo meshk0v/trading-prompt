@@ -1,0 +1,148 @@
+/* Global element styles shared by the whole app. */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  transition:
+    background-color 0.25s,
+    color 0.25s;
+}
+
+::selection {
+  background: rgba(139, 124, 255, 0.3);
+}
+
+:where(button, a, [role='button']):focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* ── Form fields ── */
+
+input,
+select,
+textarea {
+  border-color: var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  caret-color: var(--accent);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #5e5c78;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: #34344f;
+}
+
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: none;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  border-color: var(--border2);
+  background: var(--surface);
+  color: var(--muted2);
+}
+
+input[type='range'],
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--accent);
+}
+
+select option {
+  background: var(--card);
+  color: var(--text);
+}
+
+/* ── Scrollable areas ── */
+
+.scrollable {
+  scrollbar-color: #2e2e46 transparent;
+  scrollbar-width: thin;
+}
+
+.scrollable::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  border-radius: 2px;
+  background: #2e2e46;
+}
+
+.scrollable:hover::-webkit-scrollbar-thumb {
+  background: #44445f;
+}
+
+/* ── Shared animations ── */
+
+.message-fade {
+  animation: fade-in 0.25s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* ── Brand logo (components/Logo.tsx) ── */
+
+.logo {
+  flex-shrink: 0;
+  object-fit: contain;
+}

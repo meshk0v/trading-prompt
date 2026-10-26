@@ -8,7 +8,11 @@ import './SupportPage.css'
 
 type Section = 'support' | 'history'
 
-const STATUS_LABELS: Record<TicketStatus, string> = { open: tr('Открыт'), answered: tr('Отвечен'), closed: tr('Закрыт') }
+const STATUS_LABELS: Record<TicketStatus, string> = {
+  open: tr('Открыт'),
+  answered: tr('Отвечен'),
+  closed: tr('Закрыт'),
+}
 
 const CONTACTS = [
   {
@@ -28,7 +32,12 @@ const CONTACTS = [
     note: tr('Оперативная связь'),
     icon: (
       <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M14.5 2.5L1.5 7.5c-.4.17-.4.67 0 .83l2.8 1.04 1.1 3.37c.1.33.53.43.77.18l1.56-1.5 2.87 2.1c.3.2.7.05.78-.3L14.9 3c.1-.45-.33-.8-.4-.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+        <path
+          d="M14.5 2.5L1.5 7.5c-.4.17-.4.67 0 .83l2.8 1.04 1.1 3.37c.1.33.53.43.77.18l1.56-1.5 2.87 2.1c.3.2.7.05.78-.3L14.9 3c.1-.45-.33-.8-.4-.5z"
+          stroke="currentColor"
+          strokeWidth="1.2"
+          strokeLinejoin="round"
+        />
       </svg>
     ),
   },
@@ -48,7 +57,9 @@ const CONTACTS = [
 
 function todayRu() {
   const now = new Date()
-  return [now.getDate(), now.getMonth() + 1].map(part => String(part).padStart(2, '0')).join('.') + `.${now.getFullYear()}`
+  return (
+    [now.getDate(), now.getMonth() + 1].map(part => String(part).padStart(2, '0')).join('.') + `.${now.getFullYear()}`
+  )
 }
 
 export default function SupportPage({ onClose }: { onClose: () => void }) {
@@ -67,7 +78,13 @@ export default function SupportPage({ onClose }: { onClose: () => void }) {
       label: t('Поддержка'),
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M2 8a6 6 0 0 1 12 0v3a2 2 0 0 1-2 2h-1V8h3M2 8v5H1a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h1ZM11 13c0 1-1 1.5-3 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M2 8a6 6 0 0 1 12 0v3a2 2 0 0 1-2 2h-1V8h3M2 8v5H1a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h1ZM11 13c0 1-1 1.5-3 1.5"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       ),
     },
@@ -76,8 +93,20 @@ export default function SupportPage({ onClose }: { onClose: () => void }) {
       label: t('История запросов'),
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M2.5 4.5V1.8M2.5 1.8H5.2M2.5 1.8l2.1 2.1A5.5 5.5 0 1 1 2 8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M8 5v3.3l2.2 1.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M2.5 4.5V1.8M2.5 1.8H5.2M2.5 1.8l2.1 2.1A5.5 5.5 0 1 1 2 8"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M8 5v3.3l2.2 1.3"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       ),
     },
@@ -89,7 +118,13 @@ export default function SupportPage({ onClose }: { onClose: () => void }) {
     const number = tickets.length + 1
     setNewTickets(previous => [
       ...previous,
-      { id: `TKT-${String(number).padStart(3, '0')}`, date: todayRu(), subject: subject.trim(), status: 'open', reply: '' },
+      {
+        id: `TKT-${String(number).padStart(3, '0')}`,
+        date: todayRu(),
+        subject: subject.trim(),
+        status: 'open',
+        reply: '',
+      },
     ])
     setSubject('')
     setBody('')
@@ -104,7 +139,12 @@ export default function SupportPage({ onClose }: { onClose: () => void }) {
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" />
             <path d="M8 11v1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-            <path d="M6 6.5C6 5.4 6.9 4.5 8 4.5s2 .9 2 2c0 1-.6 1.5-1.3 2-.5.3-.7.7-.7 1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            <path
+              d="M6 6.5C6 5.4 6.9 4.5 8 4.5s2 .9 2 2c0 1-.6 1.5-1.3 2-.5.3-.7.7-.7 1"
+              stroke="currentColor"
+              strokeWidth="1.3"
+              strokeLinecap="round"
+            />
           </svg>
         }
         title={t('Поддержка и контакты')}
@@ -126,7 +166,9 @@ export default function SupportPage({ onClose }: { onClose: () => void }) {
                         {t('На связи')}
                       </div>
                       <h2 className="support-contacts__title">{t('Контакты поддержки')}</h2>
-                      <p className="support-contacts__text">{t('Выберите удобный способ связи или скопируйте контакт одним нажатием.')}</p>
+                      <p className="support-contacts__text">
+                        {t('Выберите удобный способ связи или скопируйте контакт одним нажатием.')}
+                      </p>
                     </div>
                     <div className="support-contacts__status">
                       <span />
@@ -154,7 +196,11 @@ export default function SupportPage({ onClose }: { onClose: () => void }) {
                         >
                           <svg width="12" height="12" viewBox="0 0 13 13" fill="none" aria-hidden="true">
                             <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-                            <path d="M9 4V2.5A1.5 1.5 0 0 0 7.5 1h-5A1.5 1.5 0 0 0 1 2.5v5A1.5 1.5 0 0 0 2.5 9H4" stroke="currentColor" strokeWidth="1.2" />
+                            <path
+                              d="M9 4V2.5A1.5 1.5 0 0 0 7.5 1h-5A1.5 1.5 0 0 0 1 2.5v5A1.5 1.5 0 0 0 2.5 9H4"
+                              stroke="currentColor"
+                              strokeWidth="1.2"
+                            />
                           </svg>
                           {t('Скопировать')}
                         </button>
@@ -172,7 +218,13 @@ export default function SupportPage({ onClose }: { onClose: () => void }) {
                     <div className="support-ticket-form__sent">
                       <svg width="20" height="20" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                         <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.4" />
-                        <path d="M5.5 9.5l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                        <path
+                          d="M5.5 9.5l2.5 2.5 4.5-5"
+                          stroke="currentColor"
+                          strokeWidth="1.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                       <span>{t('Тикет отправлен. Ответим в течение 2 часов.')}</span>
                     </div>
@@ -249,7 +301,14 @@ export default function SupportPage({ onClose }: { onClose: () => void }) {
                                 <span />
                                 {t(STATUS_LABELS[ticket.status])}
                               </span>
-                              <svg className="support-ticket__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                              <svg
+                                className="support-ticket__chevron"
+                                width="12"
+                                height="12"
+                                viewBox="0 0 12 12"
+                                fill="none"
+                                aria-hidden="true"
+                              >
                                 <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                               </svg>
                             </div>

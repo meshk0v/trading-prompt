@@ -13,7 +13,10 @@ export async function createPromptPdf(text: string): Promise<Blob> {
   context.font = '24px Arial, sans-serif'
   const lines: string[] = []
   for (const paragraph of text.split('\n')) {
-    if (!paragraph) { lines.push(''); continue }
+    if (!paragraph) {
+      lines.push('')
+      continue
+    }
     let line = ''
     for (const word of paragraph.split(/\s+/)) {
       const next = line ? `${line} ${word}` : word
@@ -70,13 +73,22 @@ export async function createPromptPdf(text: string): Promise<Blob> {
   pages.forEach((jpeg, i) => {
     const pageId = 3 + i * 3
     const content = `q\n595 0 0 842 0 0 cm\n/Im${i} Do\nQ\n`
-    object(pageId, [`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im${i} ${pageId + 1} 0 R >> >> /Contents ${pageId + 2} 0 R >>`])
-    object(pageId + 1, [`<< /Type /XObject /Subtype /Image /Width ${width} /Height ${height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`, jpeg, '\nendstream'])
+    object(pageId, [
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im${i} ${pageId + 1} 0 R >> >> /Contents ${pageId + 2} 0 R >>`,
+    ])
+    object(pageId + 1, [
+      `<< /Type /XObject /Subtype /Image /Width ${width} /Height ${height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`,
+      jpeg,
+      '\nendstream',
+    ])
     object(pageId + 2, [`<< /Length ${encoder.encode(content).length} >>\nstream\n${content}endstream`])
   })
   const xref = length
   append(`xref\n0 ${offsets.length}\n0000000000 65535 f \n`)
   offsets.slice(1).forEach(offset => append(`${String(offset).padStart(10, '0')} 00000 n \n`))
   append(`trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`)
-  return new Blob(parts.map(part => typeof part === 'string' ? part : Uint8Array.from(part).buffer), { type: 'application/pdf' })
+  return new Blob(
+    parts.map(part => (typeof part === 'string' ? part : Uint8Array.from(part).buffer)),
+    { type: 'application/pdf' },
+  )
 }

@@ -19,7 +19,8 @@ export default function PromptPanelResizeHandle({ width, onResize }: PromptPanel
   const { t } = useI18n()
   const dragState = useRef<{ startX: number; startWidth: number } | null>(null)
   const [resizing, setResizing] = useState(false)
-  const getContainerWidth = (element: HTMLDivElement) => element.closest<HTMLElement>('.app-main')?.clientWidth ?? window.innerWidth
+  const getContainerWidth = (element: HTMLDivElement) =>
+    element.closest<HTMLElement>('.app-main')?.clientWidth ?? window.innerWidth
 
   const finishResize = (event: ReactPointerEvent<HTMLDivElement>) => {
     dragState.current = null
@@ -61,7 +62,9 @@ export default function PromptPanelResizeHandle({ width, onResize }: PromptPanel
       onKeyDown={event => {
         if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
         event.preventDefault()
-        onResize(clampPanelWidth(width + (event.key === 'ArrowLeft' ? 20 : -20), getContainerWidth(event.currentTarget)))
+        onResize(
+          clampPanelWidth(width + (event.key === 'ArrowLeft' ? 20 : -20), getContainerWidth(event.currentTarget)),
+        )
       }}
     >
       <span className="prompt-panel-resize-grip" aria-hidden="true">

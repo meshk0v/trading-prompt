@@ -20,7 +20,12 @@ export default function IndicatorsTab({ selection: { isOn, setMany } }: { select
         active={enabledCount}
         total={ALL_INDICATORS.length}
         actionLabel={allEnabled ? t('Снять все') : t('Выбрать все')}
-        onAction={() => setMany(ALL_INDICATORS.map(indicator => indicator.id), !allEnabled)}
+        onAction={() =>
+          setMany(
+            ALL_INDICATORS.map(indicator => indicator.id),
+            !allEnabled,
+          )
+        }
       />
 
       <div className="indicator-table__columns">
@@ -47,7 +52,15 @@ export default function IndicatorsTab({ selection: { isOn, setMany } }: { select
                   <span>
                     {groupEnabled}/{group.indicators.length}
                   </span>
-                  <button type="button" onClick={() => setMany(group.indicators.map(indicator => indicator.id), !allGroupEnabled)}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setMany(
+                        group.indicators.map(indicator => indicator.id),
+                        !allGroupEnabled,
+                      )
+                    }
+                  >
                     {allGroupEnabled ? t('Снять') : t('Вкл.')}
                   </button>
                 </div>

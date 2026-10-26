@@ -106,3 +106,8 @@
   background: var(--selected-option-bg, #242436);
   color: var(--accent-text);
 }
+
+.custom-select__field:focus,
+.custom-select__field:focus-visible {
+  outline: none;
+}

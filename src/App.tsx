@@ -13,7 +13,6 @@ import { DEFAULT_WATCHLIST } from './data/instruments'
 import { useChat } from './hooks/useChat'
 import { usePromptBuilder } from './hooks/usePromptBuilder'
 import { useI18n } from './i18n/context'
-import { applyAppLanguage } from './i18n/legacyDomTranslator'
 import { LINKABLE_PAGES, type FaqCategoryFilter, type Page, type SettingsSection } from './navigation'
 import AffiliatePage from './pages/AffiliatePage'
 import EconomicCalendarPage from './pages/EconomicCalendarPage'
@@ -29,7 +28,7 @@ import './App.css'
 const FREE_PROMPT_LIMIT = 3
 
 export default function App() {
-  const { language, t } = useI18n()
+  const { t } = useI18n()
   const [user, setUser] = useState<AuthUser | null>(null)
 
   // Navigation
@@ -53,14 +52,10 @@ export default function App() {
 
   // Restore the session on load.
   useEffect(() => {
-    fetchCurrentUser().then(setUser).catch(() => {})
+    fetchCurrentUser()
+      .then(setUser)
+      .catch(() => {})
   }, [])
-
-  // TEMPORARY: legacy styles key off this attribute and the DOM translator handles not yet migrated text.
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', 'black')
-  }, [])
-  useEffect(() => applyAppLanguage(language), [language])
 
   const openLinkedPage = (id: string) => {
     if (id === 'faq') setFaqCategory('Все')
@@ -113,7 +108,9 @@ export default function App() {
   }
 
   const isChat = page === 'chat'
-  const mainClassName = ['app-main', isChat && 'app-main--chat', user && 'app-main--with-footer'].filter(Boolean).join(' ')
+  const mainClassName = ['app-main', isChat && 'app-main--chat', user && 'app-main--with-footer']
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <div className="app">
@@ -133,7 +130,11 @@ export default function App() {
         <AppHeader />
 
         {page === 'affiliate' &&
-          (user ? <AffiliatePage onClose={closePage} /> : <PublicAffiliatePage onClose={closePage} onSignUp={() => setAuthOpen(true)} />)}
+          (user ? (
+            <AffiliatePage onClose={closePage} />
+          ) : (
+            <PublicAffiliatePage onClose={closePage} onSignUp={() => setAuthOpen(true)} />
+          ))}
         {page === 'legal' && <LegalPage onClose={closePage} />}
         {page === 'support' && <SupportPage onClose={closePage} />}
         {page === 'settings' && (

@@ -5,7 +5,8 @@ export function useToggleSet() {
   const [disabled, setDisabled] = useState<Record<string, boolean>>({})
   return {
     isOn: (id: string) => !disabled[id],
-    setMany: (ids: string[], on: boolean) => setDisabled(current => ({ ...current, ...Object.fromEntries(ids.map(id => [id, !on])) })),
+    setMany: (ids: string[], on: boolean) =>
+      setDisabled(current => ({ ...current, ...Object.fromEntries(ids.map(id => [id, !on])) })),
   }
 }
 

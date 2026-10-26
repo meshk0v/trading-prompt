@@ -56,7 +56,13 @@ const usd = (value: number) => `$${value.toFixed(2)}`
 
 const TrashIcon = () => (
   <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-    <path d="M2.5 4h9M5 4V2.5h4V4m-5.5 0 .6 8h5.8l.6-8M5.7 6.2v3.5M8.3 6.2v3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path
+      d="M2.5 4h9M5 4V2.5h4V4m-5.5 0 .6 8h5.8l.6-8M5.7 6.2v3.5M8.3 6.2v3.5"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 )
 
@@ -103,7 +109,9 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
   const [walletSaved, setWalletSaved] = useState(false)
 
   const selectedLink = links.find(link => link.id === selectedLinkId)
-  const visiblePartners = selectedLink ? DEMO_PARTNERS.filter(partner => selectedLink.partnerIds.includes(partner.id)) : DEMO_PARTNERS
+  const visiblePartners = selectedLink
+    ? DEMO_PARTNERS.filter(partner => selectedLink.partnerIds.includes(partner.id))
+    : DEMO_PARTNERS
   const sum = (key: 'earned' | 'pendingPayout' | 'activePartners') =>
     selectedLink ? selectedLink[key] : links.reduce((total, link) => total + link[key], 0)
   const linkName = (link: ReferralLink) => (link.removable ? link.name : t(link.name))
@@ -154,7 +162,12 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <circle cx="5.5" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.3" />
           <circle cx="10.5" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.3" />
-          <path d="M1 14c0-2.5 2-4.5 4.5-4.5M15 14c0-2.5-2-4.5-4.5-4.5M7 14c0-2.5 1.3-4 3-4s3 1.5 3 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          <path
+            d="M1 14c0-2.5 2-4.5 4.5-4.5M15 14c0-2.5-2-4.5-4.5-4.5M7 14c0-2.5 1.3-4 3-4s3 1.5 3 4"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+          />
         </svg>
       ),
     },
@@ -180,7 +193,12 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <circle cx="5" cy="5" r="2.3" stroke="currentColor" strokeWidth="1.3" />
           <circle cx="11.5" cy="5.5" r="1.8" stroke="currentColor" strokeWidth="1.3" />
-          <path d="M1.5 14c0-2.7 1.5-4.5 3.5-4.5s3.5 1.8 3.5 4.5M9 10c1.9 0 3.5 1.5 3.5 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          <path
+            d="M1.5 14c0-2.7 1.5-4.5 3.5-4.5s3.5 1.8 3.5 4.5M9 10c1.9 0 3.5 1.5 3.5 3.5"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+          />
         </svg>
       ),
     },
@@ -190,7 +208,13 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
       note: t('приносят доход'),
       icon: (
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M2 13V9M6 13V6M10 13V8M14 13V3M1 13.5h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M2 13V9M6 13V6M10 13V8M14 13V3M1 13.5h14"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       ),
     },
@@ -201,7 +225,12 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
       icon: (
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <circle cx="8" cy="8" r="6.2" stroke="currentColor" strokeWidth="1.3" />
-          <path d="M10.5 5.5H7.2a1.7 1.7 0 0 0 0 3.4h1.6a1.7 1.7 0 0 1 0 3.4H5.5M8 3.8v1.7M8 12.3V14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+          <path
+            d="M10.5 5.5H7.2a1.7 1.7 0 0 0 0 3.4h1.6a1.7 1.7 0 0 1 0 3.4H5.5M8 3.8v1.7M8 12.3V14"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+          />
         </svg>
       ),
     },
@@ -236,7 +265,13 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
         onClose={onClose}
       />
 
-      <SectionLayout items={sections} active={section} onChange={setSection} tone="solid" className="affiliate-sections">
+      <SectionLayout
+        items={sections}
+        active={section}
+        onChange={setSection}
+        tone="solid"
+        className="affiliate-sections"
+      >
         <div className="affiliate-page__body scrollable">
           {section === 'partners' && (
             <div className="affiliate-page__stack">
@@ -244,7 +279,9 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
                 <div className="affiliate-links__header">
                   <div>
                     <div className="affiliate-card__title">{t('Реферальные ссылки')}</div>
-                    <div className="affiliate-card__subtitle">{t('Создавайте отдельную ссылку для каждого источника трафика')}</div>
+                    <div className="affiliate-card__subtitle">
+                      {t('Создавайте отдельную ссылку для каждого источника трафика')}
+                    </div>
                   </div>
                   <button type="button" onClick={() => setAddingLink(value => !value)} className="affiliate-links__add">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
@@ -264,7 +301,12 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
                       placeholder={t('Введите имя, например Telegram или YouTube')}
                       className="affiliate-links__name-input"
                     />
-                    <button type="button" onClick={createLink} disabled={!newLinkName.trim()} className="affiliate-button">
+                    <button
+                      type="button"
+                      onClick={createLink}
+                      disabled={!newLinkName.trim()}
+                      className="affiliate-button"
+                    >
                       {t('Сохранить')}
                     </button>
                   </div>
@@ -310,7 +352,10 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
                   <CustomSelect
                     value={selectedLinkId}
                     onChange={setSelectedLinkId}
-                    options={[{ label: t('Все ссылки'), value: 'all' }, ...links.map(link => ({ label: linkName(link), value: link.id }))]}
+                    options={[
+                      { label: t('Все ссылки'), value: 'all' },
+                      ...links.map(link => ({ label: linkName(link), value: link.id })),
+                    ]}
                     dropDown
                   />
                 </div>
@@ -325,7 +370,9 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
               <div className="affiliate-card affiliate-table">
                 <div className="affiliate-table__header">
                   <span className="affiliate-card__title">{t('Список партнёров')}</span>
-                  <span className="affiliate-table__count">{t('{count} пользователей', { count: visiblePartners.length })}</span>
+                  <span className="affiliate-table__count">
+                    {t('{count} пользователей', { count: visiblePartners.length })}
+                  </span>
                 </div>
                 <div className="affiliate-table__scroll">
                   <div className="affiliate-partner affiliate-partner--head">
@@ -361,7 +408,9 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
                 <p className="affiliate-wallet__text">
                   {walletSaved
                     ? t('Сохранённый кошелёк используется для автоматического получения выплат.')
-                    : t('Укажите адрес кошелька USDT ({network}) для автоматического получения выплат.', { network: walletNetwork })}
+                    : t('Укажите адрес кошелька USDT ({network}) для автоматического получения выплат.', {
+                        network: walletNetwork,
+                      })}
                 </p>
                 {walletSaved ? (
                   <div className="affiliate-wallet__saved">
@@ -399,7 +448,12 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
                   <>
                     <div className="affiliate-wallet__network">
                       <div className="affiliate-wallet__network-label">{t('Сеть выплат')}</div>
-                      <CustomSelect value={walletNetwork} onChange={setWalletNetwork} options={NETWORK_OPTIONS} dropDown />
+                      <CustomSelect
+                        value={walletNetwork}
+                        onChange={setWalletNetwork}
+                        options={NETWORK_OPTIONS}
+                        dropDown
+                      />
                     </div>
                     <div className="affiliate-wallet__form">
                       <input

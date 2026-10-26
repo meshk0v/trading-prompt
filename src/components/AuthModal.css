@@ -21,7 +21,9 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--card);
-  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(139, 124, 255, 0.05);
+  box-shadow:
+    0 32px 90px rgba(0, 0, 0, 0.72),
+    0 0 0 1px rgba(139, 124, 255, 0.05);
 }
 
 .auth-modal::-webkit-scrollbar {
@@ -60,7 +62,10 @@
   border-radius: 6px;
   color: var(--muted);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .auth-modal__close:hover {
@@ -129,7 +134,9 @@
   color: var(--text);
   font-size: 14px;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 .auth-modal__input:focus {
@@ -194,7 +201,9 @@
   background: var(--bg);
   cursor: pointer;
   user-select: none;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .auth-modal__terms.is-checked {
@@ -267,7 +276,10 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .auth-modal__submit:hover:not(:disabled) {

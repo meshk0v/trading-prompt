@@ -15,7 +15,14 @@ type SectionLayoutProps<T extends string> = {
 }
 
 /** Sections of a page: a sidebar on desktop, tabs above the content on phones (≤640px). */
-export default function SectionLayout<T extends string>({ items, active, onChange, tone = 'soft', className, children }: SectionLayoutProps<T>) {
+export default function SectionLayout<T extends string>({
+  items,
+  active,
+  onChange,
+  tone = 'soft',
+  className,
+  children,
+}: SectionLayoutProps<T>) {
   const rootClass = ['section-layout', `section-layout--${tone}`, className].filter(Boolean).join(' ')
 
   const renderItems = (itemClass: string) =>

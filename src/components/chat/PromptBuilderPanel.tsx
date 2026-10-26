@@ -34,7 +34,12 @@ export default function PromptBuilderPanel({
   const { t } = useI18n()
   const historyFields = [
     { id: 'price-history', label: tr('История цены'), value: builder.priceHistory, setValue: builder.setPriceHistory },
-    { id: 'indicator-history', label: tr('История индикаторов'), value: builder.indicatorHistory, setValue: builder.setIndicatorHistory },
+    {
+      id: 'indicator-history',
+      label: tr('История индикаторов'),
+      value: builder.indicatorHistory,
+      setValue: builder.setIndicatorHistory,
+    },
   ]
 
   return (
@@ -48,7 +53,9 @@ export default function PromptBuilderPanel({
             </div>
             <div className="prompt-builder__header-text">
               <div className="prompt-builder__title">{t('Конструктор промпта')}</div>
-              <div className="prompt-builder__subtitle">{t('Настройте инструмент, глубину данных и период графика')}</div>
+              <div className="prompt-builder__subtitle">
+                {t('Настройте инструмент, глубину данных и период графика')}
+              </div>
             </div>
           </div>
 
@@ -59,7 +66,11 @@ export default function PromptBuilderPanel({
                 <CustomSelect
                   value={builder.instruments.includes(builder.pair) ? builder.pair : builder.instruments[0]}
                   onChange={builder.setPair}
-                  options={builder.instruments.map(pair => ({ label: pair, value: pair, icon: <PairFlag pair={pair} size={13} /> }))}
+                  options={builder.instruments.map(pair => ({
+                    label: pair,
+                    value: pair,
+                    icon: <PairFlag pair={pair} size={13} />,
+                  }))}
                   dropDown
                 />
               </div>
@@ -114,7 +125,12 @@ export default function PromptBuilderPanel({
               </div>
             </div>
 
-            <button data-prompt-guide="create-prompt" type="button" onClick={onGenerate} className="prompt-builder__submit">
+            <button
+              data-prompt-guide="create-prompt"
+              type="button"
+              onClick={onGenerate}
+              className="prompt-builder__submit"
+            >
               <SparkleBoldIcon />
               {t('Собрать промпт')}
             </button>
@@ -132,7 +148,12 @@ export default function PromptBuilderPanel({
             >
               <GearIcon />
             </button>
-            <button data-prompt-guide="create-prompt" type="button" onClick={onGenerate} className="prompt-builder__mobile-submit">
+            <button
+              data-prompt-guide="create-prompt"
+              type="button"
+              onClick={onGenerate}
+              className="prompt-builder__mobile-submit"
+            >
               <BoltIcon />
               {t('Собрать промпт')}
             </button>

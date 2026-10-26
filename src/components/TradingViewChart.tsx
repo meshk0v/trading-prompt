@@ -4,20 +4,40 @@ import PairFlag from './PairFlag'
 import './TradingViewChart.css'
 
 const TV_SYMBOL: Record<string, string> = {
-  'BTC/USD': 'BINANCE:BTCUSDT', 'ETH/USD': 'BINANCE:ETHUSDT',
-  'BNB/USD': 'BINANCE:BNBUSDT', 'XRP/USD': 'BINANCE:XRPUSDT',
-  'SOL/USD': 'BINANCE:SOLUSDT', 'ADA/USD': 'BINANCE:ADAUSDT',
-  'AVAX/USD': 'BINANCE:AVAXUSDT', 'DOT/USD': 'BINANCE:DOTUSDT',
-  'MATIC/USD': 'BINANCE:MATICUSDT', 'LINK/USD': 'BINANCE:LINKUSDT',
-  'LTC/USD': 'BINANCE:LTCUSDT', 'ATOM/USD': 'BINANCE:ATOMUSDT',
-  'DOGE/USD': 'BINANCE:DOGEUSDT', 'TRX/USD': 'BINANCE:TRXUSDT',
-  'EUR/USD': 'FX:EURUSD', 'GBP/USD': 'FX:GBPUSD', 'USD/JPY': 'FX:USDJPY',
-  'XAU/USD': 'TVC:GOLD',  'AUD/USD': 'FX:AUDUSD', 'USD/CHF': 'FX:USDCHF',
-  'GBP/JPY': 'FX:GBPJPY', 'NZD/USD': 'FX:NZDUSD', 'USD/CAD': 'FX:USDCAD',
-  'EUR/GBP': 'FX:EURGBP', 'EUR/JPY': 'FX:EURJPY', 'OIL/USD': 'TVC:USOIL',
-  'USD/TRY': 'FX:USDTRY', 'EUR/CHF': 'FX:EURCHF', 'AUD/CAD': 'FX:AUDCAD',
-  'USD/ZAR': 'FX:USDZAR', 'USD/NOK': 'FX:USDNOK', 'GBP/CHF': 'FX:GBPCHF',
-  'EUR/AUD': 'FX:EURAUD', 'XAG/USD': 'TVC:SILVER',
+  'BTC/USD': 'BINANCE:BTCUSDT',
+  'ETH/USD': 'BINANCE:ETHUSDT',
+  'BNB/USD': 'BINANCE:BNBUSDT',
+  'XRP/USD': 'BINANCE:XRPUSDT',
+  'SOL/USD': 'BINANCE:SOLUSDT',
+  'ADA/USD': 'BINANCE:ADAUSDT',
+  'AVAX/USD': 'BINANCE:AVAXUSDT',
+  'DOT/USD': 'BINANCE:DOTUSDT',
+  'MATIC/USD': 'BINANCE:MATICUSDT',
+  'LINK/USD': 'BINANCE:LINKUSDT',
+  'LTC/USD': 'BINANCE:LTCUSDT',
+  'ATOM/USD': 'BINANCE:ATOMUSDT',
+  'DOGE/USD': 'BINANCE:DOGEUSDT',
+  'TRX/USD': 'BINANCE:TRXUSDT',
+  'EUR/USD': 'FX:EURUSD',
+  'GBP/USD': 'FX:GBPUSD',
+  'USD/JPY': 'FX:USDJPY',
+  'XAU/USD': 'TVC:GOLD',
+  'AUD/USD': 'FX:AUDUSD',
+  'USD/CHF': 'FX:USDCHF',
+  'GBP/JPY': 'FX:GBPJPY',
+  'NZD/USD': 'FX:NZDUSD',
+  'USD/CAD': 'FX:USDCAD',
+  'EUR/GBP': 'FX:EURGBP',
+  'EUR/JPY': 'FX:EURJPY',
+  'OIL/USD': 'TVC:USOIL',
+  'USD/TRY': 'FX:USDTRY',
+  'EUR/CHF': 'FX:EURCHF',
+  'AUD/CAD': 'FX:AUDCAD',
+  'USD/ZAR': 'FX:USDZAR',
+  'USD/NOK': 'FX:USDNOK',
+  'GBP/CHF': 'FX:GBPCHF',
+  'EUR/AUD': 'FX:EURAUD',
+  'XAG/USD': 'TVC:SILVER',
 }
 
 const TV_INTERVAL: Record<string, string> = {
@@ -91,13 +111,24 @@ export default function PromptTradingView({ pair, timeframe }: { pair: string; t
           title={t('Открыть график на всю страницу')}
         >
           <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M6 2H2v4M10 2h4v4M6 14H2v-4M10 14h4v-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            <path
+              d="M6 2H2v4M10 2h4v4M6 14H2v-4M10 14h4v-4"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
       </div>
 
       {fullscreen && (
-        <div className="prompt-chart-fullscreen" role="dialog" aria-modal="true" aria-label={t('График TradingView {pair}', { pair })}>
+        <div
+          className="prompt-chart-fullscreen"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('График TradingView {pair}', { pair })}
+        >
           <div className="prompt-chart-fullscreen-header">
             <div className="prompt-chart-fullscreen-title">
               <PairFlag pair={pair} size={18} />
@@ -112,7 +143,13 @@ export default function PromptTradingView({ pair, timeframe }: { pair: string; t
               title={t('Свернуть график')}
             >
               <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M2 6h4V2M14 6h-4V2M2 10h4v4M14 10h-4v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                <path
+                  d="M2 6h4V2M14 6h-4V2M2 10h4v4M14 10h-4v4"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
           </div>

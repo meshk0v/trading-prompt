@@ -20,7 +20,12 @@ export default function FundamentalsTab({ selection: { isOn, setMany } }: { sele
         active={enabledCount}
         total={ALL_ITEMS.length}
         actionLabel={allEnabled ? t('Снять все') : t('Выбрать все')}
-        onAction={() => setMany(ALL_ITEMS.map(item => item.id), !allEnabled)}
+        onAction={() =>
+          setMany(
+            ALL_ITEMS.map(item => item.id),
+            !allEnabled,
+          )
+        }
       />
 
       <div className="fundamental-list">
@@ -28,7 +33,11 @@ export default function FundamentalsTab({ selection: { isOn, setMany } }: { sele
           const groupEnabled = group.items.filter(item => isOn(item.id)).length
           const allGroupEnabled = groupEnabled === group.items.length
           return (
-            <div key={group.id} className="fundamental-group" style={{ '--group-accent': group.accent } as CSSProperties}>
+            <div
+              key={group.id}
+              className="fundamental-group"
+              style={{ '--group-accent': group.accent } as CSSProperties}
+            >
               <div className="fundamental-group__header">
                 <div className="fundamental-group__heading">
                   <div className="fundamental-group__title">
@@ -40,7 +49,15 @@ export default function FundamentalsTab({ selection: { isOn, setMany } }: { sele
                   </div>
                   <div className="fundamental-group__description">{t(group.description)}</div>
                 </div>
-                <button type="button" onClick={() => setMany(group.items.map(item => item.id), !allGroupEnabled)}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMany(
+                      group.items.map(item => item.id),
+                      !allGroupEnabled,
+                    )
+                  }
+                >
                   {allGroupEnabled ? t('Снять') : t('Вкл.')}
                 </button>
               </div>

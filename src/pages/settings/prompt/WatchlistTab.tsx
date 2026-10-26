@@ -14,8 +14,12 @@ const ALL_PAIRS = WATCHLIST_GROUPS.flatMap(group => group.pairs)
 /** Currency pairs offered in the prompt builder. */
 export default function WatchlistTab({ watchlist, setWatchlist }: WatchlistTabProps) {
   const { t } = useI18n()
-  const selectedCount = WATCHLIST_GROUPS.reduce((sum, group) => sum + group.pairs.filter(pair => watchlist.includes(pair)).length, 0)
-  const toggle = (pair: string) => setWatchlist(current => (current.includes(pair) ? current.filter(item => item !== pair) : [...current, pair]))
+  const selectedCount = WATCHLIST_GROUPS.reduce(
+    (sum, group) => sum + group.pairs.filter(pair => watchlist.includes(pair)).length,
+    0,
+  )
+  const toggle = (pair: string) =>
+    setWatchlist(current => (current.includes(pair) ? current.filter(item => item !== pair) : [...current, pair]))
 
   return (
     <div className="settings-tab settings-tab--watchlist">

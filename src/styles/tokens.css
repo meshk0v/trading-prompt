@@ -1,0 +1,48 @@
+/* Design tokens: the whole palette of the dark theme. Components use these variables only. */
+:root {
+  /* Accent (violet) */
+  --accent: #8b7cff;
+  --accent-hover: #a194ff;
+  --accent-pressed: #6f5ff0;
+  --accent-text: #b9afff;
+  --on-accent: #0d0a24;
+  --accent-soft: rgba(139, 124, 255, 0.12);
+  --accent-soft-2: rgba(139, 124, 255, 0.2);
+  --accent-border: rgba(139, 124, 255, 0.38);
+  --accent-ring: rgba(139, 124, 255, 0.45);
+  --accent-glow: rgba(139, 124, 255, 0.22);
+
+  /* Secondary accents */
+  --cyan: #4cc9f0;
+  --cyan-text: #8eddf7;
+  --cyan-soft: rgba(76, 201, 240, 0.12);
+  --cyan-border: rgba(76, 201, 240, 0.35);
+  --coral: #ff8a6b;
+  --coral-hover: #ff9f85;
+  --coral-text: #ffb4a0;
+  --on-coral: #2a0e06;
+  --coral-soft: rgba(255, 138, 107, 0.12);
+  --coral-border: rgba(255, 138, 107, 0.38);
+
+  /* Surfaces */
+  --bg: #0b0b12; /* page background */
+  --surface: #12121c; /* panels, sidebars */
+  --card: #12121c; /* cards */
+  --card2: #191926; /* raised layer, hover */
+  --input-bg: #0f0f19; /* form fields */
+  --msg-assistant-bg: #12121c;
+
+  /* Text */
+  --text: #edebfa; /* primary */
+  --text2: #cfcde3; /* body copy */
+  --muted: #9a98b5; /* labels, captions */
+  --muted2: #676582; /* dimmer labels */
+  --muted3: #474560; /* faintest */
+
+  /* Borders */
+  --border: #242436; /* card edges, sections */
+  --border2: #1a1a28; /* inner dividers */
+
+  --user-avatar-bg: var(--accent-soft-2);
+  --panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.75);
+}

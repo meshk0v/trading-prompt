@@ -27,7 +27,9 @@
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--muted);
-  transition: color 0.15s, background-color 0.15s;
+  transition:
+    color 0.15s,
+    background-color 0.15s;
 }
 
 .faq-page__back:hover {
@@ -98,7 +100,10 @@
   font-weight: 600;
   line-height: 16px;
   text-align: left;
-  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    background-color 0.15s,
+    border-color 0.15s;
 }
 
 .faq-category:not(.is-active):hover {
@@ -385,7 +390,11 @@
   height: 1px;
   flex-shrink: 0;
   margin-top: 8px;
-  background-image: linear-gradient(to right in oklab, color-mix(in oklab, var(--accent) 70%, transparent), transparent);
+  background-image: linear-gradient(
+    to right in oklab,
+    color-mix(in oklab, var(--accent) 70%, transparent),
+    transparent
+  );
 }
 
 .faq-item__answer p {
@@ -504,7 +513,10 @@
   padding: 0 16px;
   border-radius: 6px;
   font-weight: 700;
-  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    background-color 0.15s,
+    border-color 0.15s;
 }
 
 .faq-cta__primary {
@@ -534,13 +546,25 @@
 }
 
 @keyframes faq-item-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes faq-answer-in {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

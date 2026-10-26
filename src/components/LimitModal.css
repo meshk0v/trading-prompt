@@ -34,7 +34,9 @@
   border-radius: 6px;
   color: var(--muted);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .limit-modal__close:hover {
@@ -97,7 +99,10 @@
   border-radius: 6px;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .limit-modal__secondary {

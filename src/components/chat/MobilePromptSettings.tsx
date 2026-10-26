@@ -17,8 +17,18 @@ type MobilePromptSettingsProps = {
 export default function MobilePromptSettings({ builder, onClose }: MobilePromptSettingsProps) {
   const { t } = useI18n()
   const historyFields = [
-    { id: 'mobile-price-history', label: tr('История цены'), value: builder.priceHistory, setValue: builder.setPriceHistory },
-    { id: 'mobile-indicator-history', label: tr('История индикаторов'), value: builder.indicatorHistory, setValue: builder.setIndicatorHistory },
+    {
+      id: 'mobile-price-history',
+      label: tr('История цены'),
+      value: builder.priceHistory,
+      setValue: builder.setPriceHistory,
+    },
+    {
+      id: 'mobile-indicator-history',
+      label: tr('История индикаторов'),
+      value: builder.indicatorHistory,
+      setValue: builder.setIndicatorHistory,
+    },
   ]
 
   return (
@@ -56,7 +66,11 @@ export default function MobilePromptSettings({ builder, onClose }: MobilePromptS
               <CustomSelect
                 value={builder.pair}
                 onChange={builder.setPair}
-                options={builder.instruments.map(pair => ({ label: pair, value: pair, icon: <PairFlag pair={pair} size={13} /> }))}
+                options={builder.instruments.map(pair => ({
+                  label: pair,
+                  value: pair,
+                  icon: <PairFlag pair={pair} size={13} />,
+                }))}
                 dropDown
               />
             </div>
@@ -78,7 +92,10 @@ export default function MobilePromptSettings({ builder, onClose }: MobilePromptS
             <div className="prompt-data-volume__history">
               {historyFields.map(field => (
                 <div key={field.id} className="mobile-settings__field">
-                  <label htmlFor={field.id} className="prompt-field__label prompt-field__label--small mobile-settings__history-label">
+                  <label
+                    htmlFor={field.id}
+                    className="prompt-field__label prompt-field__label--small mobile-settings__history-label"
+                  >
                     {t(field.label)}
                   </label>
                   <input

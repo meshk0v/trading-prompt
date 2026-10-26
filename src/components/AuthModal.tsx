@@ -33,7 +33,11 @@ function PasswordInput({ value, onChange }: { value: string; onChange: (value: s
         required
         className="auth-modal__input auth-modal__input--password"
       />
-      <button type="button" onClick={() => setVisible(current => !current)} className={`auth-modal__eye${visible ? ' is-active' : ''}`}>
+      <button
+        type="button"
+        onClick={() => setVisible(current => !current)}
+        className={`auth-modal__eye${visible ? ' is-active' : ''}`}
+      >
         <EyeIcon crossed={visible} />
       </button>
     </div>
@@ -63,7 +67,8 @@ export default function AuthModal({ initialTab = 'login', onClose, onAuth, onOpe
     if (isRegister && password !== confirmPassword) return 'Пароли не совпадают'
     if (password.length < 6) return 'Пароль должен быть не менее 6 символов'
     if (isRegister && !telegram.trim()) return 'Укажите ваш Telegram в формате @username'
-    if (isRegister && !/^@[a-zA-Z0-9_]{3,}$/.test(telegram.trim())) return 'Telegram должен быть в формате @username (минимум 3 символа)'
+    if (isRegister && !/^@[a-zA-Z0-9_]{3,}$/.test(telegram.trim()))
+      return 'Telegram должен быть в формате @username (минимум 3 символа)'
     if (isRegister && !termsAccepted) return 'Необходимо принять условия платформы'
     return null
   }
@@ -169,7 +174,14 @@ export default function AuthModal({ initialTab = 'login', onClose, onAuth, onOpe
                     required
                     className="auth-modal__input auth-modal__input--telegram"
                   />
-                  <svg className="auth-modal__telegram-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <svg
+                    className="auth-modal__telegram-icon"
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
                     <path
                       d="M21.8 3.3L2.3 10.8c-1.3.5-1.3 1.3-.2 1.6l4.8 1.5 1.8 5.6c.2.6.5.9 1 .9.4 0 .6-.2.9-.5l2.1-2.1 4.4 3.2c.8.4 1.4.2 1.6-.7l2.9-13.8c.3-1.2-.5-1.7-1-1.2z"
                       fill="currentColor"
@@ -179,11 +191,20 @@ export default function AuthModal({ initialTab = 'login', onClose, onAuth, onOpe
                 </div>
               </div>
 
-              <div onClick={() => setTermsAccepted(value => !value)} className={`auth-modal__terms${termsAccepted ? ' is-checked' : ''}`}>
+              <div
+                onClick={() => setTermsAccepted(value => !value)}
+                className={`auth-modal__terms${termsAccepted ? ' is-checked' : ''}`}
+              >
                 <div className="auth-modal__checkbox">
                   {termsAccepted && (
                     <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
-                      <path d="M1.5 4.5l2 2L7.5 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M1.5 4.5l2 2L7.5 2"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   )}
                 </div>
@@ -223,7 +244,11 @@ export default function AuthModal({ initialTab = 'login', onClose, onAuth, onOpe
 
           <p className="auth-modal__switch">
             {isRegister ? t('Уже есть аккаунт?') : t('Нет аккаунта?')}{' '}
-            <button type="button" className="auth-modal__link" onClick={() => switchTab(isRegister ? 'login' : 'register')}>
+            <button
+              type="button"
+              className="auth-modal__link"
+              onClick={() => switchTab(isRegister ? 'login' : 'register')}
+            >
               {isRegister ? t('Войти') : t('Зарегистрироваться')}
             </button>
           </p>

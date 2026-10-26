@@ -1,5 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { changePassword, fetchSessions, revokeSession, updateProfile, type AuthUser, type UserSession } from '../../api/auth'
+import {
+  changePassword,
+  fetchSessions,
+  revokeSession,
+  updateProfile,
+  type AuthUser,
+  type UserSession,
+} from '../../api/auth'
 import { useI18n } from '../../i18n/context'
 import { tr } from '../../i18n/translate'
 import './AccountSettings.css'
@@ -136,7 +143,12 @@ export default function AccountSettings({ user, onUserUpdate }: AccountSettingsP
           <form onSubmit={handleProfileSubmit} className="account-form">
             <div>
               <label className="account-label">{t('Имя')}</label>
-              <input className="account-input" value={name} onChange={event => setName(event.target.value)} placeholder={t('Ваше имя')} />
+              <input
+                className="account-input"
+                value={name}
+                onChange={event => setName(event.target.value)}
+                placeholder={t('Ваше имя')}
+              />
             </div>
             <div>
               <label className="account-label">Email</label>

@@ -34,8 +34,13 @@
     border-color: #34344f;
     border-radius: 6px;
     background: var(--border);
-    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.035);
-    transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+    box-shadow:
+      0 5px 14px rgba(0, 0, 0, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    transition:
+      border-color 0.16s ease,
+      background 0.16s ease,
+      box-shadow 0.16s ease;
   }
 
   .prompt-panel-resize-grip > span {
@@ -57,7 +62,9 @@
   .prompt-panel-resize-handle[data-resizing='true'] .prompt-panel-resize-grip {
     border-color: var(--accent);
     background: var(--accent-soft-2);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38), 0 0 0 2px var(--accent-glow);
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, 0.38),
+      0 0 0 2px var(--accent-glow);
   }
 
   .prompt-panel-resize-handle:hover .prompt-panel-resize-grip > span,

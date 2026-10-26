@@ -34,7 +34,12 @@ const SECTIONS: Record<SettingsSection, { title: string; description: string; ic
     icon: (
       <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
         <circle cx="7.5" cy="7.5" r="2" stroke="currentColor" strokeWidth="1.3" />
-        <path d="M7.5 1v2M7.5 12v2M1 7.5h2M12 7.5h2M3.2 3.2l1.4 1.4M10.4 10.4l1.4 1.4M3.2 11.8l1.4-1.4M10.4 4.6l1.4-1.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        <path
+          d="M7.5 1v2M7.5 12v2M1 7.5h2M12 7.5h2M3.2 3.2l1.4 1.4M10.4 10.4l1.4 1.4M3.2 11.8l1.4-1.4M10.4 4.6l1.4-1.4"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+        />
       </svg>
     ),
   },
@@ -51,7 +56,14 @@ const SECTIONS: Record<SettingsSection, { title: string; description: string; ic
   },
 }
 
-export default function SettingsPage({ user, onUserUpdate, initialSection, onClose, watchlist, setWatchlist }: SettingsPageProps) {
+export default function SettingsPage({
+  user,
+  onUserUpdate,
+  initialSection,
+  onClose,
+  watchlist,
+  setWatchlist,
+}: SettingsPageProps) {
   const { t } = useI18n()
   const [section, setSection] = useState<SettingsSection>(initialSection || 'account')
 

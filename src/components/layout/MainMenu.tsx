@@ -58,16 +58,36 @@ export default function MainMenu({
   const userEntries: MenuEntry[] = [
     { id: 'account', label: tr('Аккаунт'), icon: <UserIcon />, action: () => onOpenSettings('account') },
     { id: 'subscription', label: tr('Кредиты'), icon: <CardIcon />, action: () => onOpenSettings('subscription') },
-    { id: 'prompt-settings', label: tr('Настройки'), icon: <SettingsIcon />, action: () => onOpenSettings('prompt-settings') },
-    { id: 'affiliate', label: tr('Партнёрская программа'), icon: <PartnersIcon />, action: () => onOpenPage('affiliate') },
+    {
+      id: 'prompt-settings',
+      label: tr('Настройки'),
+      icon: <SettingsIcon />,
+      action: () => onOpenSettings('prompt-settings'),
+    },
+    {
+      id: 'affiliate',
+      label: tr('Партнёрская программа'),
+      icon: <PartnersIcon />,
+      action: () => onOpenPage('affiliate'),
+    },
     { id: 'support', label: tr('Поддержка и контакты'), icon: <SupportIcon />, action: () => onOpenPage('support') },
     { id: 'faq', label: tr('Вопросы и ответы'), icon: <QuestionIcon />, action: onOpenFaq },
-    { id: 'calendar', label: tr('Экономический календарь'), icon: <CalendarIcon />, action: () => onOpenPage('calendar') },
+    {
+      id: 'calendar',
+      label: tr('Экономический календарь'),
+      icon: <CalendarIcon />,
+      action: () => onOpenPage('calendar'),
+    },
     { id: 'legal', label: tr('Правовая информация'), icon: <DocumentIcon />, action: () => onOpenPage('legal') },
   ]
 
   const guestEntries: MenuEntry[] = [
-    { id: 'affiliate', label: tr('Партнёрская программа'), icon: <PartnersIcon />, action: () => onOpenPage('affiliate') },
+    {
+      id: 'affiliate',
+      label: tr('Партнёрская программа'),
+      icon: <PartnersIcon />,
+      action: () => onOpenPage('affiliate'),
+    },
     { id: 'faq', label: tr('Вопросы и ответы'), icon: <QuestionIcon />, action: onOpenFaq },
     { id: 'legal', label: tr('Правовая информация'), icon: <DocumentIcon />, action: () => onOpenPage('legal') },
   ]
@@ -131,7 +151,13 @@ export default function MainMenu({
               {aiLinksOpen && (
                 <div className="main-menu__ai-links">
                   {AI_LINKS.map(link => (
-                    <a key={link.label} href={link.href} target="_blank" rel="noreferrer" onClick={() => onOpenChange(false)}>
+                    <a
+                      key={link.label}
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => onOpenChange(false)}
+                    >
                       <span className="main-menu__dot" />
                       {link.label}
                     </a>

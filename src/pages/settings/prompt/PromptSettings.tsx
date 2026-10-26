@@ -28,7 +28,13 @@ export default function PromptSettings({ watchlist, setWatchlist }: PromptSettin
       label: t('Индикаторы'),
       icon: (
         <svg width="15" height="15" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M1.5 12.5h11M2.5 10l2.4-3 2.2 1.7L11.5 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M1.5 12.5h11M2.5 10l2.4-3 2.2 1.7L11.5 3"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
           <circle cx="11.5" cy="3" r="1.2" fill="currentColor" />
         </svg>
       ),
@@ -38,7 +44,13 @@ export default function PromptSettings({ watchlist, setWatchlist }: PromptSettin
       label: t('Фундамент'),
       icon: (
         <svg width="15" height="15" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M2 12V6.5M5.3 12V3.5M8.7 12V8M12 12V1.5M1 12.5h12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M2 12V6.5M5.3 12V3.5M8.7 12V8M12 12V1.5M1 12.5h12"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       ),
     },
@@ -47,7 +59,12 @@ export default function PromptSettings({ watchlist, setWatchlist }: PromptSettin
       label: 'Watchlist',
       icon: (
         <svg width="15" height="15" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M7 1.5l1.6 3.2 3.5.5-2.6 2.5.7 3.6L7 9.6 3.8 11.3l.7-3.6L2 5.2l3.5-.5L7 1.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+          <path
+            d="M7 1.5l1.6 3.2 3.5.5-2.6 2.5.7 3.6L7 9.6 3.8 11.3l.7-3.6L2 5.2l3.5-.5L7 1.5z"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinejoin="round"
+          />
         </svg>
       ),
     },

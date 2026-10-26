@@ -33,7 +33,11 @@ export default function ChatMessages({ messages, isTyping, user, hidden }: ChatM
           <div key={message.id} className={`chat-message chat-message--${message.kind} message-fade`}>
             <div className="chat-message__inner">
               <div className="chat-message__avatar">
-                {fromUser ? <div className="chat-message__user-avatar">{userName[0].toUpperCase()}</div> : <Logo size={34} />}
+                {fromUser ? (
+                  <div className="chat-message__user-avatar">{userName[0].toUpperCase()}</div>
+                ) : (
+                  <Logo size={34} />
+                )}
               </div>
 
               <div className="chat-message__body">
@@ -59,7 +63,9 @@ export default function ChatMessages({ messages, isTyping, user, hidden }: ChatM
                 )}
                 {message.kind === 'prompt' && (
                   <>
-                    <MessageContent text={t('Готовый учебный промпт. Скачайте PDF или скопируйте текст для выбранного вами ИИ:')} />
+                    <MessageContent
+                      text={t('Готовый учебный промпт. Скачайте PDF или скопируйте текст для выбранного вами ИИ:')}
+                    />
                     <PromptResult prompt={message.prompt} chart={message.chart} />
                   </>
                 )}

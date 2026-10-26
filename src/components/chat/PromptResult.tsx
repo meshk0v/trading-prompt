@@ -53,8 +53,20 @@ export default function PromptResult({ prompt, chart }: { prompt: string; chart:
       label: copied ? t('Текст скопирован') : t('Копировать текст'),
       shortLabel: t('Текст'),
     },
-    { onClick: downloadPdf, className: 'prompt-export__button', icon: <DownloadIcon />, label: t('Скачать PDF'), shortLabel: 'PDF' },
-    { onClick: downloadTxt, className: 'prompt-export__button', icon: <DownloadIcon />, label: t('Скачать TXT'), shortLabel: 'TXT' },
+    {
+      onClick: downloadPdf,
+      className: 'prompt-export__button',
+      icon: <DownloadIcon />,
+      label: t('Скачать PDF'),
+      shortLabel: 'PDF',
+    },
+    {
+      onClick: downloadTxt,
+      className: 'prompt-export__button',
+      icon: <DownloadIcon />,
+      label: t('Скачать TXT'),
+      shortLabel: 'TXT',
+    },
   ]
 
   return (
