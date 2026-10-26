@@ -2646,7 +2646,7 @@ function CreditsPage({ footer }: { footer?: React.ReactNode }) {
   )
 }
 
-function SettingsPage({ user, initialSection, onClose, watchlist, setWatchlist, footer }: { user: { name: string; email: string } | null; initialSection?: string; onClose: () => void; watchlist: string[]; setWatchlist: React.Dispatch<React.SetStateAction<string[]>>; footer?: React.ReactNode }) {
+function SettingsPage({ user, onUserUpdate, initialSection, onClose, watchlist, setWatchlist, footer }: { user: AuthUser | null; onUserUpdate?: (user: AuthUser) => void; initialSection?: string; onClose: () => void; watchlist: string[]; setWatchlist: React.Dispatch<React.SetStateAction<string[]>>; footer?: React.ReactNode }) {
   type Section = 'account' | 'prompt-settings' | 'subscription'
   const [section, setSection] = useState<Section>((initialSection as Section) || 'account')
   const [sigTab, setSigTab] = useState<'indicators' | 'fundamental' | 'watchlist'>('indicators')
@@ -2698,7 +2698,7 @@ function SettingsPage({ user, initialSection, onClose, watchlist, setWatchlist, 
         <div style={{ maxWidth: (section === 'subscription' || section === 'prompt-settings') ? '100%' : section === 'account' ? 960 : 680, width: '100%', margin: section === 'prompt-settings' || section === 'subscription' ? '0' : '0 auto', display: 'flex', flexDirection: 'column', gap: section === 'subscription' ? 0 : '20px', flex: section === 'prompt-settings' || section === 'subscription' ? 1 : undefined, overflow: section === 'prompt-settings' || section === 'subscription' ? 'hidden' : undefined }}>
 
             {/* ── ACCOUNT ─────────────────────────────────────── */}
-            {section === 'account' && <AccountSettings user={user} />}
+            {section === 'account' && <AccountSettings user={user} onUserUpdate={onUserUpdate} />}
 
             {/* ── PROMPT SETTINGS (Indicators + Watchlist) ─────── */}
             {section === 'prompt-settings' && (() => {

@@ -644,7 +644,7 @@ export default function App() {
             )}
             {legalOpen && <LegalPage onClose={() => { setLegalOpen(false); setActiveTab('chat') }} />}
             {supportOpen && <SupportPage onClose={() => { setSupportOpen(false); setActiveTab('chat') }} />}
-            {settingsOpen && <SettingsPage user={user} initialSection={settingsSection} onClose={() => { setSettingsOpen(false); setActiveTab('chat') }} watchlist={watchlist} setWatchlist={setWatchlist} />}
+            {settingsOpen && <SettingsPage user={user} onUserUpdate={setUser} initialSection={settingsSection} onClose={() => { setSettingsOpen(false); setActiveTab('chat') }} watchlist={watchlist} setWatchlist={setWatchlist} />}
             {calendarOpen && <EconomicCalendarPage onClose={() => { setCalendarOpen(false); setActiveTab('chat') }} />}
             {faqOpen && <FaqPage initialCategory={faqInitialCategory} onClose={() => { setFaqOpen(false); setFaqInitialCategory('Все'); setActiveTab('chat') }} user={user} onSignUp={() => setAuthOpen(true)} onNavigate={nav} onOpenSettings={(sec) => { setSettingsSection(sec); setSettingsOpen(true); setAffiliateOpen(false); setSupportOpen(false); setLegalOpen(false); setCalendarOpen(false); setFaqOpen(false) }} />}
           </>)

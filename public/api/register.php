@@ -10,9 +10,7 @@ $password = (string) ($body['password'] ?? '');
 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 255) {
     fail(422, 'Укажите корректный email');
 }
-if (strlen($password) < 6 || strlen($password) > 72) {
-    fail(422, 'Пароль должен быть от 6 до 72 символов');
-}
+validate_password($password);
 if (!preg_match('/^@[a-zA-Z0-9_]{3,32}$/', $telegram)) {
     fail(422, 'Telegram должен быть в формате @username (минимум 3 символа)');
 }

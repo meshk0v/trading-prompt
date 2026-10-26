@@ -39,8 +39,18 @@ All endpoints live under `/api/`, write endpoints accept only `POST` with a JSON
 | `login.php`     | `email, password`                                       | `{ ok, user }`          |
 | `logout.php`    | `{}`                                                    | `{ ok }`                |
 | `me.php` (GET)  | —                                                       | `{ ok, user \| null }`  |
+| `profile.php`   | `name`                                                  | `{ ok, user }`          |
+| `password.php`  | `currentPassword, newPassword`                          | `{ ok }`, signs out other devices |
+| `sessions.php` (GET) | —                                                  | `{ ok, sessions }`      |
+| `session-revoke.php` | `id`                                               | `{ ok }`                |
 
-Errors return `{ ok: false, error }` with an HTTP status. Login is limited to 10 failed attempts per IP per 15 minutes.
+Errors return `{ ok: false, error }` with an HTTP status. Login and password change are limited to 10 failed attempts per IP per 15 minutes.
+
+Sessions are stored in `user_sessions`: the `tp_session` cookie holds a random token, the database keeps only its SHA-256 hash. Sessions expire after 30 days without activity.
+
+## Database updates
+
+New installs import `database/schema.sql`. Existing databases apply the files in `database/migrations/` in order (phpMyAdmin → Import).
 
 ## Local development
 

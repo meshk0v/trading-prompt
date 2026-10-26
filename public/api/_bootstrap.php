@@ -1,5 +1,5 @@
 <?php
-// Shared setup for every API endpoint: config, database, session, JSON helpers.
+// Shared setup for every API endpoint: config, database, sessions, JSON helpers.
 // Compatible with PHP 7.4+.
 
 declare(strict_types=1);
@@ -13,7 +13,11 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 
-const SESSION_LIFETIME = 60 * 60 * 24 * 30;
+const SESSION_COOKIE = 'tp_session';
+const SESSION_LIFETIME_DAYS = 30;
+const SESSION_TOUCH_INTERVAL = 300;
+const MAX_FAILED_ATTEMPTS = 10;
+const ATTEMPT_WINDOW_MINUTES = 15;
 
 function respond(int $status, array $payload): void
 {
@@ -65,22 +69,6 @@ function db(): PDO
     return $pdo;
 }
 
-function start_session(): void
-{
-    $https = ($_SERVER['HTTPS'] ?? '') !== '' && $_SERVER['HTTPS'] !== 'off';
-    ini_set('session.gc_maxlifetime', (string) SESSION_LIFETIME);
-    ini_set('session.use_strict_mode', '1');
-    session_name('tp_session');
-    session_set_cookie_params([
-        'lifetime' => SESSION_LIFETIME,
-        'path' => '/',
-        'secure' => $https,
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
-    session_start();
-}
-
 /** Only JSON POST bodies are accepted, which also blocks cross-site form posts. */
 function read_json_body(): array
 {
@@ -97,6 +85,110 @@ function read_json_body(): array
     return $data;
 }
 
+function client_ip(): string
+{
+    return substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 45);
+}
+
+function validate_password(string $password): void
+{
+    if (strlen($password) < 6 || strlen($password) > 72) {
+        fail(422, 'Пароль должен быть от 6 до 72 символов');
+    }
+}
+
+// ── Brute-force protection ──────────────────────────────────────────────
+
+function check_attempts(): void
+{
+    $pdo = db();
+    $pdo->exec('DELETE FROM login_attempts WHERE created_at < NOW() - INTERVAL ' . ATTEMPT_WINDOW_MINUTES . ' MINUTE');
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM login_attempts WHERE ip = ?');
+    $stmt->execute([client_ip()]);
+    if ((int) $stmt->fetchColumn() >= MAX_FAILED_ATTEMPTS) {
+        fail(429, 'Слишком много неудачных попыток. Попробуйте через 15 минут');
+    }
+}
+
+function record_failed_attempt(): void
+{
+    db()->prepare('INSERT INTO login_attempts (ip) VALUES (?)')->execute([client_ip()]);
+}
+
+// ── Sessions ────────────────────────────────────────────────────────────
+// The cookie holds a random token; the database stores only its SHA-256 hash.
+
+function set_session_cookie(string $value, int $expires): void
+{
+    $https = ($_SERVER['HTTPS'] ?? '') !== '' && $_SERVER['HTTPS'] !== 'off';
+    setcookie(SESSION_COOKIE, $value, [
+        'expires' => $expires,
+        'path' => '/',
+        'secure' => $https,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
+function user_agent(): string
+{
+    return mb_substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255);
+}
+
+function current_session(): ?array
+{
+    static $session = false;
+    if ($session !== false) {
+        return $session;
+    }
+    $session = null;
+
+    $token = $_COOKIE[SESSION_COOKIE] ?? '';
+    if (!is_string($token) || !preg_match('/^[a-f0-9]{64}$/', $token)) {
+        return null;
+    }
+
+    $stmt = db()->prepare(
+        'SELECT id, user_id, TIMESTAMPDIFF(SECOND, last_seen_at, NOW()) AS idle
+         FROM user_sessions
+         WHERE token_hash = ? AND last_seen_at > NOW() - INTERVAL ' . SESSION_LIFETIME_DAYS . ' DAY'
+    );
+    $stmt->execute([hash('sha256', $token)]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        return null;
+    }
+
+    // Sliding expiration, refreshed at most every few minutes.
+    if ((int) $row['idle'] > SESSION_TOUCH_INTERVAL) {
+        db()->prepare('UPDATE user_sessions SET last_seen_at = NOW(), ip = ?, user_agent = ? WHERE id = ?')
+            ->execute([client_ip(), user_agent(), $row['id']]);
+        set_session_cookie($token, time() + SESSION_LIFETIME_DAYS * 86400);
+    }
+
+    $session = ['id' => (int) $row['id'], 'user_id' => (int) $row['user_id']];
+    return $session;
+}
+
+function log_in(int $userId): void
+{
+    $token = bin2hex(random_bytes(32));
+    db()->prepare('INSERT INTO user_sessions (user_id, token_hash, user_agent, ip) VALUES (?, ?, ?, ?)')
+        ->execute([$userId, hash('sha256', $token), user_agent(), client_ip()]);
+    set_session_cookie($token, time() + SESSION_LIFETIME_DAYS * 86400);
+}
+
+function log_out(): void
+{
+    $session = current_session();
+    if ($session) {
+        db()->prepare('DELETE FROM user_sessions WHERE id = ?')->execute([$session['id']]);
+    }
+    set_session_cookie('', time() - 3600);
+}
+
+// ── Users ───────────────────────────────────────────────────────────────
+
 function public_user(array $row): array
 {
     return [
@@ -109,19 +201,21 @@ function public_user(array $row): array
 
 function current_user(): ?array
 {
-    if (empty($_SESSION['user_id'])) {
+    $session = current_session();
+    if (!$session) {
         return null;
     }
     $stmt = db()->prepare('SELECT id, name, email, telegram FROM users WHERE id = ?');
-    $stmt->execute([$_SESSION['user_id']]);
+    $stmt->execute([$session['user_id']]);
     $row = $stmt->fetch();
     return $row ? public_user($row) : null;
 }
 
-function log_in(int $userId): void
+function require_user(): array
 {
-    session_regenerate_id(true);
-    $_SESSION['user_id'] = $userId;
+    $user = current_user();
+    if (!$user) {
+        fail(401, 'Войдите в аккаунт');
+    }
+    return $user;
 }
-
-start_session();
