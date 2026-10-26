@@ -1,5 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useI18n } from '../i18n/context'
+import { tr } from '../i18n/translate'
+import './PromptBuilderGuide.css'
 
 type PromptBuilderGuideProps = {
   isAuthenticated: boolean
@@ -22,29 +25,29 @@ const GUEST_GUIDE_STORAGE_KEY = 'trading-prompt-builder-guide-guest-v3'
 const AUTH_GUIDE_STORAGE_KEY = 'trading-prompt-builder-guide-auth-v1'
 
 const FIELD_STEPS: GuideStep[] = [
-  { target: 'asset-type', title: 'Тип инструмента', description: 'Выберите тип инструмента. Доступны валютные и криптопары.' },
-  { target: 'currency-pair', title: 'Инструмент', description: 'Выберите инструмент из списка. Сбор промпта будет произведён по выбранному вами инструменту.' },
-  { target: 'bar-count', title: 'Объём данных в промпте', description: 'Отдельно задайте глубину истории цены и индикаторов, затем выберите до трёх таймфреймов.' },
-  { target: 'timeframe-1', title: 'Основной таймфрейм', description: 'Главный период графика, который обязательно попадёт в готовый промпт.' },
-  { target: 'timeframe-2', title: 'Дополнительный таймфрейм', description: 'Необязательный период для сравнения движения цены на другом масштабе.' },
-  { target: 'timeframe-3', title: 'Третий таймфрейм', description: 'Ещё один необязательный период для расширенного мультифреймового контекста.' },
+  { target: 'asset-type', title: tr('Тип инструмента'), description: tr('Выберите тип инструмента. Доступны валютные и криптопары.') },
+  { target: 'currency-pair', title: tr('Инструмент'), description: tr('Выберите инструмент из списка. Сбор промпта будет произведён по выбранному вами инструменту.') },
+  { target: 'bar-count', title: tr('Объём данных в промпте'), description: tr('Отдельно задайте глубину истории цены и индикаторов, затем выберите до трёх таймфреймов.') },
+  { target: 'timeframe-1', title: tr('Основной таймфрейм'), description: tr('Главный период графика, который обязательно попадёт в готовый промпт.') },
+  { target: 'timeframe-2', title: tr('Дополнительный таймфрейм'), description: tr('Необязательный период для сравнения движения цены на другом масштабе.') },
+  { target: 'timeframe-3', title: tr('Третий таймфрейм'), description: tr('Ещё один необязательный период для расширенного мультифреймового контекста.') },
   {
     target: 'prompt-purpose',
-    title: 'Дополнение к промпту',
-    description: 'В это поле можно заранее ввести начало промпта или добавить собственную задачу, сценарий, уровни, риски и желаемый формат ответа. Текст будет размещён в начале готового промпта. Например: «Сделай прогноз, куда цена пойдёт в ближайший час».',
+    title: tr('Дополнение к промпту'),
+    description: tr('В это поле можно заранее ввести начало промпта или добавить собственную задачу, сценарий, уровни, риски и желаемый формат ответа. Текст будет размещён в начале готового промпта. Например: «Сделай прогноз, куда цена пойдёт в ближайший час».'),
   },
 ]
 
 const CREATE_PROMPT_STEP: GuideStep = {
   target: 'create-prompt',
-  title: 'Собрать промпт',
-  description: 'Когда параметры готовы, нажмите эту кнопку — система соберёт промпт со всеми необходимыми данными.',
+  title: tr('Собрать промпт'),
+  description: tr('Когда параметры готовы, нажмите эту кнопку — система соберёт промпт со всеми необходимыми данными.'),
 }
 
 const READY_PROMPT_STEP: GuideStep = {
   target: 'prompt-result',
-  title: 'Готовый промпт',
-  description: 'После нажатия кнопки «Собрать промпт» в этом окне появится структурированный промпт с рыночными данными. Вы можете скопировать его или скачать в виде файла и отправить в любую удобную для вас нейросеть, чтобы получить прогноз.',
+  title: tr('Готовый промпт'),
+  description: tr('После нажатия кнопки «Собрать промпт» в этом окне появится структурированный промпт с рыночными данными. Вы можете скопировать его или скачать в виде файла и отправить в любую удобную для вас нейросеть, чтобы получить прогноз.'),
 }
 
 function findVisibleTarget(target: string) {
@@ -65,6 +68,7 @@ export default function PromptBuilderGuide({
   onOpenMobileSettings,
   onCloseMobileSettings,
 }: PromptBuilderGuideProps) {
+  const { t } = useI18n()
   const [active, setActive] = useState(false)
   const [stepIndex, setStepIndex] = useState(0)
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
@@ -76,24 +80,24 @@ export default function PromptBuilderGuide({
     const menuSteps: GuideStep[] = [
       {
         target: 'main-menu',
-        title: 'Кнопка меню',
+        title: tr('Кнопка меню'),
         description: isAuthenticated
-          ? 'Откройте меню, чтобы перейти к аккаунту, кредитам, настройкам и другим разделам сервиса.'
-          : 'Откройте меню, чтобы войти в аккаунт и перейти к дополнительным разделам сайта.',
+          ? tr('Откройте меню, чтобы перейти к аккаунту, кредитам, настройкам и другим разделам сервиса.')
+          : tr('Откройте меню, чтобы войти в аккаунт и перейти к дополнительным разделам сайта.'),
       },
       {
         target: isAuthenticated ? 'authorized-menu-items' : 'guest-menu-items',
-        title: isAuthenticated ? 'Меню пользователя' : 'Разделы сайта',
+        title: isAuthenticated ? tr('Меню пользователя') : tr('Разделы сайта'),
         description: isAuthenticated
-          ? 'Здесь находятся аккаунт, кредиты, настройки промпта, партнёрская программа, поддержка, календарь и другие разделы.'
-          : 'Здесь можно войти, открыть ссылки на нейросети, партнёрскую программу, ответы на вопросы и правовую информацию.',
+          ? tr('Здесь находятся аккаунт, кредиты, настройки промпта, партнёрская программа, поддержка, календарь и другие разделы.')
+          : tr('Здесь можно войти, открыть ссылки на нейросети, партнёрскую программу, ответы на вопросы и правовую информацию.'),
         beforeEnter: 'open-menu',
       },
     ]
 
     const builderSteps: GuideStep[] = isMobile
       ? [
-        { target: 'mobile-settings', title: 'Настройки конструктора', description: 'Все параметры промпта находятся здесь. Нажмите «Далее», и мы откроем настройки.', },
+        { target: 'mobile-settings', title: tr('Настройки конструктора'), description: tr('Все параметры промпта находятся здесь. Нажмите «Далее», и мы откроем настройки.'), },
         { ...FIELD_STEPS[0], beforeEnter: 'open-settings' },
         ...FIELD_STEPS.slice(1),
         { ...CREATE_PROMPT_STEP, beforeEnter: 'close-settings' },
@@ -238,19 +242,19 @@ export default function PromptBuilderGuide({
         role="dialog"
         aria-modal="true"
         aria-live="polite"
-        aria-label={`Шаг ${stepIndex + 1} из ${steps.length}: ${step.title}`}
+        aria-label={t('Шаг {current} из {total}: {title}', { current: stepIndex + 1, total: steps.length, title: t(step.title) })}
         style={{ top: cardTop, left: cardLeft, width: cardWidth }}
       >
         <div className="prompt-guide-progress">
-          <span>{isAuthenticated ? 'Знакомство с аккаунтом' : 'Знакомство с сервисом'}</span>
+          <span>{isAuthenticated ? t('Знакомство с аккаунтом') : t('Знакомство с сервисом')}</span>
           <span>{stepIndex + 1}/{steps.length}</span>
         </div>
-        <h2>{step.title}</h2>
-        <p>{step.description}</p>
+        <h2>{t(step.title)}</h2>
+        <p>{t(step.description)}</p>
         <div className="prompt-guide-actions">
-          <button type="button" className="prompt-guide-skip" onClick={finishGuide}>Пропустить</button>
+          <button type="button" className="prompt-guide-skip" onClick={finishGuide}>{t('Пропустить')}</button>
           <button type="button" className="prompt-guide-next" onClick={goNext}>
-            {stepIndex === steps.length - 1 ? 'Готово' : 'Далее'}
+            {stepIndex === steps.length - 1 ? t('Готово') : t('Далее')}
           </button>
         </div>
       </div>

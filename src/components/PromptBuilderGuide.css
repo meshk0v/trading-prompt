@@ -1,0 +1,117 @@
+.prompt-guide-blocker {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+}
+
+.prompt-guide-highlight {
+  position: fixed;
+  z-index: 9991;
+  box-sizing: border-box;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.65);
+  transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease;
+}
+
+.prompt-guide-card {
+  position: fixed;
+  z-index: 9992;
+  box-sizing: border-box;
+  padding: 16px;
+  border-color: var(--accent-border);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 10% 0%, var(--accent-soft) 0%, transparent 58%),
+    #12121C;
+  color: #EDEBFA;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.prompt-guide-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #9A98B5;
+
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.prompt-guide-progress > span:last-child {
+  color: #8B7CFF;
+
+}
+
+.prompt-guide-card h2 {
+  margin: 12px 0 6px;
+  color: #EDEBFA;
+
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.prompt-guide-card p {
+  margin: 0;
+  color: #C9CDD2;
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.prompt-guide-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.prompt-guide-actions button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 6px;
+
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.prompt-guide-skip {
+  border-color: #34344F;
+  background: transparent;
+  color: #C9CDD2;
+}
+
+.prompt-guide-skip:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.prompt-guide-next {
+  border: 0.5px solid #8B7CFF;
+  background: #8B7CFF;
+  color: var(--on-accent);
+}
+
+.prompt-guide-next:hover {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+}
+
+.prompt-guide-next:active {
+  border-color: var(--accent-pressed);
+  background: var(--accent-pressed);
+}
+
+.prompt-guide-next:disabled {
+  border-color: var(--accent-disabled-bg);
+  background: var(--accent-disabled-bg);
+  color: var(--accent-disabled-text);
+}
