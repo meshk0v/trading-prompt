@@ -533,4 +533,5 @@ export const en: Record<string, string> = {
   'Индикаторы': 'Indicators',
   'Фундамент': 'Fundamentals',
   'из': 'of',
+  'Открыть Telegram-канал Trading Prompt': 'Open the Trading Prompt Telegram channel',
 }

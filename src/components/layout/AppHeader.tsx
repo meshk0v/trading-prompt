@@ -1,9 +1,10 @@
 import { useI18n } from '../../i18n/context'
+import { TelegramIcon } from '../icons'
 import Logo from '../Logo'
 import './AppHeader.css'
 
 export default function AppHeader() {
-  const { language, setLanguage } = useI18n()
+  const { language, setLanguage, t } = useI18n()
   const nextLanguage = language === 'ru' ? 'en' : 'ru'
 
   return (
@@ -13,6 +14,16 @@ export default function AppHeader() {
           <Logo size={28} opacity={0.82} />
           <span>Trading Prompt</span>
         </div>
+        <a
+          className="telegram-channel-link"
+          href="https://t.me/tradingprompt"
+          target="_blank"
+          rel="noreferrer"
+          aria-label={t('Открыть Telegram-канал Trading Prompt')}
+          title="Telegram"
+        >
+          <TelegramIcon />
+        </a>
         <button
           type="button"
           className="language-switcher"

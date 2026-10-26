@@ -25,7 +25,8 @@
   letter-spacing: -0.2px;
 }
 
-.language-switcher {
+.language-switcher,
+.telegram-channel-link {
   display: grid;
   width: 34px;
   height: 34px;
@@ -48,7 +49,14 @@
   background: var(--accent-soft);
 }
 
-.language-switcher:active {
+.telegram-channel-link:hover,
+.telegram-channel-link:focus-visible {
+  border-color: rgba(34, 158, 217, 0.55);
+  background: rgba(34, 158, 217, 0.1);
+}
+
+.language-switcher:active,
+.telegram-channel-link:active {
   transform: scale(0.96);
 }
 

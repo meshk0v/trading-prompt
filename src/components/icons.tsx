@@ -235,3 +235,14 @@ export const SlidersIcon = (props: IconProps) => (
     />
   </svg>
 )
+
+/** Telegram logo in its brand colours (the only icon that does not use currentColor). */
+export const TelegramIcon = (props: IconProps) => (
+  <svg {...icon(props, '0 0 24 24', 19)}>
+    <circle cx="12" cy="12" r="11" fill="#229ED9" />
+    <path
+      d="m6.35 11.65 10.62-4.1c.49-.18.92.12.76.88l-1.81 8.54c-.13.61-.49.76-.99.47l-2.76-2.04-1.33 1.28c-.15.15-.27.27-.55.27l.2-2.81 5.11-4.62c.22-.2-.05-.31-.34-.12l-6.31 3.98-2.72-.85c-.59-.19-.6-.59.12-.88Z"
+      fill="white"
+    />
+  </svg>
+)

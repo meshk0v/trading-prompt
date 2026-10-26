@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { AFFILIATE_TERMS } from '../data/affiliate'
+import { useAutoScroll } from '../hooks/useAutoScroll'
 import { useI18n } from '../i18n/context'
 import { tr } from '../i18n/translate'
 import './PublicAffiliatePage.css'
@@ -73,6 +74,7 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
   const howItWorksRef = useRef<HTMLElement>(null)
   const benefitsRef = useRef<HTMLElement>(null)
   const calculatorRef = useRef<HTMLElement>(null)
+  const benefitsCarousel = useAutoScroll<HTMLDivElement>()
   const [clients, setClients] = useState<number>(AFFILIATE_TERMS.defaultClients)
   const [averageDeposit, setAverageDeposit] = useState<number>(AFFILIATE_TERMS.defaultDeposit)
   const income = useMemo(() => clients * averageDeposit * AFFILIATE_TERMS.rewardRate, [clients, averageDeposit])
@@ -333,7 +335,7 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
               </div>
             </div>
 
-            <div className="pa-benefits__carousel">
+            <div className="pa-benefits__carousel" {...benefitsCarousel}>
               {BENEFITS.map((benefit, index) => (
                 <div key={benefit.title} className="pa-benefit">
                   <div className="pa-benefit__glow" aria-hidden="true" />
