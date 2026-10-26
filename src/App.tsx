@@ -498,7 +498,8 @@ export default function App() {
           backdropFilter: 'blur(12px)', flexShrink: 0, zIndex: 10,
         }}>
           {/* Single header row: logo left, nav + auth right */}
-          <div style={{ height: 52, display: 'flex', alignItems: 'center', padding: '0 16px', gap: '12px' }}>
+          {/* Right padding reserves room for the fixed hamburger button (36px + 12px offset + gap) */}
+          <div style={{ height: 52, display: 'flex', alignItems: 'center', padding: '0 58px 0 16px', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
               <Binum_LOGO size={28} opacity={0.82} />
               <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 400, fontSize: '18px', color: 'var(--text)', letterSpacing: '-0.2px' }}>Trading Prompt</span>
@@ -506,7 +507,7 @@ export default function App() {
             <div style={{ flex: 1 }} />
             <button
               type="button"
-              className={`language-switcher${!user ? ' language-switcher--guest-menu-offset' : ''}`}
+              className="language-switcher"
               onClick={() => setLanguage(current => current === 'ru' ? 'en' : 'ru')}
               aria-label={language === 'ru' ? 'Switch to English' : 'Switch to Russian'}
               title={language === 'ru' ? 'English' : 'Russian'}

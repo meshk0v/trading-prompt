@@ -177,16 +177,6 @@ body {
   box-shadow: 0 0 0 1px rgba(255,255,255,0.12);
 }
 
-.language-switcher--guest-menu-offset {
-  margin-right: 42px;
-}
-
-@media (max-width: 780px) {
-  .language-switcher {
-    margin-right: 42px;
-  }
-}
-
 .mobile-prompt-purpose:empty::before {
   color: var(--muted2);
   content: attr(data-placeholder);
