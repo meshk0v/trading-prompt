@@ -1,31 +1,39 @@
+import { useI18n } from '../i18n/context'
+import './EconomicCalendarPage.css'
+
+const CALENDAR_SETTINGS = {
+  colorTheme: 'dark',
+  isTransparent: false,
+  width: '100%',
+  height: '100%',
+  importanceFilter: '-1,0,1',
+  countryFilter: 'ar,au,br,ca,cn,fr,de,in,id,it,jp,kr,mx,ru,sa,za,tr,gb,us,eu',
+}
+
+/** Full-height TradingView economic calendar widget. */
 export default function EconomicCalendarPage({ onClose }: { onClose: () => void }) {
+  const { t, language } = useI18n()
+  const src = `https://s.tradingview.com/embed-widget/events/?locale=${language}#${encodeURIComponent(JSON.stringify(CALENDAR_SETTINGS))}`
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg)' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-        <button
-          onClick={onClose}
-          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--muted2)', padding: '4px', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-        >
-          <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="var(--muted2)" strokeWidth="1.3"/>
-            <path d="M5 1v3M11 1v3M1.5 6.5h13" stroke="var(--muted2)" strokeWidth="1.3" strokeLinecap="round"/>
-            <path d="M4.5 10h2M4.5 12.5h2M9.5 10h2M9.5 12.5h2" stroke="var(--muted2)" strokeWidth="1.2" strokeLinecap="round"/>
+    <div className="calendar-page">
+      <div className="calendar-page__header">
+        <button type="button" onClick={onClose} className="calendar-page__back" aria-label={t('Закрыть')}>
+          <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: '15px', color: 'var(--text)' }}>Экономический календарь</span>
+        </button>
+        <div className="calendar-page__title">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="currentColor" strokeWidth="1.3" />
+            <path d="M5 1v3M11 1v3M1.5 6.5h13" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            <path d="M4.5 10h2M4.5 12.5h2M9.5 10h2M9.5 12.5h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+          </svg>
+          <span>{t('Экономический календарь')}</span>
         </div>
       </div>
-      {/* Full-height TradingView economic calendar widget */}
-      <div style={{ flex: 1, minHeight: 0 }}>
-        <iframe
-          src="https://s.tradingview.com/embed-widget/events/?locale=ru#%7B%22colorTheme%22%3A%22dark%22%2C%22isTransparent%22%3Afalse%2C%22width%22%3A%22100%25%22%2C%22height%22%3A%22100%25%22%2C%22importanceFilter%22%3A%22-1%2C0%2C1%22%2C%22countryFilter%22%3A%22ar%2Cau%2Cbr%2Cca%2Ccn%2Cfr%2Cde%2Cin%2Cid%2Cit%2Cjp%2Ckr%2Cmx%2Cru%2Csa%2Cza%2Ctr%2Cgb%2Cus%2Ceu%22%7D"
-          style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-          scrolling="yes"
-          title="Economic Calendar"
-        />
+      <div className="calendar-page__body">
+        <iframe src={src} className="calendar-page__frame" title="Economic Calendar" />
       </div>
     </div>
   )

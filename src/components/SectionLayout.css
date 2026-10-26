@@ -1,0 +1,121 @@
+/* ── Phone tabs ── */
+
+.section-layout__tabs {
+  display: none;
+  flex-shrink: 0;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--card2);
+  background: var(--surface);
+}
+
+.section-layout__tab {
+  display: flex;
+  min-width: 0;
+  height: 38px;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #7c7a98;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.section-layout__tab.is-active {
+  border-color: rgba(139, 124, 255, 0.35);
+  background: rgba(139, 124, 255, 0.16);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+/* ── Desktop sidebar ── */
+
+.section-layout__row {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.section-layout__sidebar {
+  display: flex;
+  width: 210px;
+  flex-shrink: 0;
+  flex-direction: column;
+  border-right: 1px solid var(--card2);
+  background: var(--surface);
+}
+
+.section-layout__sidebar nav {
+  flex: 1;
+  padding: 10px 8px;
+}
+
+.section-layout__item {
+  display: flex;
+  width: 100%;
+  height: 40px;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 3px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.section-layout__item:not(.is-active):hover {
+  background: var(--input-bg);
+  color: var(--accent);
+}
+
+.section-layout__item.is-active {
+  border-color: rgba(139, 124, 255, 0.35);
+  background: rgba(139, 124, 255, 0.1);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.section-layout__icon {
+  flex-shrink: 0;
+}
+
+/* ── Solid tone: the active item is filled with the accent colour ── */
+
+.section-layout--solid .section-layout__item.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.section-layout--solid .section-layout__tab {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.section-layout--solid .section-layout__tab.is-active {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+@media (max-width: 640px) {
+  .section-layout__tabs {
+    display: flex;
+  }
+
+  .section-layout__sidebar {
+    display: none;
+  }
+}
