@@ -57,6 +57,10 @@ export default defineConfig(({ mode }) => {
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
       watch: { ignored: ['**/.figma/**'] },
+      // PHP API runs separately in development (see DEPLOY.md); override with API_PROXY.
+      proxy: {
+        '/api': process.env.API_PROXY || 'http://localhost:8090',
+      },
     },
     preview: {
       host: '0.0.0.0',

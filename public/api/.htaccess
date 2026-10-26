@@ -1,0 +1,4 @@
+# Helper files (prefixed with "_") are included by endpoints, never requested directly.
+<FilesMatch "^_">
+  Require all denied
+</FilesMatch>

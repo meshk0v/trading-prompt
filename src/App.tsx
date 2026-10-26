@@ -1,5 +1,6 @@
 // @refresh reset
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { fetchCurrentUser, logout, type AuthUser } from './authApi'
 import { createPromptPdf } from './promptPdf'
 import MessageContent from './components/MessageContent'
 import FaqPage from './components/FaqPage'
@@ -79,7 +80,7 @@ export default function App() {
     }
   })
   const [settingsSection, setSettingsSection] = useState('account')
-  const [user, setUser] = useState<{ name: string; email: string; id: number } | null>(null)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [guestRequests, setGuestRequests] = useState(0)
   const [userRequests, setUserRequests] = useState(0)
   const [limitModal, setLimitModal] = useState<'guest' | 'user' | null>(null)
@@ -118,11 +119,19 @@ export default function App() {
     { label: 'TF 3', value: selectedTimeframe3, onChange: setSelectedTimeframe3, placeholder: 'Выбрать' },
   ]
 
-  const handleAuth = useCallback((name: string, email: string) => {
-    const userId = 2000 + Math.floor(Math.random() * 9000)
-    setUser({ name, email, id: userId })
+  const handleAuth = useCallback((authUser: AuthUser) => {
+    setUser(authUser)
     setAuthOpen(false)
     setUserRequests(0)
+  }, [])
+
+  const handleLogout = useCallback(() => {
+    setUser(null)
+    logout().catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    fetchCurrentUser().then(setUser).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -381,7 +390,7 @@ export default function App() {
               ))}
 
               {/* Logout */}
-              <div onClick={() => { setUser(null); setSidebarOpen(false) }} className="account-menu-button"
+              <div onClick={() => { handleLogout(); setSidebarOpen(false) }} className="account-menu-button"
                 style={{ minHeight: 40, borderRadius: '5px', display: 'flex', alignItems: 'center', gap: '10px', padding: '0 12px', cursor: 'pointer', color: 'var(--muted)', fontSize: '13px', fontFamily: 'Inter, sans-serif', fontWeight: 500, transition: 'background 0.15s, color 0.15s', userSelect: 'none' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--border2)'; e.currentTarget.style.color = 'var(--text)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--muted)' }}
@@ -514,7 +523,7 @@ export default function App() {
                   remaining={Math.max(0, FREE_LIMIT - userRequests)}
                   plan={userPlan}
                   onCyclePlan={() => setUserPlan(p => PLAN_CYCLE[(PLAN_CYCLE.indexOf(p) + 1) % PLAN_CYCLE.length])}
-                  onLogout={() => setUser(null)}
+                  onLogout={handleLogout}
                   onNavigate={(id) => {
                     if (id === 'faq') setFaqInitialCategory('Все')
                     setActiveTab(id)

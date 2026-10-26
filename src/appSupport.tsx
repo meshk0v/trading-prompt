@@ -1,5 +1,6 @@
 // @refresh reset
 import { useEffect, useState } from 'react'
+import { login, register, type AuthUser } from './authApi'
 import AccountSettings from './components/AccountSettings'
 import Binum_LOGO from './components/BinumLogo'
 import CustomSelect from './components/CustomSelect'
@@ -754,7 +755,7 @@ const AUTH_PALETTE = {
   border: '#242436',
 } as const
 
-function AuthModal({ onClose, onAuth, onOpenLegal, initialTab = 'login' }: { onClose: () => void; onAuth: (name: string, email: string) => void; onOpenLegal?: () => void; initialTab?: 'login' | 'register' }) {
+function AuthModal({ onClose, onAuth, onOpenLegal, initialTab = 'login' }: { onClose: () => void; onAuth: (user: AuthUser) => void; onOpenLegal?: () => void; initialTab?: 'login' | 'register' }) {
   const [tab, setTab] = useState<'login' | 'register'>(initialTab)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -767,7 +768,7 @@ function AuthModal({ onClose, onAuth, onOpenLegal, initialTab = 'login' }: { onC
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     if (tab === 'register' && password !== confirmPassword) {
@@ -791,10 +792,16 @@ function AuthModal({ onClose, onAuth, onOpenLegal, initialTab = 'login' }: { onC
       return
     }
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const user = tab === 'register'
+        ? await register({ name: name.trim(), email: email.trim(), telegram: telegram.trim(), password, termsAccepted })
+        : await login(email.trim(), password)
+      onAuth(user)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка сервера')
+    } finally {
       setLoading(false)
-      onAuth(tab === 'register' ? name || email.split('@')[0] : email.split('@')[0], email)
-    }, 1000)
+    }
   }
 
   const inputStyle: React.CSSProperties = {
