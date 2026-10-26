@@ -1,23 +1,10 @@
 import { useMemo, useRef, useState } from 'react'
+import { AFFILIATE_TERMS } from '../data/affiliate'
 
-export const AFFILIATE_TERMS = {
-  rewardRate: 0.5,
-  rewardPercent: 50,
-  payoutFeePercent: 0,
-  payoutCurrency: 'USDT',
-  payoutNetwork: 'TRC-20',
-  minClients: 1,
-  maxClients: 500,
-  defaultClients: 10,
-  minDeposit: 1,
-  defaultDeposit: 20,
-} as const
 
 type PublicAffiliatePageProps = {
   onClose: () => void
   onSignUp: () => void
-  onOpenFaq: () => void
-  footer?: React.ReactNode
 }
 
 const ArrowIcon = () => (
@@ -32,34 +19,7 @@ const CheckIcon = () => (
   </svg>
 )
 
-const ImagePlaceholder = ({ label, recommendation, className = '' }: { label: string; recommendation: string; className?: string }) => (
-  <div
-    role="img"
-    aria-label={`${label}. ${recommendation}`}
-    className={`group relative grid min-h-48 place-items-center overflow-hidden rounded-xl border border-dashed border-accent/35 bg-[linear-gradient(145deg,rgba(139,124,255,.055),rgba(15,15,15,.75))] ${className}`}
-  >
-    <div className="pointer-events-none absolute inset-3 rounded-lg border border-accent/[0.06]" aria-hidden="true" />
-    <div className="pointer-events-none absolute inset-0 opacity-35" aria-hidden="true" style={{ backgroundImage: 'linear-gradient(rgba(139,124,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(139,124,255,.04) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-    <span className="absolute left-0 top-0 size-5 border-l border-t border-accent/70" aria-hidden="true" />
-    <span className="absolute right-0 top-0 size-5 border-r border-t border-accent/70" aria-hidden="true" />
-    <span className="absolute bottom-0 left-0 size-5 border-b border-l border-accent/70" aria-hidden="true" />
-    <span className="absolute bottom-0 right-0 size-5 border-b border-r border-accent/70" aria-hidden="true" />
-    <div className="relative flex flex-col items-center px-6 py-8 text-center">
-      <div className="grid size-11 place-items-center rounded-xl border border-accent/20 bg-accent/[0.08] text-accent transition-transform duration-300 group-hover:scale-105">
-        <svg width="21" height="21" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-          <rect x="2.5" y="3.5" width="17" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.4"/>
-          <circle cx="7.5" cy="8" r="1.75" stroke="currentColor" strokeWidth="1.3"/>
-          <path d="m4.5 16 4.2-4 3.1 2.7 2.5-2.4 3.2 3.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-      <div className="mt-4 text-[10px] font-bold uppercase tracking-[0.16em] text-accent">Место для изображения</div>
-      <div className="mt-2 font-['Outfit'] text-sm font-bold text-[#CFCDE3]">{label}</div>
-      <div className="mt-1.5 font-['JetBrains_Mono'] text-[9px] uppercase tracking-[0.08em] text-[#5F5F5F]">{recommendation}</div>
-    </div>
-  </div>
-)
-
-export default function PublicAffiliatePage({ onClose, onSignUp, onOpenFaq, footer }: PublicAffiliatePageProps) {
+export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffiliatePageProps) {
   const howItWorksRef = useRef<HTMLElement>(null)
   const benefitsRef = useRef<HTMLElement>(null)
   const calculatorRef = useRef<HTMLElement>(null)
@@ -774,7 +734,6 @@ export default function PublicAffiliatePage({ onClose, onSignUp, onOpenFaq, foot
             </p>
           </section>
         </main>
-        {footer}
       </div>
     </div>
   )

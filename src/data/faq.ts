@@ -1,4 +1,4 @@
-import { AFFILIATE_TERMS } from '../components/PublicAffiliatePage'
+import { AFFILIATE_TERMS } from './affiliate'
 
 export const FAQ_CATEGORIES = [
   'Начало работы',

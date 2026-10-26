@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
-import { changePassword, fetchSessions, revokeSession, updateProfile, type AuthUser, type UserSession } from '../authApi'
+import { changePassword, fetchSessions, revokeSession, updateProfile, type AuthUser, type UserSession } from '../../api/auth'
 
 type AccountSettingsProps = {
   user: AuthUser | null

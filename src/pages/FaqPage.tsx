@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { FAQ_CATEGORIES, FAQ_ITEMS, type FaqAction, type FaqCategory } from '../data/faq'
 
 type FaqPageProps = {
@@ -8,7 +8,6 @@ type FaqPageProps = {
   onNavigate: (id: string) => void
   onOpenSettings: (section: string) => void
   initialCategory?: 'Все' | FaqCategory
-  footer?: ReactNode
 }
 
 function QuestionIcon({ size = 20 }: { size?: number }) {
@@ -36,7 +35,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
   )
 }
 
-export default function FaqPage({ onClose, user, onSignUp, onNavigate, onOpenSettings, initialCategory = 'Все', footer }: FaqPageProps) {
+export default function FaqPage({ onClose, user, onSignUp, onNavigate, onOpenSettings, initialCategory = 'Все' }: FaqPageProps) {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<'Все' | FaqCategory>(initialCategory)
   const [openId, setOpenId] = useState<string | null>(FAQ_ITEMS[0]?.id ?? null)
@@ -55,9 +54,10 @@ export default function FaqPage({ onClose, user, onSignUp, onNavigate, onOpenSet
     })
   }, [category, query])
 
+  // Open the first matching answer whenever the filter changes.
   useEffect(() => {
     setOpenId(filteredItems[0]?.id ?? null)
-  }, [category, query])
+  }, [filteredItems])
 
   useEffect(() => {
     setCategory(initialCategory)
@@ -112,7 +112,7 @@ export default function FaqPage({ onClose, user, onSignUp, onNavigate, onOpenSet
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <aside className="hidden w-[210px] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface)] lg:flex">
           <nav className="flex-1 p-2">
-            {['Все', ...FAQ_CATEGORIES].map(item => {
+            {(['Все', ...FAQ_CATEGORIES] as const).map(item => {
               const count = item === 'Все' ? FAQ_ITEMS.length : categoryCounts[item]
               return (
                 <button
@@ -162,7 +162,7 @@ export default function FaqPage({ onClose, user, onSignUp, onNavigate, onOpenSet
             <div className="relative mx-auto mt-3 max-w-2xl lg:hidden">
               <select
                 value={category}
-                onChange={event => setCategory(event.target.value)}
+                onChange={event => setCategory(event.target.value as 'Все' | FaqCategory)}
                 aria-label="Категория вопросов"
                 className="h-11 w-full appearance-none rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-4 pr-11 font-['Inter'] text-sm font-semibold text-[var(--text)] outline-none transition-colors focus:border-accent"
               >
@@ -251,7 +251,6 @@ export default function FaqPage({ onClose, user, onSignUp, onNavigate, onOpenSet
             </div>
           </section>
         </main>
-        {footer}
         </div>
       </div>
     </div>

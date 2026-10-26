@@ -70,31 +70,6 @@ body * {
   --panel-shadow:     0 8px 32px rgba(0,0,0,0.75);
 }
 
-[data-theme="light"] {
-  /* Palette: White / Black / Gray 200-500 / Blue 300 */
-  --bg:               #FFFFFF;
-  --bg2:              #F9FAFB;
-  --surface:          #FFFFFF;
-  --card:             #FFFFFF;
-  --card2:            #F9FAFB;
-  --overlay:          #F3F4F6;
-  --text:             #000000;
-  --text2:            #111827;
-  --muted:            #6B7280;   /* Gray 500 — надписи */
-  --muted2:           #6B7280;   /* Gray 500 — надписи */
-  --muted3:           #9CA3AF;   /* Gray 400 — подписи */
-  --border:           #E5E7EB;   /* Gray 200 — инфоиконки / разделители */
-  --border2:          #F3F4F6;   /* чуть светлее для тонких линий */
-  --input-bg:         #F9FAFB;
-  --sidebar-bg:       #FFFFFF;
-  --header-bg:        rgba(255,255,255,0.97);
-  --dropdown-bg:      #FFFFFF;
-  /* chat */
-  --msg-assistant-bg: #F3F4F6;
-  --user-avatar-bg:   #E5E7EB;
-  --panel-shadow:     0 4px 16px rgba(0,0,0,0.08);
-}
-
 * {
   box-sizing: border-box;
 }
@@ -187,17 +162,7 @@ body {
   display: none;
 }
 
-/* Light theme global overrides — cover hardcoded inline bg colors */
-[data-theme="light"] {
-  color-scheme: light;
-}
-
-[data-theme="light"] #root > div {
-  background-color: var(--bg) !important;
-}
-
 /* Main layout structural overrides */
-[data-theme="light"] .app-root         { background: var(--bg) !important; color: var(--text) !important; }
 
 /* Scrollbar */
 .scrollable {
@@ -208,10 +173,6 @@ body {
 .scrollable::-webkit-scrollbar-track { background: transparent; }
 .scrollable::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 .scrollable:hover::-webkit-scrollbar-thumb { background: var(--muted2); }
-
-[data-theme="light"] .scrollable { scrollbar-color: #D1D5DB transparent; }
-[data-theme="light"] .scrollable::-webkit-scrollbar-thumb { background: #D1D5DB; }
-[data-theme="light"] .scrollable:hover::-webkit-scrollbar-thumb { background: #9CA3AF; }
 
 select { border-radius: 5px !important; }
 
@@ -2068,130 +2029,35 @@ select { border-radius: 5px !important; }
   }
 }
 
-/* ── Light theme chat overrides ── */
-
-/* Disabled signal button in light mode */
-[data-theme="light"] .signal-btn-desktop:disabled,
-[data-theme="light"] .signal-btn-mobile:disabled {
-  background: #E5E7EB !important;
-  color: #9CA3AF !important;
-}
-
-/* ── Light theme text/icon colour corrections ── */
-
 /* Muted labels, captions, nav items */
-[data-theme="light"] * {
-  --accent: #4A90D9;
-}
 
 /* Header nav buttons */
-[data-theme="light"] header button { color: #374151; }
-[data-theme="light"] .nav-desktop button {
-  background: rgba(0,0,0,0.04) !important;
-  border-color: rgba(0,0,0,0.1) !important;
-  color: #374151 !important;
-}
 
 /* Borders and dividers */
-[data-theme="light"] [style*="var(--border)"] { border-color: #E5E7EB; }
 
 /* Code / mono labels stay readable */
-[data-theme="light"] code { background: #F3F4F6; color: #374151; }
 
 /* Input fields */
-[data-theme="light"] input,
-[data-theme="light"] select,
-[data-theme="light"] textarea {
-  background: #FFFFFF !important;
-  border-color: #D1D5DB !important;
-  color: #000000 !important;
-}
-[data-theme="light"] input::placeholder { color: #9CA3AF; }
 
 /* Cards and panels */
-[data-theme="light"] [class*="card"],
-[data-theme="light"] [style*="var(--card)"] {
-  background: #FFFFFF;
-  border-color: #E5E7EB;
-}
 
 /* ── Override hardcoded dark inline backgrounds throughout the app ── */
 
 /* All generic divs/sections that carry dark inline bg */
-[data-theme="light"] main,
-[data-theme="light"] aside,
-[data-theme="light"] header,
-[data-theme="light"] section,
-[data-theme="light"] article {
-  background-color: var(--bg);
-  color: var(--text);
-}
 
 /* Modals and overlays */
-[data-theme="light"] [style*="background: var(--card2)"],
-[data-theme="light"] [style*="background:var(--card2)"] {
-  background: #FFFFFF !important;
-}
 
 /* Dark hardcoded backgrounds — catch common dark tokens used inline */
-[data-theme="light"] [style*="#0F172A"]  { background: #FFFFFF !important; }
-[data-theme="light"] [style*="#111827"]  { background: #F9FAFB !important; }
-[data-theme="light"] [style*="#1A2332"]  { background: #FFFFFF !important; }
-[data-theme="light"] [style*="#1E293B"]  { background: #F9FAFB !important; }
-[data-theme="light"] [style*="rgba(15,23,42"]    { background: transparent !important; }
-[data-theme="light"] [style*="rgba(30,41,59"]    { background: #F3F4F6 !important; }
-[data-theme="light"] [style*="rgba(51,65,85"]    { background: transparent !important; }
 
 /* Signal card and message assistant backgrounds */
-[data-theme="light"] [style*="var(--msg-assistant-bg)"] { background: #F3F4F6 !important; }
-[data-theme="light"] [style*="var(--input-bg)"]         { background: #F9FAFB !important; }
 
 /* Dark text on dark bg — restore readable contrast */
-[data-theme="light"] span[style*="color: var(--text)"],
-[data-theme="light"] div[style*="color: var(--text)"],
-[data-theme="light"] p[style*="color: var(--text)"] {
-  color: #000000 !important;
-}
-[data-theme="light"] span[style*="color: var(--text2)"],
-[data-theme="light"] div[style*="color: var(--text2)"] {
-  color: #111827 !important;
-}
-[data-theme="light"] span[style*="color: var(--muted)"],
-[data-theme="light"] div[style*="color: var(--muted)"] {
-  color: #6B7280 !important;
-}
-[data-theme="light"] span[style*="color: var(--muted2)"],
-[data-theme="light"] div[style*="color: var(--muted2)"],
-[data-theme="light"] button[style*="color: var(--muted2)"] {
-  color: #6B7280 !important;
-}
-[data-theme="light"] span[style*="color: var(--muted3)"],
-[data-theme="light"] div[style*="color: var(--muted3)"],
-[data-theme="light"] p[style*="color: var(--muted3)"] {
-  color: #9CA3AF !important;
-}
 
 /* Blue accent: keep #3B82F6 buttons readable, remap to Blue 300 */
-[data-theme="light"] button[style*="background: #3B82F6"],
-[data-theme="light"] button[style*="background:#3B82F6"] {
-  background: #4A90D9 !important;
-}
 
 /* Borders */
-[data-theme="light"] [style*="border: 1px solid var(--border)"],
-[data-theme="light"] [style*="borderColor: var(--border)"] {
-  border-color: #E5E7EB !important;
-}
-[data-theme="light"] [style*="border-top: 1px solid var(--border)"],
-[data-theme="light"] [style*="border-bottom: 1px solid var(--border)"] {
-  border-color: #E5E7EB !important;
-}
 
 /* Custom select dropdown */
-[data-theme="light"] [style*="var(--card2)"] {
-  background: #FFFFFF !important;
-  border-color: #E5E7EB !important;
-}
 
 /* ══════════════════════════════════════════════════
    ЧЁРНАЯ ТЕМА  — pure black
@@ -2543,4 +2409,83 @@ select { border-radius: 5px !important; }
 
 @media (max-width: 640px) {
   .support-body > div { max-width: 100% !important; }
+}
+
+/* ── Layout rules (formerly an inline <style> in App.tsx) ── */
+@media (max-width: 600px) {
+  .signal-btn-desktop { display: none !important; }
+  .signal-btn-mobile { display: flex !important; }
+
+  /* Chat message rows */
+  .msg-inner { padding: 0 10px !important; gap: 8px !important; max-width: 100% !important; }
+
+  /* Prompt builder bar */
+  .sig-bar-outer { padding: 10px 10px 12px !important; }
+  .sig-card {
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-size: 13px !important;
+  }
+  .sig-card-header,
+  .sig-config-panel,
+  .sig-purpose-panel { display: none !important; }
+  .mobile-prompt-actions { display: flex !important; }
+  .mobile-prompt-usage { display: flex !important; }
+  .signal-btn-mobile {
+    flex: 1 !important;
+    width: auto !important;
+    margin-top: 0 !important;
+  }
+  .sig-field-timeframe { width: 100% !important; }
+  .prompt-export-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  .prompt-export-action > button {
+    width: 100% !important;
+    min-width: 0;
+    max-width: none !important;
+    padding-inline: 0 !important;
+  }
+  .prompt-export-label-desktop { display: none; }
+  .prompt-export-label-mobile { display: inline; }
+
+  /* Page headers */
+  .page-hdr { padding: 12px 14px !important; }
+  .page-hdr h2, .page-hdr h1 { font-size: 16px !important; }
+
+  /* Page body scrollable areas */
+  .page-body { padding: 14px 12px !important; }
+
+  /* Settings body */
+  .settings-body { padding: 12px 12px !important; }
+
+  /* Settings cards — reduce inner paddings */
+  .settings-body > div > div,
+  .settings-body [style*="padding: 20px"],
+  .settings-body [style*="padding: 24px"] {
+    padding: 14px !important;
+  }
+
+  /* Settings section headings */
+  .settings-body h3 { font-size: 14px !important; }
+  .settings-body p, .settings-body label, .settings-body span { font-size: 13px !important; }
+
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+select option {
+  background: var(--card);
+  color: var(--text);
+}
+select:focus {
+  border-color: rgba(59,130,246,0.6) !important;
+  outline: none;
 }

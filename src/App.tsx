@@ -1,41 +1,29 @@
-// @refresh reset
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
-import { fetchCurrentUser, logout, type AuthUser } from './authApi'
-import { createPromptPdf } from './promptPdf'
+import { fetchCurrentUser, logout, type AuthUser } from './api/auth'
+import AccountBalanceSummary from './components/AccountBalanceSummary'
+import AuthModal from './components/AuthModal'
+import CustomSelect from './components/CustomSelect'
+import Logo from './components/Logo'
 import MessageContent from './components/MessageContent'
-import FaqPage from './components/FaqPage'
+import PageFooter from './components/PageFooter'
+import PairFlag from './components/PairFlag'
 import PromptBuilderGuide from './components/PromptBuilderGuide'
 import PromptPanelResizeHandle from './components/PromptPanelResizeHandle'
-import PublicAffiliatePage from './components/PublicAffiliatePage'
+import PromptTradingView from './components/TradingViewChart'
+import { GREETINGS } from './data/greetings'
+import { CURRENCY_PAIRS, DEFAULT_WATCHLIST, PAIR_CATEGORIES, TIMEFRAME_OPTIONS } from './data/instruments'
+import { buildCandles, generateFundamentals, generateIndicators, generateVolumeData } from './data/mockMarketData'
 import { applyAppLanguage, type AppLanguage } from './i18n'
-import {
-  AccountBalanceSummary,
-  AffiliatePage,
-  AuthModal,
-  Binum_LOGO,
-  CURRENCY_PAIRS,
-  CustomSelect,
-  DEFAULT_WATCHLIST,
-  EconomicCalendarPage,
-  GREETINGS,
-  LegalPage,
-  PLAN_CYCLE,
-  PageFooter,
-  PairFlag,
-  PAIR_CATEGORIES,
-  PromptTradingView,
-  SettingsPage,
-  SupportPage,
-  TIMEFRAME_OPTIONS,
-  UserMenu,
-  buildCandles,
-  formatTime,
-  generateFundamentals,
-  generateIndicators,
-  generateVolumeData,
-  type Message,
-  type PlanTier,
-} from './appSupport'
+import AffiliatePage from './pages/AffiliatePage'
+import EconomicCalendarPage from './pages/EconomicCalendarPage'
+import FaqPage from './pages/FaqPage'
+import LegalPage from './pages/LegalPage'
+import PublicAffiliatePage from './pages/PublicAffiliatePage'
+import SettingsPage from './pages/settings/SettingsPage'
+import SupportPage from './pages/SupportPage'
+import type { Message } from './types'
+import { formatTime } from './utils/format'
+import { createPromptPdf } from './utils/promptPdf'
 
 const ASSET_TYPE_OPTIONS = [
   'Crypto',
@@ -62,7 +50,6 @@ export default function App() {
   const [mobilePromptSettingsOpen, setMobilePromptSettingsOpen] = useState(false)
   const [copiedPromptId, setCopiedPromptId] = useState<string | null>(null)
   const [copyErrorId, setCopyErrorId] = useState<string | null>(null)
-  const [copiedPdfId, setCopiedPdfId] = useState<string | null>(null)
   const [pdfErrorId, setPdfErrorId] = useState<string | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
   const [affiliateOpen, setAffiliateOpen] = useState(false)
@@ -84,10 +71,7 @@ export default function App() {
   const [guestRequests, setGuestRequests] = useState(0)
   const [userRequests, setUserRequests] = useState(0)
   const [limitModal, setLimitModal] = useState<'guest' | 'user' | null>(null)
-  const [emailHidden, setEmailHidden] = useState(false)
   const [watchlist, setWatchlist] = useState<string[]>(DEFAULT_WATCHLIST)
-  const [activeTab, setActiveTab] = useState('chat')
-  const [userPlan, setUserPlan] = useState<PlanTier>('free')
   const bottomRef = useRef<HTMLDivElement>(null)
   const categoryInstruments = PAIR_CATEGORIES[selectedAssetType as keyof typeof PAIR_CATEGORIES] ?? CURRENCY_PAIRS
   const watchedCategoryInstruments = categoryInstruments.filter(pair => watchlist.includes(pair))
@@ -217,7 +201,6 @@ export default function App() {
     ])
     setCopiedPromptId(null)
     setCopyErrorId(null)
-    setCopiedPdfId(null)
     setPdfErrorId(null)
     if (user) {
       setUserRequests(userRequests + 1)
@@ -239,23 +222,15 @@ export default function App() {
     }
   }
 
-  const handlePromptPdf = async (id: string, prompt: string, copy: boolean) => {
+  const handlePromptPdf = async (id: string, prompt: string) => {
     try {
       const pdf = await createPromptPdf(prompt)
-      if (copy) {
-        if (!navigator.clipboard?.write || !ClipboardItem.supports?.('application/pdf')) {
-          throw new Error('PDF clipboard is unsupported')
-        }
-        await navigator.clipboard.write([new ClipboardItem({ 'application/pdf': pdf })])
-        setCopiedPdfId(id)
-      } else {
-        const url = URL.createObjectURL(pdf)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = 'binum-prompt.pdf'
-        link.click()
-        setTimeout(() => URL.revokeObjectURL(url), 60000)
-      }
+      const url = URL.createObjectURL(pdf)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'binum-prompt.pdf'
+      link.click()
+      setTimeout(() => URL.revokeObjectURL(url), 60000)
       setPdfErrorId(null)
     } catch {
       setPdfErrorId(id)
@@ -274,7 +249,7 @@ export default function App() {
   }, [language])
 
   const openAffiliateFromMenu = () => {
-    setActiveTab('affiliate')
+    
     setAffiliateOpen(true)
     setFaqOpen(false)
     setSettingsOpen(false)
@@ -285,7 +260,7 @@ export default function App() {
   }
   const openFaqFromMenu = () => {
     setFaqInitialCategory('Все')
-    setActiveTab('faq')
+    
     setFaqOpen(true)
     setAffiliateOpen(false)
     setSettingsOpen(false)
@@ -357,7 +332,7 @@ export default function App() {
             whiteSpace: 'nowrap', overflow: 'hidden',
           }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontFamily: 'Outfit, sans-serif', fontWeight: 400, fontSize: '18px', color: 'var(--text)', letterSpacing: '-0.2px' }}>
-              <Binum_LOGO size={24} />
+              <Logo size={24} />
               Trading Prompt
             </span>
           </div>
@@ -456,7 +431,7 @@ export default function App() {
                 {
                   id: 'legal',
                   label: 'Правовая информация',
-                  action: () => { setActiveTab('legal'); setLegalOpen(true); setAffiliateOpen(false); setSupportOpen(false); setSettingsOpen(false); setCalendarOpen(false); setFaqOpen(false); setSidebarOpen(false) },
+                  action: () => { setLegalOpen(true); setAffiliateOpen(false); setSupportOpen(false); setSettingsOpen(false); setCalendarOpen(false); setFaqOpen(false); setSidebarOpen(false) },
                   icon: <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><rect x="2" y="1.5" width="10" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M4.5 5h5M4.5 7.5h5M4.5 10h3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
                 },
               ] as const).map(item => (
@@ -501,7 +476,7 @@ export default function App() {
           {/* Right padding reserves room for the fixed hamburger button (36px + 12px offset + gap) */}
           <div style={{ height: 52, display: 'flex', alignItems: 'center', padding: '0 58px 0 16px', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-              <Binum_LOGO size={28} opacity={0.82} />
+              <Logo size={28} opacity={0.82} />
               <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 400, fontSize: '18px', color: 'var(--text)', letterSpacing: '-0.2px' }}>Trading Prompt</span>
             </div>
             <div style={{ flex: 1 }} />
@@ -514,41 +489,7 @@ export default function App() {
             >
               <span className={`fi fi-${language === 'ru' ? 'gb' : 'ru'}`} aria-hidden="true" />
             </button>
-            {user ? (
-              <div style={{ display: 'flex', alignItems: 'center', overflowX: 'auto', overflowY: 'hidden', scrollbarWidth: 'none' }}>
-                <UserMenu
-                  className="nav-desktop"
-                  email={user.email}
-                  emailHidden={emailHidden}
-                  onToggleEmail={() => setEmailHidden(v => !v)}
-                  remaining={Math.max(0, FREE_LIMIT - userRequests)}
-                  plan={userPlan}
-                  onCyclePlan={() => setUserPlan(p => PLAN_CYCLE[(PLAN_CYCLE.indexOf(p) + 1) % PLAN_CYCLE.length])}
-                  onLogout={handleLogout}
-                  onNavigate={(id) => {
-                    if (id === 'faq') setFaqInitialCategory('Все')
-                    setActiveTab(id)
-                    setAffiliateOpen(id === 'affiliate')
-                    setSupportOpen(id === 'support')
-                    setLegalOpen(id === 'legal')
-                    setCalendarOpen(id === 'calendar')
-                    setFaqOpen(id === 'faq')
-                    setSettingsOpen(false)
-                  }}
-                  onOpenSettings={(sec) => {
-                    setSettingsSection(sec)
-                    setSettingsOpen(true)
-                    setAffiliateOpen(false)
-                    setSupportOpen(false)
-                    setLegalOpen(false)
-                    setCalendarOpen(false)
-                    setFaqOpen(false)
-                  }}
-                  userId={user.id}
-                  name={user.name}
-                />
-              </div>
-            ) : (
+            {!user && (
               <div data-prompt-guide="guest-desktop-menu-items" className="guest-header-actions">
                 <div className="guest-header-links" aria-label="Навигация для гостя">
                   <div className="guest-ai-links">
@@ -577,7 +518,7 @@ export default function App() {
                     type="button"
                     className="guest-header-link"
                     onClick={() => {
-                      setActiveTab('affiliate')
+                      
                       setAffiliateOpen(true)
                       setLegalOpen(false)
                       setSupportOpen(false)
@@ -593,7 +534,7 @@ export default function App() {
                     className="guest-header-link"
                     onClick={() => {
                       setFaqInitialCategory('Все')
-                      setActiveTab('faq')
+                      
                       setFaqOpen(true)
                       setAffiliateOpen(false)
                       setLegalOpen(false)
@@ -608,7 +549,7 @@ export default function App() {
                     type="button"
                     className="guest-header-link"
                     onClick={() => {
-                      setActiveTab('legal')
+                      
                       setLegalOpen(true)
                       setAffiliateOpen(false)
                       setSupportOpen(false)
@@ -636,17 +577,17 @@ export default function App() {
 
         {/* Page content */}
         {(() => {
-          const nav = (id: string) => { if (id === 'faq') setFaqInitialCategory('Все'); setActiveTab(id); setAffiliateOpen(id === 'affiliate'); setSupportOpen(id === 'support'); setLegalOpen(id === 'legal'); setFaqOpen(id === 'faq'); setCalendarOpen(false); setSettingsOpen(false) }
+          const nav = (id: string) => { if (id === 'faq') setFaqInitialCategory('Все'); setAffiliateOpen(id === 'affiliate'); setSupportOpen(id === 'support'); setLegalOpen(id === 'legal'); setFaqOpen(id === 'faq'); setCalendarOpen(false); setSettingsOpen(false) }
           return (<>
             {affiliateOpen && (user
-              ? <AffiliatePage onClose={() => { setAffiliateOpen(false); setActiveTab('chat') }} />
-              : <PublicAffiliatePage onClose={() => { setAffiliateOpen(false); setActiveTab('chat') }} onSignUp={() => setAuthOpen(true)} onOpenFaq={() => nav('faq')} />
+              ? <AffiliatePage onClose={() => { setAffiliateOpen(false); }} />
+              : <PublicAffiliatePage onClose={() => { setAffiliateOpen(false); }} onSignUp={() => setAuthOpen(true)} />
             )}
-            {legalOpen && <LegalPage onClose={() => { setLegalOpen(false); setActiveTab('chat') }} />}
-            {supportOpen && <SupportPage onClose={() => { setSupportOpen(false); setActiveTab('chat') }} />}
-            {settingsOpen && <SettingsPage user={user} onUserUpdate={setUser} initialSection={settingsSection} onClose={() => { setSettingsOpen(false); setActiveTab('chat') }} watchlist={watchlist} setWatchlist={setWatchlist} />}
-            {calendarOpen && <EconomicCalendarPage onClose={() => { setCalendarOpen(false); setActiveTab('chat') }} />}
-            {faqOpen && <FaqPage initialCategory={faqInitialCategory} onClose={() => { setFaqOpen(false); setFaqInitialCategory('Все'); setActiveTab('chat') }} user={user} onSignUp={() => setAuthOpen(true)} onNavigate={nav} onOpenSettings={(sec) => { setSettingsSection(sec); setSettingsOpen(true); setAffiliateOpen(false); setSupportOpen(false); setLegalOpen(false); setCalendarOpen(false); setFaqOpen(false) }} />}
+            {legalOpen && <LegalPage onClose={() => { setLegalOpen(false); }} />}
+            {supportOpen && <SupportPage onClose={() => { setSupportOpen(false); }} />}
+            {settingsOpen && <SettingsPage user={user} onUserUpdate={setUser} initialSection={settingsSection} onClose={() => { setSettingsOpen(false); }} watchlist={watchlist} setWatchlist={setWatchlist} />}
+            {calendarOpen && <EconomicCalendarPage onClose={() => { setCalendarOpen(false); }} />}
+            {faqOpen && <FaqPage initialCategory={faqInitialCategory} onClose={() => { setFaqOpen(false); setFaqInitialCategory('Все'); }} user={user} onSignUp={() => setAuthOpen(true)} onNavigate={nav} onOpenSettings={(sec) => { setSettingsSection(sec); setSettingsOpen(true); setAffiliateOpen(false); setSupportOpen(false); setLegalOpen(false); setCalendarOpen(false); setFaqOpen(false) }} />}
           </>)
         })()}
 
@@ -662,7 +603,7 @@ export default function App() {
               <div className="msg-inner" style={{ maxWidth: 760, margin: '0 auto', padding: '0 32px', display: 'flex', gap: '16px' }}>
                 <div style={{ flexShrink: 0, marginTop: '1px' }}>
                   {msg.role === 'assistant' ? (
-                    <Binum_LOGO size={34} />
+                    <Logo size={34} />
                   ) : (
                     <div style={{
                       width: 34, height: 34, borderRadius: '5px',
@@ -708,7 +649,7 @@ export default function App() {
                           </a>
                         </div>
                         <div className="prompt-export-action flex min-w-0 flex-col items-center gap-2">
-                          <button type="button" onClick={() => handlePromptPdf(msg.id, msg.prompt!, false)} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '190px', maxWidth: '100%', height: 36, padding: '0 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--text)', fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+                          <button type="button" onClick={() => handlePromptPdf(msg.id, msg.prompt!)} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '190px', maxWidth: '100%', height: 36, padding: '0 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--text)', fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M2.5 11v2.5h11V11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             <span className="prompt-export-label-desktop">Скачать PDF</span>
                             <span className="prompt-export-label-mobile">PDF</span>
@@ -756,7 +697,7 @@ export default function App() {
             }}>
               <div className="msg-inner" style={{ maxWidth: 760, margin: '0 auto', padding: '0 32px', display: 'flex', gap: '16px' }}>
                 <div style={{ flexShrink: 0 }}>
-                  <Binum_LOGO size={34} />
+                  <Logo size={34} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
@@ -1186,7 +1127,7 @@ export default function App() {
           <PageFooter
             onNavigate={(id) => {
               if (id === 'faq') setFaqInitialCategory('Все')
-              setActiveTab(id)
+              
               setAffiliateOpen(id === 'affiliate')
               setSupportOpen(id === 'support')
               setLegalOpen(id === 'legal')
@@ -1297,174 +1238,6 @@ export default function App() {
         </div>
       )}
 
-      <style>{`
-        .premium-grid {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 16px;
-        }
-        @media (max-width: 1200px) {
-          .premium-grid { grid-template-columns: repeat(3, 1fr); }
-          .sub-packages-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-        }
-        @media (max-width: 900px) {
-          .premium-grid { grid-template-columns: repeat(2, 1fr); }
-          .sub-packages-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-        }
-        @media (max-width: 500px) {
-          .premium-grid { grid-template-columns: 1fr; }
-        }
-        .nav-desktop { display: none !important; }
-        .mobile-only { display: flex !important; }
-        @media (max-width: 600px) {
-          .signal-btn-desktop { display: none !important; }
-          .signal-btn-mobile { display: flex !important; }
-          .header-clock { display: none !important; }
-
-          /* Chat message rows */
-          .msg-inner { padding: 0 10px !important; gap: 8px !important; max-width: 100% !important; }
-
-          /* Prompt builder bar */
-          .sig-bar-outer { padding: 10px 10px 12px !important; }
-          .sig-card {
-            padding: 0 !important;
-            border: none !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            font-size: 13px !important;
-          }
-          .sig-card-header,
-          .sig-config-panel,
-          .sig-purpose-panel { display: none !important; }
-          .mobile-prompt-actions { display: flex !important; }
-          .mobile-prompt-usage { display: flex !important; }
-          .signal-btn-mobile {
-            flex: 1 !important;
-            width: auto !important;
-            margin-top: 0 !important;
-          }
-          .sig-field-timeframe { width: 100% !important; }
-          .chat-main .custom-select--subdued > button,
-          .chat-main input.prompt-builder-input { height: 40px !important; }
-          .prompt-export-actions {
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-          }
-          .prompt-export-action > button {
-            width: 100% !important;
-            min-width: 0;
-            max-width: none !important;
-            padding-inline: 0 !important;
-          }
-          .prompt-export-label-desktop { display: none; }
-          .prompt-export-label-mobile { display: inline; }
-
-          /* Page headers */
-          .page-hdr { padding: 12px 14px !important; }
-          .page-hdr h2, .page-hdr h1 { font-size: 16px !important; }
-
-          /* Page body scrollable areas */
-          .page-body { padding: 14px 12px !important; }
-
-          /* Settings body */
-          .settings-body { padding: 12px 12px !important; }
-
-          /* Settings cards — reduce inner paddings */
-          .settings-body > div > div,
-          .settings-body [style*="padding: 20px"],
-          .settings-body [style*="padding: 24px"] {
-            padding: 14px !important;
-          }
-
-          /* Settings section headings */
-          .settings-body h3 { font-size: 14px !important; }
-          .settings-body p, .settings-body label, .settings-body span { font-size: 13px !important; }
-
-          /* Prompt builder actions — allow horizontal scroll */
-          .sig-card .vote-list { overflow-x: auto; }
-
-          /* Subscription — packages grid */
-          .sub-packages-grid {
-            grid-template-columns: 1fr !important;
-            gap: 10px !important;
-          }
-          .subscription-packages-hero {
-            grid-template-columns: 1fr !important;
-            padding: 18px !important;
-            gap: 16px !important;
-          }
-          .subscription-rate-tile {
-            min-width: 0 !important;
-            width: 100% !important;
-            text-align: left !important;
-          }
-          .subscription-package-card {
-            padding: 16px !important;
-          }
-          .subscription-package-features {
-            grid-template-columns: 1fr !important;
-          }
-
-          /* Subscription — payment history rows: stack as cards */
-          .sub-history-row {
-            grid-template-columns: 1fr auto !important;
-            grid-template-rows: auto auto !important;
-            gap: 4px 8px !important;
-            padding: 10px 12px !important;
-          }
-          /* date spans full width on mobile */
-          .sub-history-row > span:first-child {
-            grid-column: 1 / -1;
-            font-size: 10px !important;
-            color: #676582;
-          }
-          /* desc takes available space */
-          .sub-history-row > span:nth-child(2) {
-            font-size: 12px !important;
-            white-space: normal !important;
-          }
-          /* prompt count, amount, status in a tight row */
-          .sub-history-row > span:nth-child(3),
-          .sub-history-row > span:nth-child(4),
-          .sub-history-row > span:nth-child(5) {
-            font-size: 11px !important;
-          }
-        }
-
-        @media (max-width: 420px) {
-          .sub-packages-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes pulse-glow {
-          0%, 100% { box-shadow: 0 0 16px rgba(200,200,200,0.12), 0 4px 12px rgba(200,200,200,0.06); }
-          50% { box-shadow: 0 0 32px rgba(200,200,200,0.2), 0 4px 20px rgba(200,200,200,0.1); }
-        }
-        @keyframes ai-chip-glow {
-          0%, 100% { border-color: #2E2E46; background: #191926; }
-          50% { border-color: #383838; background: #242436; }
-        }
-        @keyframes progress-scan {
-          0% { width: 0%; margin-left: 0%; }
-          50% { width: 60%; margin-left: 20%; }
-          100% { width: 0%; margin-left: 100%; }
-        }
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.2; }
-        }
-        select option {
-          background: var(--card);
-          color: var(--text);
-        }
-        select:focus {
-          border-color: rgba(59,130,246,0.6) !important;
-          outline: none;
-        }
-      `}</style>
     </div>
   )
 }
