@@ -6,6 +6,21 @@ body,
   height: 100%;
 }
 
+/* The app is a full-screen layout: only inner areas scroll (chat, panels, pages).
+   Locking the document stops iPhone from panning it sideways or vertically,
+   e.g. towards the off-screen menu. */
+html,
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* No double-tap zoom on phones (pinch zoom still works): a quick second tap on a button
+   used to zoom the page in and push the header off-screen. */
+html {
+  touch-action: manipulation;
+}
+
 body {
   background-color: var(--bg);
   color: var(--text);

@@ -2,6 +2,8 @@
   position: relative;
   display: flex;
   height: 100vh;
+  /* Visible height on phones: 100vh there includes the area under the browser toolbars. */
+  height: 100dvh;
   background: var(--bg);
   color: var(--text);
   transition:
