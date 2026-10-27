@@ -1,89 +1,142 @@
 # Trading Prompt
 
-AI prompt builder for traders: pick an instrument, timeframes and history depth, and the service
-assembles a structured prompt with market data that can be pasted into any AI chat.
+Сборщик промптов для ИИ для трейдеров. Пользователь выбирает инструмент (валютную или криптопару),
+до трёх таймфреймов и глубину истории, при желании добавляет свою задачу — сервис собирает
+структурированный промпт с рыночными данными. Готовый промпт копируется или скачивается файлом
+и отправляется в любую нейросеть (ChatGPT, Claude, Gemini, DeepSeek и т.д.).
 
-React 19 + TypeScript + Vite. Plain CSS, no UI framework. Small PHP + MySQL API for accounts.
-Deployment is described in [DEPLOY.md](DEPLOY.md).
+- Сайт: https://tradingprompt.space
+- Предпросмотр (без входа в аккаунт): https://meshk0v.github.io/trading-prompt/
+- Хостинг, обновление сайта, API и база данных: [DEPLOY.md](DEPLOY.md)
 
-## Getting started
+## Что уже работает, а что — макет
 
-Requires Node 22 (see `.nvmrc`).
+| Работает                                                         | Только интерфейс, без сервера                          |
+| ---------------------------------------------------------------- | ------------------------------------------------------ |
+| Конструктор промпта, копирование и скачивание                    | Рыночные данные — демо (`src/data/mockMarketData.ts`)  |
+| Регистрация, вход, выход, профиль, смена пароля                  | Оплата и пополнение кредитов                           |
+| Список сессий и завершение сессий на других устройствах          | Статистика партнёрской программы                       |
+| Обучение (тур по интерфейсу): гостям — в браузере, вошедшим — в аккаунте | Обращения в поддержку                          |
+| Русский и английский языки                                       |                                                        |
+
+## Стек
+
+- React 19 + TypeScript + Vite 8
+- Обычный CSS (без Tailwind и UI-библиотек), `flag-icons` для флагов
+- Сервер: PHP 7.4+ (PDO) и MySQL/MariaDB — только аккаунты и сессии
+- Хостинг: Plesk, статические файлы + PHP
+
+## Быстрый старт
+
+Нужен Node 22 (см. `.nvmrc`); на Node 20 Vite не запускается.
 
 ```bash
 npm install
-npm run dev        # http://localhost:8443, /api is proxied to localhost:8090
+npm run dev        # http://localhost:8443, запросы /api проксируются на localhost:8090
 ```
 
-| Script               | What it does                                             |
-| -------------------- | -------------------------------------------------------- |
-| `npm run dev`        | Dev server with hot reload                               |
-| `npm run build`      | Type check + production build into `dist/`               |
-| `npm run preview`    | Serve the production build locally                       |
-| `npm run typecheck`  | TypeScript only                                          |
-| `npm run lint`       | ESLint                                                   |
-| `npm run format`     | Prettier                                                 |
-| `npm run i18n:check` | Strings without an English translation, unused entries   |
+Без PHP-сервера интерфейс работает полностью, кроме входа и регистрации. Как поднять PHP и базу
+локально — в [DEPLOY.md](DEPLOY.md#локальная-разработка).
 
-## Project structure
+| Команда              | Что делает                                                    |
+| -------------------- | ------------------------------------------------------------- |
+| `npm run dev`        | Сервер разработки с горячей перезагрузкой                     |
+| `npm run build`      | Проверка типов и сборка в `dist/`                             |
+| `npm run preview`    | Локальный просмотр собранной версии                           |
+| `npm run typecheck`  | Только проверка типов                                         |
+| `npm run lint`       | ESLint                                                        |
+| `npm run format`     | Prettier                                                      |
+| `npm run i18n:check` | Строки без английского перевода и неиспользуемые переводы     |
+
+Переменные окружения: `BASE_PATH` — сборка для подпапки (например, `/trading-prompt` для GitHub Pages),
+`API_PROXY` — другой адрес PHP API при разработке. Для хостинга собирать без `BASE_PATH`.
+
+## Структура
 
 ```
 src/
-├── main.tsx              entry point: global CSS + I18nProvider + App
-├── App.tsx               page state, prompt limit, layout of the main screen
-├── navigation.ts         page ids and links shared by the menu and footer
-├── types.ts              chat message types
-├── api/auth.ts           calls to the PHP API (login, register, profile, sessions)
+├── main.tsx              точка входа: глобальные стили, I18nProvider, App
+├── App.tsx               текущая страница, лимит промптов, раскладка главного экрана
+├── navigation.ts         страницы и ссылки, общие для меню и подвала
+├── types.ts              типы сообщений чата
+├── api/auth.ts           запросы к PHP API (вход, регистрация, профиль, сессии, обучение)
 ├── hooks/
-│   ├── usePromptBuilder.ts   state of the prompt builder form
-│   └── useChat.ts            chat messages and the typing greeting
-├── utils/                buildPrompt (prompt text), promptPdf (download), format
-├── data/                 static content: instruments, FAQ, legal texts, demo data
-├── i18n/                 translations (see below)
-├── styles/               reset, design tokens, global element styles
+│   ├── usePromptBuilder.ts   состояние формы конструктора
+│   ├── useChat.ts            сообщения чата и печатающееся приветствие
+│   └── useAutoScroll.ts      автопрокрутка карусели
+├── utils/                buildPrompt (текст промпта), promptPdf (скачивание), format
+├── data/                 статичные данные: инструменты, FAQ, правовые тексты, демо-данные
+├── i18n/                 переводы (см. ниже)
+├── styles/               сброс стилей, цветовые переменные, стили элементов
 ├── components/
-│   ├── layout/           AppHeader, MainMenu, PageFooter
-│   ├── chat/             chat feed, prompt result, prompt builder panel, mobile settings
-│   └── …                 shared pieces: modals, CustomSelect, SectionLayout, guide, icons
-└── pages/                one file per page; settings/ holds account, credits and prompt settings
-public/api/               PHP endpoints
-database/                 schema.sql, migrations, config template
-scripts/check-i18n.mjs    translation checker
+│   ├── layout/           шапка, главное меню, подвал
+│   ├── chat/             лента чата, готовый промпт, панель конструктора, настройки на телефоне
+│   └── …                 общие: модальные окна, CustomSelect, SectionLayout, обучение, иконки
+└── pages/                по файлу на страницу; settings/ — аккаунт, кредиты, настройки промпта
+public/api/               PHP-обработчики (при сборке копируются в dist/api/)
+database/                 schema.sql, миграции, шаблон конфига
+scripts/check-i18n.mjs    проверка переводов
 ```
 
-There is no router: `App.tsx` keeps the current page in state, and the chat stays mounted
-(hidden) on other pages so the conversation survives navigation.
+Роутера нет: `App.tsx` хранит текущую страницу в состоянии, а чат остаётся смонтированным (скрытым)
+на других страницах, чтобы разговор не терялся при переходах.
 
-## Styles
+## Стили
 
-- Every component has a `.css` file next to it with the same name, imported by the component.
-  Class names are prefixed with the component (`.prompt-panel`, `.prompt-panel__title`,
-  `.prompt-panel--collapsed`); state classes look like `.is-active`.
-- `src/styles/tokens.css` holds the whole palette as CSS variables (`--accent`, `--bg`, `--text`,
-  `--border` …). Use variables instead of hard-coded colors.
-- `src/styles/reset.css` is a browser reset inside `@layer reset`, so any component rule wins over it.
-- `src/styles/base.css` styles bare elements: body, form fields, scrollbars (`.scrollable`), animations.
-- Inline `style` is only used for values computed at runtime (widths, positions, CSS variables).
+- У каждого компонента рядом лежит свой `.css` с тем же именем, его импортирует сам компонент.
+  Классы начинаются с имени компонента (`.prompt-panel`, `.prompt-panel__title`,
+  `.prompt-panel--collapsed`), состояния — `.is-active`, `.is-open`.
+- `src/styles/tokens.css` — вся палитра в CSS-переменных (`--accent`, `--bg`, `--text`, `--border` …).
+  Цвета задаются только через них.
+- `src/styles/reset.css` — сброс стилей браузера в `@layer reset`, любое правило компонента сильнее.
+- `src/styles/base.css` — стили элементов: body, поля ввода, полосы прокрутки (`.scrollable`), анимации,
+  а также защита от приближения и сдвига страницы на iPhone.
+- Встроенный `style` — только для значений, вычисляемых при работе (ширины, позиции, CSS-переменные).
 
-## Translations
+## Переводы
 
-The interface is written in Russian; English lives in `src/i18n/en.ts`, keyed by the Russian text.
+Интерфейс написан на русском; английский лежит в `src/i18n/en.ts`, ключ — русский текст.
 
 ```tsx
 const { t, language } = useI18n()
-t('Собрать промпт')                       // → "Build prompt" in English
+t('Собрать промпт') // → "Build prompt" на английском
 t('Шаг {current} из {total}', { current: 1, total: 5 })
 ```
 
-- Strings stored in data files are marked with `tr('…')` and translated where they are rendered (`t(item.label)`).
-- Long texts that differ by language (legal pages, greetings) are stored as `{ ru, en }` objects.
-- After adding or changing text run `npm run i18n:check`: it lists strings that still need an English
-  translation and dictionary entries nobody uses any more.
+- Строки в файлах данных помечаются `tr('…')` и переводятся там, где выводятся (`t(item.label)`).
+- Длинные тексты, разные для языков (правовые страницы, приветствия), хранятся объектами `{ ru, en }`.
+- После добавления или изменения текста запустите `npm run i18n:check`: должно быть 0 строк без перевода
+  и 0 лишних. Prettier настроен с `quoteProps: "preserve"`, иначе ключи в `en.ts` теряют кавычки.
 
-## Backend
+## Сервер
 
-`public/api/*.php` (PHP 7.4+, PDO) is copied into `dist/api/` by the build. Accounts live in MySQL/MariaDB
-(`database/schema.sql`), sessions are stored in the database and identified by an HTTP-only cookie.
-The endpoint list and setup steps are in [DEPLOY.md](DEPLOY.md).
+`public/api/*.php` при сборке попадает в `dist/api/`. Аккаунты хранятся в MySQL/MariaDB
+(`database/schema.sql`), сессии — в базе, браузер получает HTTP-only cookie. Пароль от базы лежит
+в `tp-config.php` выше корня сайта и в репозиторий не попадает. Изменения базы оформляются
+миграциями в `database/migrations/` и одновременно вносятся в `schema.sql`.
 
-Market data in the generated prompt is currently demo data (`src/data/mockMarketData.ts`).
+Список обработчиков, устройство хостинга и порядок обновления — в [DEPLOY.md](DEPLOY.md).
+
+## Правки из Figma
+
+Дизайн изначально сделан в Figma Make, и правки в него можно вносить дальше. Код Figma
+(Tailwind, другой механизм переводов) напрямую не используется — изменения переносятся в этот
+код вручную, по смыслу.
+
+1. В Figma: File → Save local copy (полный файл `.make`, не «Partial file»).
+2. Историю кода Figma извлечь из `.make` в отдельный bare-репозиторий; последняя перенесённая версия
+   отмечена тегом `ported-to-our-code`.
+3. `git diff ported-to-our-code <новый коммит>` — только новые правки.
+4. Перенести их, закоммитить отдельно («Port Figma edits (…)») и передвинуть тег.
+
+## Перед коммитом
+
+```bash
+npx tsc --noEmit
+npx eslint .
+npx prettier --check .
+npm run i18n:check
+npm run build
+```
+
+Комментарии в коде и сообщения коммитов — на английском.
