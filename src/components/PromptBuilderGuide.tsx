@@ -212,12 +212,17 @@ export default function PromptBuilderGuide({
     const transitionTimer = setTimeout(updateTarget, 300)
     window.addEventListener('resize', updateTarget)
     window.addEventListener('scroll', updateTarget, true)
+    // Pinch zoom and panning on phones move the visual viewport without a window scroll or resize.
+    window.visualViewport?.addEventListener('resize', updateTarget)
+    window.visualViewport?.addEventListener('scroll', updateTarget)
     return () => {
       cancelAnimationFrame(frame)
       clearTimeout(transitionTimer)
       if (retryTimer) clearTimeout(retryTimer)
       window.removeEventListener('resize', updateTarget)
       window.removeEventListener('scroll', updateTarget, true)
+      window.visualViewport?.removeEventListener('resize', updateTarget)
+      window.visualViewport?.removeEventListener('scroll', updateTarget)
     }
   }, [active, menuOpen, mobileSettingsOpen, stepIndex, steps])
 
