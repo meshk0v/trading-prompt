@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type CSSProperties } from 'react'
-import { fetchCurrentUser, logout, type AuthUser } from './api/auth'
+import { completeGuide, fetchCurrentUser, logout, type AuthUser } from './api/auth'
 import AuthModal from './components/AuthModal'
 import ChatMessages from './components/chat/ChatMessages'
 import MobilePromptSettings from './components/chat/MobilePromptSettings'
@@ -75,6 +75,11 @@ export default function App() {
     setUser(authUser)
     setAuthOpen(false)
     setUserPromptsUsed(0)
+  }, [])
+
+  const handleGuideComplete = useCallback(() => {
+    setUser(current => (current ? { ...current, guideCompleted: true } : current))
+    completeGuide().catch(() => {})
   }, [])
 
   const handleLogout = useCallback(() => {
@@ -181,6 +186,8 @@ export default function App() {
 
       <PromptBuilderGuide
         isAuthenticated={Boolean(user)}
+        authGuideCompleted={Boolean(user?.guideCompleted)}
+        onAuthGuideComplete={handleGuideComplete}
         menuOpen={menuOpen}
         mobileSettingsOpen={mobileSettingsOpen}
         onOpenMenu={() => setMenuOpen(true)}

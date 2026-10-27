@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
   email         VARCHAR(255) NOT NULL,
   telegram      VARCHAR(64)  NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
+  guide_completed_at DATETIME NULL DEFAULT NULL, -- onboarding guide finished on any device
   created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY users_email_unique (email)

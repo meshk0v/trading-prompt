@@ -196,6 +196,7 @@ function public_user(array $row): array
         'name' => $row['name'],
         'email' => $row['email'],
         'telegram' => $row['telegram'],
+        'guideCompleted' => !empty($row['guide_completed_at']),
     ];
 }
 
@@ -205,7 +206,7 @@ function current_user(): ?array
     if (!$session) {
         return null;
     }
-    $stmt = db()->prepare('SELECT id, name, email, telegram FROM users WHERE id = ?');
+    $stmt = db()->prepare('SELECT id, name, email, telegram, guide_completed_at FROM users WHERE id = ?');
     $stmt->execute([$session['user_id']]);
     $row = $stmt->fetch();
     return $row ? public_user($row) : null;

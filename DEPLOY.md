@@ -43,6 +43,7 @@ All endpoints live under `/api/`, write endpoints accept only `POST` with a JSON
 | `password.php`  | `currentPassword, newPassword`                          | `{ ok }`, signs out other devices |
 | `sessions.php` (GET) | —                                                  | `{ ok, sessions }`      |
 | `session-revoke.php` | `id`                                               | `{ ok }`                |
+| `guide-complete.php` | `{}`                                              | `{ ok, user }`, onboarding guide will not show again on any device |
 
 Errors return `{ ok: false, error }` with an HTTP status. Login and password change are limited to 10 failed attempts per IP per 15 minutes.
 
@@ -51,6 +52,7 @@ Sessions are stored in `user_sessions`: the `tp_session` cookie holds a random t
 ## Database updates
 
 New installs import `database/schema.sql`. Existing databases apply the files in `database/migrations/` in order (phpMyAdmin → Import).
+Each migration is applied once; check `users` in phpMyAdmin if unsure (for example, `003` adds the `guide_completed_at` column).
 
 ## Local development
 

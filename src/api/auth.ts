@@ -3,6 +3,8 @@ export type AuthUser = {
   name: string
   email: string
   telegram: string
+  /** The onboarding guide was finished or skipped on some device. */
+  guideCompleted: boolean
 }
 
 export type RegisterData = {
@@ -69,6 +71,11 @@ export async function logout(): Promise<void> {
 
 export async function updateProfile(name: string): Promise<AuthUser> {
   return (await post<{ user: AuthUser }>('profile', { name })).user
+}
+
+/** Marks the onboarding guide as seen for this account. */
+export async function completeGuide(): Promise<AuthUser> {
+  return (await post<{ user: AuthUser }>('guide-complete')).user
 }
 
 export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
