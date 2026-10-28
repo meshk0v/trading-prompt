@@ -539,8 +539,8 @@ export const en: Record<string, string> = {
   'Пополнение баланса для создания готовых промптов': 'Top up your balance to build prompts',
 
   // Admin: site text editor
-  'Тексты сайта': 'Site texts',
-  'Изменения появляются на сайте сразу после сохранения': 'Changes appear on the site as soon as they are saved',
+  'Админка': 'Admin panel',
+  'Тексты сайта: изменения появляются сразу после сохранения': 'Site texts: changes appear as soon as they are saved',
   'Все тексты': 'All texts',
   'Шапка, меню и подвал': 'Header, menu and footer',
   'Чат и конструктор': 'Chat and prompt builder',

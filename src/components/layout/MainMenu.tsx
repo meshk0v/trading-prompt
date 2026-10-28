@@ -83,9 +83,7 @@ export default function MainMenu({
       action: () => onOpenPage('calendar'),
     },
     { id: 'legal', label: tr('Правовая информация'), icon: <DocumentIcon />, action: () => onOpenPage('legal') },
-    ...(isAdmin
-      ? [{ id: 'texts', label: tr('Тексты сайта'), icon: <TextsIcon />, action: () => onOpenPage('texts') }]
-      : []),
+    ...(isAdmin ? [{ id: 'texts', label: tr('Админка'), icon: <TextsIcon />, action: () => onOpenPage('texts') }] : []),
   ]
 
   const guestEntries: MenuEntry[] = [

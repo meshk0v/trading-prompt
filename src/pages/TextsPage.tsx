@@ -107,8 +107,8 @@ export default function TextsPage({ onClose }: { onClose: () => void }) {
             <path d="M3 3.5h10M3 8h10M3 12.5h6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
           </svg>
         }
-        title={t('Тексты сайта')}
-        description={t('Изменения появляются на сайте сразу после сохранения')}
+        title={t('Админка')}
+        description={t('Тексты сайта: изменения появляются сразу после сохранения')}
         onClose={onClose}
       />
 
