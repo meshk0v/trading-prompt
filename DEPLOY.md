@@ -49,7 +49,7 @@ tradingprompt.space/
 | `guide-complete.php` | `{}`                                             | `{ ok, user }`, обучение больше не покажется ни на одном устройстве |
 | `texts.php` (GET)    | —                                                | `{ ok, texts }` — тексты, изменённые в редакторе (публично)         |
 | `texts-save.php`     | `key, ru, en`                                    | `{ ok, text }`, только администраторы; пустые `ru` и `en` — удалить правку |
-| `market.php` (GET)   | `?pair=EUR/USD&timeframe=M1&limit=1440`          | `{ ok, symbol, price, bars }` — закрытые свечи `[время, O, H, L, C, объём]` |
+| `market.php` (GET)   | `?pair=EUR/USD&timeframe=M1&limit=1440`          | `{ ok, symbol, price, bars, current }` — свечи `[время, O, H, L, C, объём]`; `current` — последняя ещё формируется |
 | `calendar.php` (GET) | `?pair=EUR/USD`                                  | `{ ok, currencies, events }` — экономический календарь              |
 
 Ошибки возвращаются как `{ ok: false, error }` с HTTP-статусом. Вход и смена пароля ограничены 10 неудачными попытками с одного IP за 15 минут.

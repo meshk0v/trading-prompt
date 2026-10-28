@@ -17,7 +17,7 @@ if (!isset(TIMEFRAMES[$timeframe])) {
 $limit = max(1, min(MAX_BARS, $limit));
 
 try {
-    $bars = timeframe_bars($symbol, $timeframe, $limit);
+    $candles = timeframe_bars($symbol, $timeframe, $limit);
     $tick = biquote_get('/' . rawurlencode($symbol));
 } catch (RuntimeException $e) {
     error_log('market.php: ' . $e->getMessage());
@@ -38,5 +38,7 @@ respond(200, [
         'marketOpen' => ($tick['marketState'] ?? '') === 'open',
     ],
     // [time (unix seconds, candle open, UTC), open, high, low, close, tick volume], oldest first
-    'bars' => $bars,
+    'bars' => $candles['bars'],
+    // The last candle is still forming: its close is the current price.
+    'current' => $candles['current'],
 ]);

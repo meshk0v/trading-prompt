@@ -197,16 +197,17 @@ function biquote_request(string $path, array $query)
     return $data;
 }
 
-/** Closed candles from biquote, oldest first, as [time (unix seconds), open, high, low, close, tick volume]. */
+/**
+ * Candles from biquote as [time (unix seconds), open, high, low, close, tick volume]:
+ * 'closed' oldest first, and 'current' — the candle that is still forming (null when the market is closed).
+ */
 function fetch_bars(string $symbol, string $interval, int $limit = 1000): array
 {
     $data = biquote_get('/' . rawurlencode($symbol) . '/ohlc', ['interval' => $interval, 'limit' => $limit]);
     $bars = [];
+    $current = null;
     foreach ($data['bars'] ?? [] as $bar) {
-        if (!empty($bar['isOpen'])) {
-            continue;
-        }
-        $bars[] = [
+        $candle = [
             strtotime($bar['openTime']),
             (float) $bar['open'],
             (float) $bar['high'],
@@ -214,11 +215,16 @@ function fetch_bars(string $symbol, string $interval, int $limit = 1000): array
             (float) $bar['close'],
             (int) ($bar['tickVolume'] ?? 0),
         ];
+        if (!empty($bar['isOpen'])) {
+            $current = $candle;
+        } else {
+            $bars[] = $candle;
+        }
     }
     usort($bars, static function (array $a, array $b): int {
         return $a[0] <=> $b[0];
     });
-    return $bars;
+    return ['closed' => $bars, 'current' => $current];
 }
 
 // ── Our minute candles ──────────────────────────────────────────────────
@@ -259,7 +265,7 @@ function prune_minute_bars(string $symbol): void
 /** Fetches the minutes biquote has and we do not have yet (it keeps about 5 hours). */
 function collect_minute_bars(string $symbol): int
 {
-    return store_minute_bars($symbol, fetch_bars($symbol, '1m', 1000));
+    return store_minute_bars($symbol, fetch_bars($symbol, '1m', 1000)['closed']);
 }
 
 function load_minute_bars(string $symbol, int $limit): array
@@ -302,15 +308,18 @@ function bucket_end(int $start, $size): int
     return $start + $size;
 }
 
-/** Merges source candles into larger ones; a candle that has not closed yet is left out. */
-function aggregate_bars(array $bars, $size, int $sourceSeconds): array
+/**
+ * Merges source candles into larger ones. Returns the candles, the last one possibly still forming,
+ * and whether it is forming (it holds the current source candle, or its period has not ended yet).
+ */
+function aggregate_bars(array $closed, ?array $current, $size, int $sourceSeconds): array
 {
-    if (!$bars) {
-        return [];
+    $source = $current ? array_merge($closed, [$current]) : $closed;
+    if (!$source) {
+        return ['bars' => [], 'current' => false];
     }
-    $closedUntil = $bars[count($bars) - 1][0] + $sourceSeconds;
     $result = [];
-    foreach ($bars as $bar) {
+    foreach ($source as $bar) {
         $start = bucket_start($bar[0], $size);
         $last = count($result) - 1;
         if ($last >= 0 && $result[$last][0] === $start) {
@@ -322,30 +331,39 @@ function aggregate_bars(array $bars, $size, int $sourceSeconds): array
             $result[] = [$start, $bar[1], $bar[2], $bar[3], $bar[4], $bar[5]];
         }
     }
-    if (bucket_end($result[count($result) - 1][0], $size) > $closedUntil) {
-        array_pop($result);
-    }
-    return $result;
+    $lastClosedEnd = $closed ? $closed[count($closed) - 1][0] + $sourceSeconds : 0;
+    $forming = $current !== null || bucket_end($result[count($result) - 1][0], $size) > $lastClosedEnd;
+    return ['bars' => $result, 'current' => $forming];
 }
 
-/** Closed candles of a prompt builder timeframe, oldest first, at most $limit of them. */
+/**
+ * Candles of a prompt builder timeframe, oldest first, at most $limit of them, including the one
+ * that is still forming: 'current' tells whether the last candle is it.
+ */
 function timeframe_bars(string $symbol, string $timeframe, int $limit): array
 {
     [$source, $size] = TIMEFRAMES[$timeframe];
     if ($source === 'db') {
         // The latest minutes come straight from biquote, so the candles are fresh between collector runs.
-        collect_minute_bars($symbol);
+        $fresh = fetch_bars($symbol, '1m', 1000);
+        store_minute_bars($symbol, $fresh['closed']);
         $factor = intdiv($size, 60);
-        $bars = load_minute_bars($symbol, min(MINUTE_BARS_KEPT, $limit * $factor + $factor));
+        $closed = load_minute_bars($symbol, min(MINUTE_BARS_KEPT, $limit * $factor + $factor));
+        $current = $fresh['current'];
         $sourceSeconds = 60;
     } else {
-        $bars = fetch_bars($symbol, $source, 1000);
+        $fresh = fetch_bars($symbol, $source, 1000);
+        $closed = $fresh['closed'];
+        $current = $fresh['current'];
         $sourceSeconds = SOURCE_SECONDS[$source];
     }
     if ($size !== $sourceSeconds) {
-        $bars = aggregate_bars($bars, $size, $sourceSeconds);
+        $result = aggregate_bars($closed, $current, $size, $sourceSeconds);
+    } else {
+        $result = ['bars' => $current ? array_merge($closed, [$current]) : $closed, 'current' => $current !== null];
     }
-    return array_slice($bars, -$limit);
+    $result['bars'] = array_slice($result['bars'], -$limit);
+    return $result;
 }
 
 /** Currencies whose economic news move an instrument. */

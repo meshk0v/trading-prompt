@@ -8,8 +8,10 @@ export type MarketData = {
   symbol: string
   timeframe: string
   price: { value: number | null; time: number | null; marketOpen: boolean }
-  /** Closed candles, oldest first. */
+  /** Candles, oldest first. */
   bars: Bar[]
+  /** The last candle is still forming: its close is the current price. */
+  current: boolean
 }
 
 export type CalendarEvent = {

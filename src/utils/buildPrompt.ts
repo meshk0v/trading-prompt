@@ -1,6 +1,5 @@
 import { fetchCalendar, fetchMarketData, type Bar, type CalendarEvent, type MarketData } from '../api/market'
 import type { TranslationParams } from '../i18n/translate'
-import { MAX_BARS } from './format'
 import { calculateIndicators, type ValueKind } from './indicators'
 
 type Translate = (text: string, params?: TranslationParams) => string
@@ -20,6 +19,8 @@ export type PromptSettings = {
 
 /** Extra candles requested beyond the ones shown, so long indicators (SMA 200) are calculated correctly. */
 const INDICATOR_WARMUP = 200
+/** Most candles the server returns in one request. */
+const SERVER_MAX_BARS = 2000
 
 const formatTime = (seconds: number) => new Date(seconds * 1000).toISOString().slice(0, 16).replace('T', ' ')
 
@@ -45,7 +46,13 @@ function timeframeSection(data: MarketData, settings: PromptSettings, t: Transla
   const shown = bars.slice(-settings.priceHistory)
 
   const lines = [`=== ${t('Таймфрейм {timeframe}', { timeframe: data.timeframe })} ===`]
-  lines.push(t('Свечи: {count} (закрытые, от старых к новым).', { count: shown.length }))
+  lines.push(
+    data.current
+      ? t('Свечи: {count}, от старых к новым. Последняя ещё формируется, её Close — текущая цена.', {
+          count: shown.length,
+        })
+      : t('Свечи: {count}, от старых к новым, все закрыты.', { count: shown.length }),
+  )
   if (shown.length < settings.priceHistory) {
     lines.push(t('Запрошено {requested}, доступно {count}.', { requested: settings.priceHistory, count: shown.length }))
   }
@@ -114,7 +121,7 @@ const errorText = (error: unknown) => (error instanceof Error ? error.message : 
  * Throws when no timeframe has data (unknown instrument, data source down).
  */
 export async function buildPrompt(settings: PromptSettings, t: Translate): Promise<string> {
-  const limit = Math.min(MAX_BARS, Math.max(settings.priceHistory, settings.indicatorHistory) + INDICATOR_WARMUP)
+  const limit = Math.min(SERVER_MAX_BARS, Math.max(settings.priceHistory, settings.indicatorHistory) + INDICATOR_WARMUP)
   const [results, calendar] = await Promise.all([
     Promise.allSettled(settings.timeframes.map(timeframe => fetchMarketData(settings.pair, timeframe, limit))),
     settings.includeCalendar

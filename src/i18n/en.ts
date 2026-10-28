@@ -565,7 +565,9 @@ export const en: Record<string, string> = {
   'Загружаем рыночные данные…': 'Loading market data…',
   'Загружаем данные…': 'Loading data…',
   'Таймфрейм {timeframe}': 'Timeframe {timeframe}',
-  'Свечи: {count} (закрытые, от старых к новым).': 'Candles: {count} (closed, oldest to newest).',
+  'Свечи: {count}, от старых к новым. Последняя ещё формируется, её Close — текущая цена.':
+    'Candles: {count}, oldest to newest. The last one is still forming; its Close is the current price.',
+  'Свечи: {count}, от старых к новым, все закрыты.': 'Candles: {count}, oldest to newest, all closed.',
   'Запрошено {requested}, доступно {count}.': 'Requested {requested}, available {count}.',
   'Время': 'Time',
   'Индикаторы на последних {count} свечах:': 'Indicators on the last {count} candles:',
