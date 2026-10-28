@@ -43,7 +43,11 @@ export function useChat() {
     const startId = setTimeout(() => {
       let visibleChars = 0
       setIsTyping(false)
-      const show = () => setMessages([{ id: 'greeting', kind: 'greeting', greetingIndex, visibleChars, timestamp }])
+      // Updates only the greeting: a prompt or a notice may already follow it.
+      const show = () => {
+        const greeting: Message = { id: 'greeting', kind: 'greeting', greetingIndex, visibleChars, timestamp }
+        setMessages(previous => [greeting, ...previous.filter(message => message.id !== 'greeting')])
+      }
       show()
       intervalId = setInterval(() => {
         const length = fullLength()
@@ -68,5 +72,9 @@ export function useChat() {
     ])
   }
 
-  return { messages, isTyping, addPromptExchange }
+  const addNotice = (text: string) => {
+    setMessages(previous => [...previous, { id: `${Date.now()}-notice`, kind: 'notice', text, timestamp: new Date() }])
+  }
+
+  return { messages, isTyping, addPromptExchange, addNotice }
 }

@@ -13,8 +13,8 @@ export function usePromptBuilder(watchlist: string[]) {
   const [assetType, setAssetTypeState] = useState('Major')
   const [pair, setPair] = useState('EUR/USD')
   const [timeframes, setTimeframes] = useState<[string, string, string]>(['M5', '', ''])
-  const [priceHistory, setPriceHistory] = useState('1000')
-  const [indicatorHistory, setIndicatorHistory] = useState('1000')
+  const [priceHistory, setPriceHistory] = useState('1440')
+  const [indicatorHistory, setIndicatorHistory] = useState('30')
   const [purpose, setPurpose] = useState('')
 
   const instruments = instrumentsFor(assetType, watchlist)

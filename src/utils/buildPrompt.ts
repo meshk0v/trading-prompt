@@ -1,5 +1,7 @@
-import { buildCandles, generateFundamentals, generateIndicators, generateVolumeData } from '../data/mockMarketData'
+import { fetchCalendar, fetchMarketData, type Bar, type CalendarEvent, type MarketData } from '../api/market'
 import type { TranslationParams } from '../i18n/translate'
+import { MAX_BARS } from './format'
+import { calculateIndicators, type ValueKind } from './indicators'
 
 type Translate = (text: string, params?: TranslationParams) => string
 
@@ -10,57 +12,153 @@ export type PromptSettings = {
   priceHistory: number
   indicatorHistory: number
   purpose: string
+  /** Indicator ids enabled in the prompt settings. */
+  indicators: string[]
+  /** The economic calendar is enabled in the prompt settings. */
+  includeCalendar: boolean
 }
 
-/** Positive whole number from a text field, or the default when the input is invalid. */
-export function parseBarCount(value: string, fallback = 1000): number {
-  const number = Number(value)
-  return Number.isFinite(number) && number >= 1 ? Math.floor(number) : fallback
+/** Extra candles requested beyond the ones shown, so long indicators (SMA 200) are calculated correctly. */
+const INDICATOR_WARMUP = 200
+
+const formatTime = (seconds: number) => new Date(seconds * 1000).toISOString().slice(0, 16).replace('T', ' ')
+
+/** Decimal places the instrument is quoted with (5 for EUR/USD, 2 for BTC/USD). */
+function priceDigits(bars: Bar[]): number {
+  let digits = 0
+  for (const bar of bars.slice(-50)) {
+    for (const value of bar.slice(1, 5)) digits = Math.max(digits, (String(value).split('.')[1] ?? '').length)
+  }
+  return Math.min(digits, 8)
 }
 
-/** Builds the prompt text with sample (fictional) market data for the chosen instrument. */
-export function buildPrompt(settings: PromptSettings, t: Translate): string {
-  const { pair } = settings
-  const now = Date.now()
+function formatValue(value: number | null, kind: ValueKind, digits: number): string {
+  if (value === null) return '—'
+  if (kind === 'scale') return value.toFixed(2)
+  if (kind === 'count') return String(Math.round(value))
+  return value.toFixed(Math.min(kind === 'delta' ? digits + 1 : digits, 8))
+}
 
-  const indicators = generateIndicators('WAIT', pair)
-    .slice(0, 8)
-    .map(item => t('• {name} ({param}): {value}; оценка {signal}', { ...item }))
-  const candles = buildCandles('WAIT', now)
-    .slice(-6)
-    .map((item, index) =>
-      t('• Свеча {index}: O {o}, H {h}, L {l}, C {c}', {
-        index: index + 1,
-        o: item.o.toFixed(2),
-        h: item.h.toFixed(2),
-        l: item.l.toFixed(2),
-        c: item.c.toFixed(2),
-      }),
-    )
-  const volumes = generateVolumeData('WAIT', pair)
-    .slice(0, 5)
-    .map(item => t('• {exchange} / {instrument}: объём {volume}, изменение {change}', { ...item }))
-  const fundamentals = generateFundamentals('WAIT', pair)
-    .slice(0, 5)
-    .map(item =>
-      t('• {country}: {name} ({period}) — значение {actual}, прогноз {forecast}, ранее {previous}', { ...item }),
-    )
+function timeframeSection(data: MarketData, settings: PromptSettings, t: Translate): string {
+  const { bars } = data
+  const digits = priceDigits(bars)
+  const shown = bars.slice(-settings.priceHistory)
 
+  const lines = [`=== ${t('Таймфрейм {timeframe}', { timeframe: data.timeframe })} ===`]
+  lines.push(t('Свечи: {count} (закрытые, от старых к новым).', { count: shown.length }))
+  if (shown.length < settings.priceHistory) {
+    lines.push(t('Запрошено {requested}, доступно {count}.', { requested: settings.priceHistory, count: shown.length }))
+  }
+  lines.push(`${t('Время')};Open;High;Low;Close;Volume`)
+  for (const [time, open, high, low, close, volume] of shown) {
+    lines.push([formatTime(time), ...[open, high, low, close].map(v => v.toFixed(digits)), volume].join(';'))
+  }
+
+  if (settings.indicators.length > 0 && bars.length > 0) {
+    const count = Math.min(settings.indicatorHistory, bars.length)
+    const columns = calculateIndicators(bars, settings.indicators, count)
+    const ready = columns.filter(column => column.values.some(value => value !== null))
+    const missing = columns.filter(column => !ready.includes(column))
+
+    lines.push('', t('Индикаторы на последних {count} свечах:', { count }))
+    if (ready.length > 0) {
+      lines.push([t('Время'), ...ready.map(column => column.title)].join(';'))
+      bars.slice(-count).forEach(([time], row) => {
+        lines.push(
+          [formatTime(time), ...ready.map(column => formatValue(column.values[row], column.kind, digits))].join(';'),
+        )
+      })
+    }
+    if (missing.length > 0) {
+      lines.push(
+        t('Недостаточно свечей для расчёта: {names}.', { names: missing.map(column => column.title).join(', ') }),
+      )
+    }
+  }
+  return lines.join('\n')
+}
+
+function calendarSection(currencies: string[], events: CalendarEvent[], t: Translate): string {
+  const lines = [
+    `=== ${t('Экономический календарь')} ===`,
+    t('Валюты: {currencies}. Последние 2 дня и ближайшие 3 дня, события средней и высокой важности.', {
+      currencies: currencies.join(', '),
+    }),
+  ]
+  if (events.length === 0) return [...lines, t('Событий нет.')].join('\n')
+
+  const value = (number: number | null, unit: string) =>
+    number === null ? '—' : `${number}${unit === 'percent' ? '%' : ''}`
+  lines.push([t('Время'), t('Валюта'), t('Важность'), t('Событие'), t('Факт'), t('Прогноз'), t('Ранее')].join(';'))
+  for (const event of events) {
+    lines.push(
+      [
+        formatTime(event.time),
+        event.currency,
+        event.importance === 'high' ? t('высокая') : t('средняя'),
+        event.name,
+        value(event.actual, event.unit),
+        value(event.forecast, event.unit),
+        value(event.previous, event.unit),
+      ].join(';'),
+    )
+  }
+  return lines.join('\n')
+}
+
+const errorText = (error: unknown) => (error instanceof Error ? error.message : 'Ошибка сервера')
+
+/**
+ * Builds the prompt with market data from biquote.io: candles of every chosen timeframe,
+ * indicators from the prompt settings, the current price and the economic calendar.
+ * Throws when no timeframe has data (unknown instrument, data source down).
+ */
+export async function buildPrompt(settings: PromptSettings, t: Translate): Promise<string> {
+  const limit = Math.min(MAX_BARS, Math.max(settings.priceHistory, settings.indicatorHistory) + INDICATOR_WARMUP)
+  const [results, calendar] = await Promise.all([
+    Promise.allSettled(settings.timeframes.map(timeframe => fetchMarketData(settings.pair, timeframe, limit))),
+    settings.includeCalendar
+      ? fetchCalendar(settings.pair).then(
+          value => ({ value }),
+          (error: unknown) => ({ error }),
+        )
+      : null,
+  ])
+
+  const loaded = results.flatMap(result => (result.status === 'fulfilled' ? [result.value] : []))
+  if (loaded.length === 0) throw new Error(errorText((results[0] as PromiseRejectedResult).reason))
+
+  const { price } = loaded[0]
+  const digits = priceDigits(loaded[0].bars)
   const summary = [
-    t('Инструмент: {value}', { value: pair }),
+    t('Инструмент: {value}', { value: settings.pair }),
     t('Тип актива: {value}', { value: settings.assetType }),
     t('Таймфреймы: {value}', { value: settings.timeframes.join(', ') }),
-    t('История цены: {count} баров', { count: settings.priceHistory }),
-    t('История индикаторов: {count} баров', { count: settings.indicatorHistory }),
-  ].join('\n')
+  ]
+  if (price.value !== null && price.time !== null) {
+    summary.push(
+      t('Текущая цена: {price} ({time} UTC)', { price: price.value.toFixed(digits), time: formatTime(price.time) }) +
+        (price.marketOpen ? '' : `, ${t('рынок закрыт')}`),
+    )
+  }
+  summary.push(
+    t('Данные: biquote.io. Время — UTC, время свечи — её открытие. Volume — тиковый объём (число изменений цены).'),
+    t('Сформировано: {time} UTC', { time: formatTime(Date.now() / 1000) }),
+  )
+
+  const sections = results.map((result, index) =>
+    result.status === 'fulfilled'
+      ? timeframeSection(result.value, settings, t)
+      : `=== ${t('Таймфрейм {timeframe}', { timeframe: settings.timeframes[index] })} ===\n${t('Данные недоступны: {error}', { error: t(errorText(result.reason)) })}`,
+  )
+  if (calendar && 'error' in calendar) {
+    sections.push(
+      `=== ${t('Экономический календарь')} ===\n${t('Данные недоступны: {error}', { error: t(errorText(calendar.error)) })}`,
+    )
+  } else if (calendar) {
+    sections.push(calendarSection(calendar.value.currencies, calendar.value.events, t))
+  }
 
   const purpose = settings.purpose.trim()
-  return [
-    ...(purpose ? [purpose] : []),
-    summary,
-    `${t('Индикаторы (учебные, вымышленные):')}\n${indicators.join('\n')}`,
-    `${t('Свечи OHLC (учебные, вымышленные, условный индекс):')}\n${candles.join('\n')}`,
-    `${t('Объёмы (учебные, вымышленные):')}\n${volumes.join('\n')}`,
-    `${t('Фундаментальные показатели (учебные, вымышленные):')}\n${fundamentals.join('\n')}`,
-  ].join('\n\n')
+  return [...(purpose ? [purpose] : []), summary.join('\n'), ...sections].join('\n\n')
 }

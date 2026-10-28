@@ -1,5 +1,6 @@
 import { useEffect, useState, type Dispatch, type ReactElement, type SetStateAction } from 'react'
 import type { AuthUser } from '../../api/auth'
+import type { ToggleSet } from '../../hooks/useToggleSet'
 import PageHeader from '../../components/PageHeader'
 import { useI18n } from '../../i18n/context'
 import { tr } from '../../i18n/translate'
@@ -16,6 +17,8 @@ type SettingsPageProps = {
   onClose: () => void
   watchlist: string[]
   setWatchlist: Dispatch<SetStateAction<string[]>>
+  indicators: ToggleSet
+  fundamentals: ToggleSet
 }
 
 const SECTIONS: Record<SettingsSection, { title: string; description: string; icon: ReactElement }> = {
@@ -64,6 +67,8 @@ export default function SettingsPage({
   onClose,
   watchlist,
   setWatchlist,
+  indicators,
+  fundamentals,
 }: SettingsPageProps) {
   const { t } = useI18n()
   const [section, setSection] = useState<SettingsSection>(initialSection || 'account')
@@ -88,7 +93,12 @@ export default function SettingsPage({
 
       {section === 'prompt-settings' && (
         <div className="settings-page__panel settings-page__panel--prompt">
-          <PromptSettings watchlist={watchlist} setWatchlist={setWatchlist} />
+          <PromptSettings
+            watchlist={watchlist}
+            setWatchlist={setWatchlist}
+            indicators={indicators}
+            fundamentals={fundamentals}
+          />
         </div>
       )}
 

@@ -13,8 +13,9 @@ export default defineConfig({
     assetsInlineLimit: file => (file.endsWith('.svg') ? false : undefined),
     rolldownOptions: {
       output: {
-        // Keep third-party code in its own long-cached file.
-        codeSplitting: { groups: [{ name: 'vendor', test: /node_modules/ }] },
+        // Keep third-party code in its own long-cached file. The indicator library stays with
+        // buildPrompt, which is loaded only when a prompt is built.
+        codeSplitting: { groups: [{ name: 'vendor', test: /node_modules\/(?!trading-signals)/ }] },
       },
     },
   },

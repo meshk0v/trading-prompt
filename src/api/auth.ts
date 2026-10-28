@@ -27,11 +27,14 @@ export type UserSession = {
 
 const API_URL = `${import.meta.env.BASE_URL}api`
 
-export async function request<T>(endpoint: string, body?: object): Promise<T> {
+export async function request<T>(endpoint: string, body?: object, query?: Record<string, string | number>): Promise<T> {
+  const search = query
+    ? `?${new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]))}`
+    : ''
   let response: Response
   try {
     response = await fetch(
-      `${API_URL}/${endpoint}.php`,
+      `${API_URL}/${endpoint}.php${search}`,
       body === undefined
         ? { credentials: 'same-origin' }
         : {
@@ -46,7 +49,7 @@ export async function request<T>(endpoint: string, body?: object): Promise<T> {
   }
 
   const data = await response.json().catch(() => null)
-  if (!data) throw new Error('Сервер авторизации недоступен')
+  if (!data) throw new Error('Сервер недоступен')
   if (!response.ok || !data.ok) throw new Error(data.error || 'Ошибка сервера')
   return data as T
 }

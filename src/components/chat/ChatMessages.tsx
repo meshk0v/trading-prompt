@@ -61,10 +61,13 @@ export default function ChatMessages({ messages, isTyping, user, hidden }: ChatM
                     })}
                   />
                 )}
+                {message.kind === 'notice' && <MessageContent text={message.text} />}
                 {message.kind === 'prompt' && (
                   <>
                     <MessageContent
-                      text={t('Готовый учебный промпт. Скачайте PDF или скопируйте текст для выбранного вами ИИ:')}
+                      text={t(
+                        'Промпт с рыночными данными готов. Скопируйте текст или скачайте файл для выбранного вами ИИ:',
+                      )}
                     />
                     <PromptResult prompt={message.prompt} chart={message.chart} />
                   </>

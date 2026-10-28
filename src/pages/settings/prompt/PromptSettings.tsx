@@ -3,7 +3,7 @@ import SectionLayout, { type SectionItem } from '../../../components/SectionLayo
 import { useI18n } from '../../../i18n/context'
 import FundamentalsTab from './FundamentalsTab'
 import IndicatorsTab from './IndicatorsTab'
-import { useToggleSet } from './useToggleSet'
+import type { ToggleSet } from '../../../hooks/useToggleSet'
 import WatchlistTab from './WatchlistTab'
 import './PromptSettings.css'
 
@@ -12,15 +12,15 @@ type Tab = 'indicators' | 'fundamental' | 'watchlist'
 type PromptSettingsProps = {
   watchlist: string[]
   setWatchlist: Dispatch<SetStateAction<string[]>>
+  /** Enabled indicators and fundamentals; kept by App, so the prompt uses them. */
+  indicators: ToggleSet
+  fundamentals: ToggleSet
 }
 
 /** Which data goes into a prompt: indicators, fundamentals and the instrument watchlist. */
-export default function PromptSettings({ watchlist, setWatchlist }: PromptSettingsProps) {
+export default function PromptSettings({ watchlist, setWatchlist, indicators, fundamentals }: PromptSettingsProps) {
   const { t } = useI18n()
   const [tab, setTab] = useState<Tab>('indicators')
-  // Kept here so selections survive switching between tabs.
-  const indicators = useToggleSet()
-  const fundamentals = useToggleSet()
 
   const tabs: SectionItem<Tab>[] = [
     {

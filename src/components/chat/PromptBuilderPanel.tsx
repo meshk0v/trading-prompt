@@ -2,7 +2,7 @@ import { ASSET_TYPE_OPTIONS, TIMEFRAME_OPTIONS } from '../../data/instruments'
 import type { PromptBuilderState } from '../../hooks/usePromptBuilder'
 import { useI18n } from '../../i18n/context'
 import { tr } from '../../i18n/translate'
-import { parseBarCount } from '../../utils/buildPrompt'
+import { parseBarCount } from '../../utils/format'
 import CustomSelect from '../CustomSelect'
 import { BoltIcon, GearIcon, SparkleBoldIcon, SparkleIcon } from '../icons'
 import PairFlag from '../PairFlag'
@@ -17,6 +17,8 @@ type PromptBuilderPanelProps = {
   remainingPrompts: number
   promptLimit: number
   onGenerate: () => void
+  /** Market data for the prompt is loading. */
+  generating: boolean
   onOpenMobileSettings: () => void
 }
 
@@ -29,6 +31,7 @@ export default function PromptBuilderPanel({
   remainingPrompts,
   promptLimit,
   onGenerate,
+  generating,
   onOpenMobileSettings,
 }: PromptBuilderPanelProps) {
   const { t } = useI18n()
@@ -129,10 +132,11 @@ export default function PromptBuilderPanel({
               data-prompt-guide="create-prompt"
               type="button"
               onClick={onGenerate}
+              disabled={generating}
               className="prompt-builder__submit"
             >
               <SparkleBoldIcon />
-              {t('Собрать промпт')}
+              {generating ? t('Загружаем рыночные данные…') : t('Собрать промпт')}
             </button>
           </div>
 
@@ -152,10 +156,11 @@ export default function PromptBuilderPanel({
               data-prompt-guide="create-prompt"
               type="button"
               onClick={onGenerate}
+              disabled={generating}
               className="prompt-builder__mobile-submit"
             >
               <BoltIcon />
-              {t('Собрать промпт')}
+              {generating ? t('Загружаем данные…') : t('Собрать промпт')}
             </button>
           </div>
           <div className="prompt-builder__usage">

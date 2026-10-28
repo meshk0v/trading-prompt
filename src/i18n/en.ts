@@ -160,8 +160,6 @@ export const en: Record<string, string> = {
     'When the settings are ready, press this button and the system will build a prompt with all required data.',
   'После нажатия кнопки «Собрать промпт» в этом окне появится структурированный промпт с рыночными данными. Вы можете скопировать его или скачать в виде файла и отправить в любую удобную для вас нейросеть, чтобы получить прогноз.':
     'After you press “Build prompt”, a structured prompt with market data will appear here. You can copy it or download it as a file and send it to your preferred AI to receive a forecast.',
-  'Готовый учебный промпт. Скачайте PDF или скопируйте текст для выбранного вами ИИ:':
-    'Your sample prompt is ready. Download the PDF or copy the text for your preferred AI:',
   'Не удалось обработать PDF. Копирование PDF поддерживается не всеми браузерами; попробуйте скачать его.':
     'Could not process the PDF. PDF copying is not supported by every browser; try downloading it.',
   'Не удалось скопировать автоматически. Выделите текст промпта и скопируйте вручную.':
@@ -311,21 +309,9 @@ export const en: Record<string, string> = {
   'Копировать текст': 'Copy text',
   'Открыть {name} в новой вкладке': 'Open {name} in a new tab',
   'Навигация в подвале': 'Footer navigation',
-  '• {name} ({param}): {value}; оценка {signal}': '• {name} ({param}): {value}; rating {signal}',
-  '• Свеча {index}: O {o}, H {h}, L {l}, C {c}': '• Candle {index}: O {o}, H {h}, L {l}, C {c}',
-  '• {exchange} / {instrument}: объём {volume}, изменение {change}':
-    '• {exchange} / {instrument}: volume {volume}, change {change}',
-  '• {country}: {name} ({period}) — значение {actual}, прогноз {forecast}, ранее {previous}':
-    '• {country}: {name} ({period}) — actual {actual}, forecast {forecast}, previous {previous}',
   'Инструмент: {value}': 'Instrument: {value}',
   'Тип актива: {value}': 'Asset type: {value}',
   'Таймфреймы: {value}': 'Timeframes: {value}',
-  'История цены: {count} баров': 'Price history: {count} bars',
-  'История индикаторов: {count} баров': 'Indicator history: {count} bars',
-  'Индикаторы (учебные, вымышленные):': 'Indicators (educational, fictional):',
-  'Свечи OHLC (учебные, вымышленные, условный индекс):': 'OHLC candles (educational, fictional, notional index):',
-  'Объёмы (учебные, вымышленные):': 'Volumes (educational, fictional):',
-  'Фундаментальные показатели (учебные, вымышленные):': 'Fundamental indicators (educational, fictional):',
   'Укажите корректный email': 'Enter a valid email',
   'Пароль должен быть от 6 до 72 символов': 'The password must be 6 to 72 characters',
   'Пользователь с таким email уже зарегистрирован': 'A user with this email is already registered',
@@ -338,7 +324,7 @@ export const en: Record<string, string> = {
   'Войдите в аккаунт': 'Please sign in',
   'Чтобы завершить текущую сессию, выйдите из аккаунта': 'To end the current session, sign out',
   'Нет связи с сервером': 'No connection to the server',
-  'Сервер авторизации недоступен': 'The sign-in server is unavailable',
+  'Сервер недоступен': 'Server unavailable',
   'Ошибка сервера': 'Server error',
   'База данных недоступна': 'The database is unavailable',
   'Сервер не настроен': 'The server is not configured',
@@ -571,4 +557,38 @@ export const en: Record<string, string> = {
   'Недостаточно прав': 'Not enough permissions',
   'Некорректный текст': 'Invalid text',
   'Текст слишком длинный': 'The text is too long',
+
+  // Market data in the prompt
+  'Не удалось собрать промпт для {pair}: {reason}': 'Could not build the prompt for {pair}: {reason}',
+  'Промпт с рыночными данными готов. Скопируйте текст или скачайте файл для выбранного вами ИИ:':
+    'The prompt with market data is ready. Copy the text or download the file for the AI of your choice:',
+  'Загружаем рыночные данные…': 'Loading market data…',
+  'Загружаем данные…': 'Loading data…',
+  'Таймфрейм {timeframe}': 'Timeframe {timeframe}',
+  'Свечи: {count} (закрытые, от старых к новым).': 'Candles: {count} (closed, oldest to newest).',
+  'Запрошено {requested}, доступно {count}.': 'Requested {requested}, available {count}.',
+  'Время': 'Time',
+  'Индикаторы на последних {count} свечах:': 'Indicators on the last {count} candles:',
+  'Недостаточно свечей для расчёта: {names}.': 'Not enough candles to calculate: {names}.',
+  'Валюты: {currencies}. Последние 2 дня и ближайшие 3 дня, события средней и высокой важности.':
+    'Currencies: {currencies}. The last 2 days and the next 3 days, medium and high importance events.',
+  'Событий нет.': 'No events.',
+  'Валюта': 'Currency',
+  'Важность': 'Importance',
+  'Событие': 'Event',
+  'Факт': 'Actual',
+  'Прогноз': 'Forecast',
+  'Ранее': 'Previous',
+  'высокая': 'high',
+  'средняя': 'medium',
+  'Текущая цена: {price} ({time} UTC)': 'Current price: {price} ({time} UTC)',
+  'рынок закрыт': 'market closed',
+  'Данные: biquote.io. Время — UTC, время свечи — её открытие. Volume — тиковый объём (число изменений цены).':
+    "Data: biquote.io. Times are UTC; a candle's time is its open. Volume is tick volume (number of price changes).",
+  'Сформировано: {time} UTC': 'Generated: {time} UTC',
+  'Данные недоступны: {error}': 'Data unavailable: {error}',
+  'Для этого инструмента нет рыночных данных': 'No market data for this instrument',
+  'Неизвестный таймфрейм': 'Unknown timeframe',
+  'Источник рыночных данных недоступен. Попробуйте позже':
+    'The market data source is unavailable. Please try again later',
 }

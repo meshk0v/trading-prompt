@@ -10,7 +10,9 @@ import PageFooter from './components/layout/PageFooter'
 import LimitModal from './components/LimitModal'
 import PromptBuilderGuide from './components/PromptBuilderGuide'
 import { DEFAULT_WATCHLIST } from './data/instruments'
+import { INDICATOR_GROUPS } from './data/promptSettings'
 import { useChat } from './hooks/useChat'
+import { useToggleSet } from './hooks/useToggleSet'
 import { usePromptBuilder } from './hooks/usePromptBuilder'
 import { useI18n } from './i18n/context'
 import { LINKABLE_PAGES, type FaqCategoryFilter, type Page, type SettingsSection } from './navigation'
@@ -21,11 +23,13 @@ import LegalPage from './pages/LegalPage'
 import PublicAffiliatePage from './pages/PublicAffiliatePage'
 import SettingsPage from './pages/settings/SettingsPage'
 import SupportPage from './pages/SupportPage'
-import { buildPrompt, parseBarCount } from './utils/buildPrompt'
+import { parseBarCount } from './utils/format'
 import './App.css'
 
 // Only administrators open the text editor, so it is loaded on demand.
 const TextsPage = lazy(() => import('./pages/TextsPage'))
+
+const ALL_INDICATOR_IDS = INDICATOR_GROUPS.flatMap(group => group.indicators.map(indicator => indicator.id))
 
 /** Prompts available for free (guests, and signed-in users before buying credits). */
 const FREE_PROMPT_LIMIT = 3
@@ -47,7 +51,11 @@ export default function App() {
   const [watchlist, setWatchlist] = useState<string[]>(DEFAULT_WATCHLIST)
   const [panelWidth, setPanelWidth] = useState(400)
   const builder = usePromptBuilder(watchlist)
-  const { messages, isTyping, addPromptExchange } = useChat()
+  // Selected in the prompt settings; kept here so the prompt uses them.
+  const indicators = useToggleSet()
+  const fundamentals = useToggleSet()
+  const [generating, setGenerating] = useState(false)
+  const { messages, isTyping, addPromptExchange, addNotice } = useChat()
   const [guestPromptsUsed, setGuestPromptsUsed] = useState(0)
   const [userPromptsUsed, setUserPromptsUsed] = useState(0)
   const promptsUsed = user ? userPromptsUsed : guestPromptsUsed
@@ -90,29 +98,43 @@ export default function App() {
     logout().catch(() => {})
   }, [])
 
-  const handleGeneratePrompt = () => {
+  const handleGeneratePrompt = async () => {
+    if (generating) return
     if (promptsUsed >= FREE_PROMPT_LIMIT) {
       setLimitModal(user ? 'user' : 'guest')
       return
     }
 
-    const prompt = buildPrompt(
-      {
-        pair: builder.pair,
-        assetType: builder.assetType,
-        timeframes: builder.timeframes.filter(Boolean),
-        priceHistory: parseBarCount(builder.priceHistory),
-        indicatorHistory: parseBarCount(builder.indicatorHistory),
-        purpose: builder.purpose,
-      },
-      t,
-    )
-    addPromptExchange(prompt, { pair: builder.pair, timeframe: builder.timeframes[0] })
+    setGenerating(true)
+    try {
+      // Loaded on demand: the indicator library is only needed to build a prompt.
+      const { buildPrompt } = await import('./utils/buildPrompt')
+      const prompt = await buildPrompt(
+        {
+          pair: builder.pair,
+          assetType: builder.assetType,
+          timeframes: builder.timeframes.filter(Boolean),
+          priceHistory: parseBarCount(builder.priceHistory),
+          indicatorHistory: parseBarCount(builder.indicatorHistory, 30),
+          purpose: builder.purpose,
+          indicators: ALL_INDICATOR_IDS.filter(indicators.isOn),
+          includeCalendar: fundamentals.isOn('calendar'),
+        },
+        t,
+      )
+      addPromptExchange(prompt, { pair: builder.pair, timeframe: builder.timeframes[0] })
 
-    const used = promptsUsed + 1
-    if (user) setUserPromptsUsed(used)
-    else setGuestPromptsUsed(used)
-    if (used === FREE_PROMPT_LIMIT) setLimitModal(user ? 'user' : 'guest')
+      // Only a prompt that was actually built counts towards the free limit.
+      const used = promptsUsed + 1
+      if (user) setUserPromptsUsed(used)
+      else setGuestPromptsUsed(used)
+      if (used === FREE_PROMPT_LIMIT) setLimitModal(user ? 'user' : 'guest')
+    } catch (error) {
+      const reason = t(error instanceof Error ? error.message : 'Ошибка сервера')
+      addNotice(t('Не удалось собрать промпт для {pair}: {reason}', { pair: builder.pair, reason }))
+    } finally {
+      setGenerating(false)
+    }
   }
 
   const isChat = page === 'chat'
@@ -154,6 +176,8 @@ export default function App() {
             onClose={closePage}
             watchlist={watchlist}
             setWatchlist={setWatchlist}
+            indicators={indicators}
+            fundamentals={fundamentals}
           />
         )}
         {page === 'calendar' && <EconomicCalendarPage onClose={closePage} />}
@@ -186,6 +210,7 @@ export default function App() {
           remainingPrompts={remainingPrompts}
           promptLimit={FREE_PROMPT_LIMIT}
           onGenerate={handleGeneratePrompt}
+          generating={generating}
           onOpenMobileSettings={() => setMobileSettingsOpen(true)}
         />
 

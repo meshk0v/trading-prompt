@@ -1,4 +1,4 @@
--- Trading Prompt: users, sessions, login throttling and texts edited on the site.
+-- Trading Prompt: users, sessions, login throttling, texts edited on the site and collected market data.
 -- Import once via Plesk → Databases → phpMyAdmin → Import.
 
 CREATE TABLE IF NOT EXISTS users (
@@ -46,4 +46,16 @@ CREATE TABLE IF NOT EXISTS site_texts (
   updated_by INT UNSIGNED NULL,
   updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (key_hash)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Minute candles collected from biquote.io by api/_cron-collect.php (UTC); the newest 2000 per symbol are kept.
+CREATE TABLE IF NOT EXISTS market_candles (
+  symbol      VARCHAR(32)  NOT NULL,
+  open_time   DATETIME     NOT NULL,
+  open        DOUBLE       NOT NULL,
+  high        DOUBLE       NOT NULL,
+  low         DOUBLE       NOT NULL,
+  close       DOUBLE       NOT NULL,
+  tick_volume INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (symbol, open_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
