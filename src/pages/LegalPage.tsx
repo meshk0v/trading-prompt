@@ -4,7 +4,7 @@ import { useI18n } from '../i18n/context'
 import './LegalPage.css'
 
 export default function LegalPage({ onClose }: { onClose: () => void }) {
-  const { t, language } = useI18n()
+  const { t } = useI18n()
 
   return (
     <div className="legal-page message-fade scrollable">
@@ -32,14 +32,15 @@ export default function LegalPage({ onClose }: { onClose: () => void }) {
       />
 
       <div className="legal-page__content">
-        {LEGAL_DOCUMENTS[language].map(document => (
+        {/* Russian texts are the keys; English and texts changed in the admin come from t(). */}
+        {LEGAL_DOCUMENTS.ru.map(document => (
           <section key={document.title} className="legal-document">
-            <h2>{document.title}</h2>
+            <h2>{t(document.title)}</h2>
             <div className="legal-document__sections">
               {document.sections.map(section => (
                 <div key={section.heading}>
-                  <h3>{section.heading}</h3>
-                  <p>{section.text}</p>
+                  <h3>{t(section.heading)}</h3>
+                  <p>{t(section.text)}</p>
                 </div>
               ))}
             </div>

@@ -107,6 +107,19 @@ export const DocumentIcon = (props: IconProps) => (
   </svg>
 )
 
+export const TextsIcon = (props: IconProps) => (
+  <svg {...icon(props, '0 0 14 14', 15)}>
+    <path d="M2 3h10M2 7h10M2 11h6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <path
+      d="M10.5 9.5l1.5 1.5-1.5 1.5"
+      stroke="currentColor"
+      strokeWidth="1.1"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
 export const LogoutIcon = (props: IconProps) => (
   <svg {...icon(props, '0 0 14 14', 15)}>
     <path

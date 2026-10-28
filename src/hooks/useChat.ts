@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { GREETINGS } from '../data/greetings'
+import { useI18n } from '../i18n/context'
 import type { ChartRef, Message } from '../types'
 
 const GREETING_INDEX_KEY = 'trading_prompt_greeting_idx'
@@ -22,12 +23,19 @@ function nextGreetingIndex(): number {
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([])
   const [isTyping, setIsTyping] = useState(false)
+  // Read inside the typing timer, so a text changed by an administrator is typed to its end.
+  const { tIn } = useI18n()
+  const tInRef = useRef(tIn)
+  useEffect(() => {
+    tInRef.current = tIn
+  }, [tIn])
 
   // Show a "typing…" indicator, then reveal the greeting a few characters at a time.
   useEffect(() => {
     const greetingIndex = nextGreetingIndex()
+    const greeting = GREETINGS.ru[greetingIndex]
     // Type until the longest translation is complete, so switching language never cuts the text.
-    const length = Math.max(GREETINGS.ru[greetingIndex].length, GREETINGS.en[greetingIndex].length)
+    const fullLength = () => Math.max(tInRef.current('ru', greeting).length, tInRef.current('en', greeting).length)
     const timestamp = new Date()
     let intervalId: ReturnType<typeof setInterval> | undefined
 
@@ -38,6 +46,7 @@ export function useChat() {
       const show = () => setMessages([{ id: 'greeting', kind: 'greeting', greetingIndex, visibleChars, timestamp }])
       show()
       intervalId = setInterval(() => {
+        const length = fullLength()
         visibleChars = Math.min(length, visibleChars + CHARS_PER_STEP)
         show()
         if (visibleChars >= length && intervalId) clearInterval(intervalId)

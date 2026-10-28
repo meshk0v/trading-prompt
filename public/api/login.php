@@ -8,7 +8,7 @@ $password = (string) ($body['password'] ?? '');
 check_attempts();
 
 $pdo = db();
-$stmt = $pdo->prepare('SELECT id, name, email, telegram, guide_completed_at, password_hash FROM users WHERE email = ?');
+$stmt = $pdo->prepare('SELECT id, name, email, telegram, guide_completed_at, is_admin, password_hash FROM users WHERE email = ?');
 $stmt->execute([$email]);
 $user = $stmt->fetch();
 

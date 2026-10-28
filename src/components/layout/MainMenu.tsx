@@ -16,6 +16,7 @@ import {
   SettingsIcon,
   SignInIcon,
   SupportIcon,
+  TextsIcon,
   UserIcon,
 } from '../icons'
 import Logo from '../Logo'
@@ -25,6 +26,8 @@ type MainMenuProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   isAuthenticated: boolean
+  /** Administrators also get the site text editor. */
+  isAdmin: boolean
   remainingPrompts: number
   onOpenPage: (page: Page) => void
   onOpenSettings: (section: SettingsSection) => void
@@ -40,6 +43,7 @@ export default function MainMenu({
   open,
   onOpenChange,
   isAuthenticated,
+  isAdmin,
   remainingPrompts,
   onOpenPage,
   onOpenSettings,
@@ -79,6 +83,9 @@ export default function MainMenu({
       action: () => onOpenPage('calendar'),
     },
     { id: 'legal', label: tr('Правовая информация'), icon: <DocumentIcon />, action: () => onOpenPage('legal') },
+    ...(isAdmin
+      ? [{ id: 'texts', label: tr('Тексты сайта'), icon: <TextsIcon />, action: () => onOpenPage('texts') }]
+      : []),
   ]
 
   const guestEntries: MenuEntry[] = [

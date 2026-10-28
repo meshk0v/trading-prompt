@@ -1,5 +1,5 @@
 // Screens of the single-page app. "chat" is the prompt builder; the rest replace it while open.
-export type Page = 'chat' | 'affiliate' | 'legal' | 'support' | 'settings' | 'calendar' | 'faq'
+export type Page = 'chat' | 'affiliate' | 'legal' | 'support' | 'settings' | 'calendar' | 'faq' | 'texts'
 
 export type SettingsSection = 'account' | 'prompt-settings' | 'subscription'
 

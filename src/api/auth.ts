@@ -5,6 +5,8 @@ export type AuthUser = {
   telegram: string
   /** The onboarding guide was finished or skipped on some device. */
   guideCompleted: boolean
+  /** May edit site texts. */
+  isAdmin: boolean
 }
 
 export type RegisterData = {
@@ -25,7 +27,7 @@ export type UserSession = {
 
 const API_URL = `${import.meta.env.BASE_URL}api`
 
-async function request<T>(endpoint: string, body?: object): Promise<T> {
+export async function request<T>(endpoint: string, body?: object): Promise<T> {
   let response: Response
   try {
     response = await fetch(
@@ -49,7 +51,7 @@ async function request<T>(endpoint: string, body?: object): Promise<T> {
   return data as T
 }
 
-function post<T>(endpoint: string, body: object = {}): Promise<T> {
+export function post<T>(endpoint: string, body: object = {}): Promise<T> {
   return request<T>(endpoint, body)
 }
 

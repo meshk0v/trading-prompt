@@ -17,7 +17,7 @@ type ChatMessagesProps = {
 }
 
 export default function ChatMessages({ messages, isTyping, user, hidden }: ChatMessagesProps) {
-  const { t, language } = useI18n()
+  const { t } = useI18n()
   const bottomRef = useRef<HTMLDivElement>(null)
   const userName = user?.name || user?.email || t('Вы')
 
@@ -48,7 +48,7 @@ export default function ChatMessages({ messages, isTyping, user, hidden }: ChatM
 
                 {message.kind === 'greeting' && (
                   <MessageContent
-                    text={GREETINGS[language][message.greetingIndex].slice(0, message.visibleChars)}
+                    text={t(GREETINGS.ru[message.greetingIndex]).slice(0, message.visibleChars)}
                     muted
                     compactParagraphs
                   />

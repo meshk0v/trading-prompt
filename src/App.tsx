@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type CSSProperties } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState, type CSSProperties } from 'react'
 import { completeGuide, fetchCurrentUser, logout, type AuthUser } from './api/auth'
 import AuthModal from './components/AuthModal'
 import ChatMessages from './components/chat/ChatMessages'
@@ -23,6 +23,9 @@ import SettingsPage from './pages/settings/SettingsPage'
 import SupportPage from './pages/SupportPage'
 import { buildPrompt, parseBarCount } from './utils/buildPrompt'
 import './App.css'
+
+// Only administrators open the text editor, so it is loaded on demand.
+const TextsPage = lazy(() => import('./pages/TextsPage'))
 
 /** Prompts available for free (guests, and signed-in users before buying credits). */
 const FREE_PROMPT_LIMIT = 3
@@ -123,6 +126,7 @@ export default function App() {
         open={menuOpen}
         onOpenChange={setMenuOpen}
         isAuthenticated={Boolean(user)}
+        isAdmin={Boolean(user?.isAdmin)}
         remainingPrompts={remainingPrompts}
         onOpenPage={setPage}
         onOpenSettings={openSettings}
@@ -153,6 +157,11 @@ export default function App() {
           />
         )}
         {page === 'calendar' && <EconomicCalendarPage onClose={closePage} />}
+        {page === 'texts' && user?.isAdmin && (
+          <Suspense fallback={null}>
+            <TextsPage onClose={closePage} />
+          </Suspense>
+        )}
         {page === 'faq' && (
           <FaqPage
             initialCategory={faqCategory}

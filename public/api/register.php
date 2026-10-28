@@ -34,4 +34,4 @@ try {
 
 $id = (int) db()->lastInsertId();
 log_in($id);
-respond(201, ['ok' => true, 'user' => ['id' => $id, 'name' => $name, 'email' => $email, 'telegram' => $telegram, 'guideCompleted' => false]]);
+respond(201, ['ok' => true, 'user' => ['id' => $id, 'name' => $name, 'email' => $email, 'telegram' => $telegram, 'guideCompleted' => false, 'isAdmin' => false]]);
