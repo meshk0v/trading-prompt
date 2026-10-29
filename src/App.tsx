@@ -1,5 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useState, type CSSProperties } from 'react'
 import { completeGuide, fetchCurrentUser, logout, type AuthUser } from './api/auth'
+import { MARKET_DATA_ENABLED } from './api/market'
 import AuthModal from './components/AuthModal'
 import ChatMessages from './components/chat/ChatMessages'
 import MobilePromptSettings from './components/chat/MobilePromptSettings'
@@ -107,21 +108,20 @@ export default function App() {
 
     setGenerating(true)
     try {
+      const settings = {
+        pair: builder.pair,
+        assetType: builder.assetType,
+        timeframes: builder.timeframes.filter(Boolean),
+        priceHistory: parseBarCount(builder.priceHistory),
+        indicatorHistory: parseBarCount(builder.indicatorHistory, 30),
+        purpose: builder.purpose,
+        indicators: ALL_INDICATOR_IDS.filter(indicators.isOn),
+        includeCalendar: fundamentals.isOn('calendar'),
+      }
       // Loaded on demand: the indicator library is only needed to build a prompt.
-      const { buildPrompt } = await import('./utils/buildPrompt')
-      const prompt = await buildPrompt(
-        {
-          pair: builder.pair,
-          assetType: builder.assetType,
-          timeframes: builder.timeframes.filter(Boolean),
-          priceHistory: parseBarCount(builder.priceHistory),
-          indicatorHistory: parseBarCount(builder.indicatorHistory, 30),
-          purpose: builder.purpose,
-          indicators: ALL_INDICATOR_IDS.filter(indicators.isOn),
-          includeCalendar: fundamentals.isOn('calendar'),
-        },
-        t,
-      )
+      const prompt = MARKET_DATA_ENABLED
+        ? await (await import('./utils/buildPrompt')).buildPrompt(settings, t)
+        : (await import('./utils/buildDemoPrompt')).buildDemoPrompt(settings, t)
       addPromptExchange(prompt, { pair: builder.pair, timeframe: builder.timeframes[0] })
 
       // Only a prompt that was actually built counts towards the free limit.

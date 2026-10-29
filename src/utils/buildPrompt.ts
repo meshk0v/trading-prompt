@@ -2,7 +2,7 @@ import { fetchCalendar, fetchMarketData, type Bar, type CalendarEvent, type Mark
 import type { TranslationParams } from '../i18n/translate'
 import { calculateIndicators, type ValueKind } from './indicators'
 
-type Translate = (text: string, params?: TranslationParams) => string
+export type Translate = (text: string, params?: TranslationParams) => string
 
 export type PromptSettings = {
   pair: string
