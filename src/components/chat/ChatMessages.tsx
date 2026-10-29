@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import type { AuthUser } from '../../api/auth'
-import { MARKET_DATA_ENABLED } from '../../api/market'
 import { GREETINGS } from '../../data/greetings'
 import { useI18n } from '../../i18n/context'
 import type { Message } from '../../types'
@@ -66,13 +65,9 @@ export default function ChatMessages({ messages, isTyping, user, hidden }: ChatM
                 {message.kind === 'prompt' && (
                   <>
                     <MessageContent
-                      text={
-                        MARKET_DATA_ENABLED
-                          ? t(
-                              'Промпт с рыночными данными готов. Скопируйте текст или скачайте файл для выбранного вами ИИ:',
-                            )
-                          : t('Готовый учебный промпт. Скачайте PDF или скопируйте текст для выбранного вами ИИ:')
-                      }
+                      text={t(
+                        'Промпт с рыночными данными готов. Скопируйте текст или скачайте файл для выбранного вами ИИ:',
+                      )}
                     />
                     <PromptResult prompt={message.prompt} chart={message.chart} />
                   </>

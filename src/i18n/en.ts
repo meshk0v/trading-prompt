@@ -559,33 +559,17 @@ export const en: Record<string, string> = {
   'Текст слишком длинный': 'The text is too long',
 
   // Market data in the prompt
-  'Готовый учебный промпт. Скачайте PDF или скопируйте текст для выбранного вами ИИ:':
-    'Your sample prompt is ready. Download the PDF or copy the text for your preferred AI:',
-  '• {name} ({param}): {value}; оценка {signal}': '• {name} ({param}): {value}; rating {signal}',
-  '• Свеча {index}: O {o}, H {h}, L {l}, C {c}': '• Candle {index}: O {o}, H {h}, L {l}, C {c}',
-  '• {exchange} / {instrument}: объём {volume}, изменение {change}':
-    '• {exchange} / {instrument}: volume {volume}, change {change}',
-  '• {country}: {name} ({period}) — значение {actual}, прогноз {forecast}, ранее {previous}':
-    '• {country}: {name} ({period}) — actual {actual}, forecast {forecast}, previous {previous}',
-  'История цены: {count} баров': 'Price history: {count} bars',
-  'История индикаторов: {count} баров': 'Indicator history: {count} bars',
-  'Индикаторы (учебные, вымышленные):': 'Indicators (educational, fictional):',
-  'Свечи OHLC (учебные, вымышленные, условный индекс):': 'OHLC candles (educational, fictional, notional index):',
-  'Объёмы (учебные, вымышленные):': 'Volumes (educational, fictional):',
-  'Фундаментальные показатели (учебные, вымышленные):': 'Fundamental indicators (educational, fictional):',
+  'Недостаточно свечей для расчёта: {count}.': 'Not enough candles to calculate: {count}.',
+  'Котировки: последние {count} свечей, от старых к новым, volume — тиковый объём.':
+    'Quotes: last {count} candles, oldest to newest, volume is tick volume.',
   'Не удалось собрать промпт для {pair}: {reason}': 'Could not build the prompt for {pair}: {reason}',
   'Промпт с рыночными данными готов. Скопируйте текст или скачайте файл для выбранного вами ИИ:':
     'The prompt with market data is ready. Copy the text or download the file for the AI of your choice:',
   'Загружаем рыночные данные…': 'Loading market data…',
   'Загружаем данные…': 'Loading data…',
   'Таймфрейм {timeframe}': 'Timeframe {timeframe}',
-  'Свечи: {count}, от старых к новым. Последняя ещё формируется, её Close — текущая цена.':
-    'Candles: {count}, oldest to newest. The last one is still forming; its Close is the current price.',
-  'Свечи: {count}, от старых к новым, все закрыты.': 'Candles: {count}, oldest to newest, all closed.',
   'Запрошено {requested}, доступно {count}.': 'Requested {requested}, available {count}.',
   'Время': 'Time',
-  'Индикаторы на последних {count} свечах:': 'Indicators on the last {count} candles:',
-  'Недостаточно свечей для расчёта: {names}.': 'Not enough candles to calculate: {names}.',
   'Валюты: {currencies}. Последние 2 дня и ближайшие 3 дня, события средней и высокой важности.':
     'Currencies: {currencies}. The last 2 days and the next 3 days, medium and high importance events.',
   'Событий нет.': 'No events.',
@@ -597,8 +581,6 @@ export const en: Record<string, string> = {
   'Ранее': 'Previous',
   'высокая': 'high',
   'средняя': 'medium',
-  'Текущая цена: {price} ({time} UTC)': 'Current price: {price} ({time} UTC)',
-  'рынок закрыт': 'market closed',
   'Данные: biquote.io. Время — UTC, время свечи — её открытие. Volume — тиковый объём (число изменений цены).':
     "Data: biquote.io. Times are UTC; a candle's time is its open. Volume is tick volume (number of price changes).",
   'Сформировано: {time} UTC': 'Generated: {time} UTC',

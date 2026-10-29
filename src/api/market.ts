@@ -1,11 +1,5 @@
 import { request } from './auth'
 
-/**
- * Off: prompts carry sample (fictional) data from data/mockMarketData.ts instead of biquote.io.
- * The market API and the minute candle collector keep working either way.
- */
-export const MARKET_DATA_ENABLED = false
-
 /** [time (unix seconds, candle open, UTC), open, high, low, close, tick volume] */
 export type Bar = [number, number, number, number, number, number]
 

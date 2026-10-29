@@ -1,6 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState, type CSSProperties } from 'react'
 import { completeGuide, fetchCurrentUser, logout, type AuthUser } from './api/auth'
-import { MARKET_DATA_ENABLED } from './api/market'
 import AuthModal from './components/AuthModal'
 import ChatMessages from './components/chat/ChatMessages'
 import MobilePromptSettings from './components/chat/MobilePromptSettings'
@@ -36,7 +35,7 @@ const ALL_INDICATOR_IDS = INDICATOR_GROUPS.flatMap(group => group.indicators.map
 const FREE_PROMPT_LIMIT = 3
 
 export default function App() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const [user, setUser] = useState<AuthUser | null>(null)
 
   // Navigation
@@ -115,13 +114,13 @@ export default function App() {
         priceHistory: parseBarCount(builder.priceHistory),
         indicatorHistory: parseBarCount(builder.indicatorHistory, 30),
         purpose: builder.purpose,
+        language,
         indicators: ALL_INDICATOR_IDS.filter(indicators.isOn),
         includeCalendar: fundamentals.isOn('calendar'),
       }
-      // Loaded on demand: the indicator library is only needed to build a prompt.
-      const prompt = MARKET_DATA_ENABLED
-        ? await (await import('./utils/buildPrompt')).buildPrompt(settings, t)
-        : (await import('./utils/buildDemoPrompt')).buildDemoPrompt(settings, t)
+      // Loaded on demand: the levels library is only needed to build a prompt.
+      const { buildPrompt } = await import('./utils/buildPrompt')
+      const prompt = await buildPrompt(settings, t)
       addPromptExchange(prompt, { pair: builder.pair, timeframe: builder.timeframes[0] })
 
       // Only a prompt that was actually built counts towards the free limit.
