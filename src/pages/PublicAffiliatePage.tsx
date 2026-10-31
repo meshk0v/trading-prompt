@@ -10,9 +10,6 @@ type PublicAffiliatePageProps = {
   onSignUp: () => void
 }
 
-const MAX_DEPOSIT = 1000
-const { rewardPercent, payoutCurrency, payoutNetwork } = AFFILIATE_TERMS
-
 const BENEFITS = [
   { title: tr('Половина с каждого пополнения'), text: tr('Самая высокая доля, а не символический бонус') },
   { title: tr('Деньги сразу'), text: tr('Никаких выплатных дней и ожидания') },
@@ -70,14 +67,19 @@ const formatNumber = (value: number, maximumFractionDigits = 0) =>
 
 /** Public affiliate program page for guests: terms, steps, benefits and an income calculator. */
 export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffiliatePageProps) {
-  const { t } = useI18n()
+  const { t, terms } = useI18n()
+  const { rewardPercent, payoutCurrency, payoutNetwork, payoutFeePercent, maxClients, maxDeposit } = terms
   const howItWorksRef = useRef<HTMLElement>(null)
   const benefitsRef = useRef<HTMLElement>(null)
   const calculatorRef = useRef<HTMLElement>(null)
   const benefitsCarousel = useAutoScroll<HTMLDivElement>()
-  const [clients, setClients] = useState<number>(AFFILIATE_TERMS.defaultClients)
-  const [averageDeposit, setAverageDeposit] = useState<number>(AFFILIATE_TERMS.defaultDeposit)
-  const income = useMemo(() => clients * averageDeposit * AFFILIATE_TERMS.rewardRate, [clients, averageDeposit])
+  const [chosenClients, setClients] = useState<number>(AFFILIATE_TERMS.defaultClients)
+  const [chosenDeposit, setAverageDeposit] = useState<number>(AFFILIATE_TERMS.defaultDeposit)
+  // The limits can be lowered in the editor below what a visitor already chose.
+  const clients = Math.min(chosenClients, maxClients)
+  const averageDeposit = Math.min(chosenDeposit, maxDeposit)
+  const rewardRate = rewardPercent / 100
+  const income = useMemo(() => clients * averageDeposit * rewardRate, [clients, averageDeposit, rewardRate])
 
   const scrollTo = (ref: RefObject<HTMLElement | null>) => () =>
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -85,7 +87,7 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
   const termTiles = [
     { value: t('Мгновенно'), label: t('выплата на кошелёк') },
     { value: `${payoutCurrency} ${payoutNetwork}`, label: t('валюта выплат') },
-    { value: `${AFFILIATE_TERMS.payoutFeePercent}%`, label: t('комиссия за перевод') },
+    { value: `${payoutFeePercent}%`, label: t('комиссия за перевод') },
     { value: t('Повторно'), label: t('доход с новых пополнений') },
   ]
 
@@ -112,12 +114,9 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
       output: formatNumber(clients),
       value: clients,
       min: AFFILIATE_TERMS.minClients,
-      max: AFFILIATE_TERMS.maxClients,
+      max: maxClients,
       onChange: setClients,
-      scale: [
-        t('{count} клиент', { count: AFFILIATE_TERMS.minClients }),
-        t('{count} клиентов', { count: AFFILIATE_TERMS.maxClients }),
-      ],
+      scale: [t('{count} клиент', { count: AFFILIATE_TERMS.minClients }), t('{count} клиентов', { count: maxClients })],
     },
     {
       id: 'affiliate-deposit-range',
@@ -125,9 +124,9 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
       output: `$${formatNumber(averageDeposit)}`,
       value: averageDeposit,
       min: AFFILIATE_TERMS.minDeposit,
-      max: MAX_DEPOSIT,
+      max: maxDeposit,
       onChange: setAverageDeposit,
-      scale: [`$${AFFILIATE_TERMS.minDeposit}`, `$${formatNumber(MAX_DEPOSIT)}`],
+      scale: [`$${AFFILIATE_TERMS.minDeposit}`, `$${formatNumber(maxDeposit)}`],
     },
   ]
 
@@ -466,7 +465,7 @@ export default function PublicAffiliatePage({ onClose, onSignUp }: PublicAffilia
                       <strong>{t('Каждое пополнение приносит вам {percent}%', { percent: rewardPercent })}</strong>
                       {t('Например, с пополнения ${deposit} ваша комиссия — ${commission}.', {
                         deposit: formatNumber(averageDeposit),
-                        commission: formatNumber(averageDeposit * AFFILIATE_TERMS.rewardRate, 2),
+                        commission: formatNumber(averageDeposit * rewardRate, 2),
                       })}
                     </div>
                   </div>

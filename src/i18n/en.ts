@@ -402,8 +402,9 @@ export const en: Record<string, string> = {
   'Минимальная сумма вывода — нет (выплаты автоматические)': 'No minimum withdrawal (payouts are automatic)',
   'Комиссия за вывод от $0.01 до $2 в зависимости от сети (TRC20, ERC20, BEP20, Polygon)':
     'Withdrawal fee from $0.01 to $2 depending on the network (TRC20, ERC20, BEP20, Polygon)',
-  'Валюта выплат — USDT': 'Payout currency: USDT',
-  'Ваш реферальный доход — 50% от каждой оплаты реферала': 'Your referral income: 50% of every referral payment',
+  'Валюта выплат — {payoutCurrency}': 'Payout currency: {payoutCurrency}',
+  'Ваш реферальный доход — {rewardPercent}% от каждой оплаты реферала':
+    'Your referral income: {rewardPercent}% of every referral payment',
   'Стандартная ссылка': 'Default link',
   'Партнёры': 'Partners',
   'Средства': 'Funds',
@@ -415,7 +416,8 @@ export const en: Record<string, string> = {
   'за весь период': 'all time',
   'К выплате': 'To be paid',
   'доступно сейчас': 'available now',
-  'Приглашайте друзей и получайте 20% от их оплаты': 'Invite friends and get 20% of their payments',
+  'Приглашайте друзей и получайте {rewardPercent}% от их оплаты':
+    'Invite friends and get {rewardPercent}% of their payments',
   'Введите имя, например Telegram или YouTube': 'Enter a name, e.g. Telegram or YouTube',
   'Скопировано': 'Copied',
   'Копировать': 'Copy',
@@ -562,12 +564,31 @@ export const en: Record<string, string> = {
   'Недостаточно свечей для расчёта: {count}.': 'Not enough candles to calculate: {count}.',
   'Котировки: последние {count} свечей, от старых к новым, volume — тиковый объём.':
     'Quotes: last {count} candles, oldest to newest, volume is tick volume.',
-  'На USDT-кошелёк в сети TRC-20, который вы указываете в кабинете.':
-    'To the USDT wallet on the TRC-20 network that you specify in your account.',
-  'Да, 50% начисляется с каждого пополнения приглашённого.':
-    'Yes, 50% is credited for every top-up made by the person you invited.',
-  'Комиссия сервиса составляет 0%. При переводе может применяться комиссия сети.':
-    'The service fee is 0%. A network fee may apply to the transfer.',
+  'На {payoutCurrency}-кошелёк в сети {payoutNetwork}, который вы указываете в кабинете.':
+    'To the {payoutCurrency} wallet on the {payoutNetwork} network that you specify in your account.',
+  'Да, {rewardPercent}% начисляется с каждого пополнения приглашённого.':
+    'Yes, {rewardPercent}% is credited for every top-up made by the person you invited.',
+  'Комиссия сервиса составляет {payoutFeePercent}%. При переводе может применяться комиссия сети.':
+    'The service fee is {payoutFeePercent}%. A network fee may apply to the transfer.',
+  'Условия партнёрки': 'Affiliate terms',
+  'Вознаграждение партнёра, %': 'Partner reward, %',
+  'Доля от каждого пополнения реферала. Используется в калькуляторе дохода.':
+    'Share of every referral top-up. Used by the income calculator.',
+  'Комиссия сервиса за перевод, %': 'Service fee for a transfer, %',
+  'Показывается в условиях программы и в вопросах и ответах.': 'Shown in the program terms and in the FAQ.',
+  'Валюта выплат': 'Payout currency',
+  'Например, USDT.': 'For example, USDT.',
+  'Например, TRC-20.': 'For example, TRC-20.',
+  'Калькулятор: максимум приглашённых клиентов': 'Calculator: most invited clients',
+  'Правый край ползунка «Приглашённые клиенты».': 'The right end of the “Invited clients” slider.',
+  'Калькулятор: максимальное пополнение, $': 'Calculator: largest top-up, $',
+  'Правый край ползунка «Среднее пополнение».': 'The right end of the “Average top-up” slider.',
+  'Эти числа сайт подставляет в тексты, калькулятор и условия партнёрской программы. Измените значение один раз, и оно обновится везде. Пустое поле — вернётся значение по умолчанию.':
+    'The site puts these values into texts, the calculator and the affiliate program terms. Change a value once and it updates everywhere. An empty field brings back the default.',
+  'В любом тексте их можно вставить в фигурных скобках, например {rewardPercent}.':
+    'In any text you can insert them in curly braces, for example {rewardPercent}.',
+  'По умолчанию: {value}': 'Default: {value}',
+  'Вернуть по умолчанию': 'Reset to default',
   'Не удалось собрать промпт для {pair}: {reason}': 'Could not build the prompt for {pair}: {reason}',
   'Промпт с рыночными данными готов. Скопируйте текст или скачайте файл для выбранного вами ИИ:':
     'The prompt with market data is ready. Copy the text or download the file for the AI of your choice:',

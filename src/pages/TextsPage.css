@@ -373,3 +373,15 @@
     grid-template-columns: 1fr;
   }
 }
+
+.term-input {
+  max-width: 260px;
+  min-height: 0;
+  height: 38px;
+  padding: 0 11px;
+  line-height: normal;
+}
+
+.term-name {
+  text-transform: none;
+}

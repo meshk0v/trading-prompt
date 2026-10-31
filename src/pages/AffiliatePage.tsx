@@ -34,15 +34,14 @@ const DEMO_WITHDRAWALS = [
   { id: 'w2', date: '04.08.2026', amount: '$8.50', wallet: 'TRX···xQ8F', completed: false },
 ]
 
-const REWARD_SHARE = 0.2
 const REFERRAL_BASE_URL = 'https://binum.ai/ref/USR-48291'
 
 const PAYOUT_TERMS = [
   tr('Выплаты производятся автоматически в момент пополнения реферала'),
   tr('Минимальная сумма вывода — нет (выплаты автоматические)'),
   tr('Комиссия за вывод от $0.01 до $2 в зависимости от сети (TRC20, ERC20, BEP20, Polygon)'),
-  tr('Валюта выплат — USDT'),
-  tr('Ваш реферальный доход — 50% от каждой оплаты реферала'),
+  tr('Валюта выплат — {payoutCurrency}'),
+  tr('Ваш реферальный доход — {rewardPercent}% от каждой оплаты реферала'),
 ]
 
 const NETWORK_OPTIONS = [
@@ -86,7 +85,7 @@ function StatCard({ label, value, note, icon, accent }: StatCardProps) {
 
 /** Affiliate dashboard for signed-in users (demo data). */
 export default function AffiliatePage({ onClose }: { onClose: () => void }) {
-  const { t } = useI18n()
+  const { t, terms } = useI18n()
   const [section, setSection] = useState<Section>('partners')
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null)
   const [selectedLinkId, setSelectedLinkId] = useState('all')
@@ -261,7 +260,7 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
           </svg>
         }
         title={t('Партнёрская программа')}
-        description={t('Приглашайте друзей и получайте 20% от их оплаты')}
+        description={t('Приглашайте друзей и получайте {rewardPercent}% от их оплаты')}
         onClose={onClose}
       />
 
@@ -385,7 +384,7 @@ export default function AffiliatePage({ onClose }: { onClose: () => void }) {
                       <span className="affiliate-partner__name">{partner.name}</span>
                       <span>{partner.email}</span>
                       <span>{partner.date}</span>
-                      <span>{usd(partner.earned / REWARD_SHARE)}</span>
+                      <span>{usd(partner.earned / (terms.rewardPercent / 100))}</span>
                       <span className="affiliate-partner__earned">{usd(partner.earned)}</span>
                     </div>
                   ))}

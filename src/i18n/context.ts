@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import type { AffiliateTerms, TermName } from '../data/affiliate'
 import type { Language, TextOverride, TextOverrides, TranslationParams } from './translate'
 
 type I18nValue = {
@@ -12,6 +13,10 @@ type I18nValue = {
   overrides: TextOverrides
   /** Applies a saved change at once; `null` brings back the text from the code. */
   setOverride: (key: string, value: TextOverride | null) => void
+  /** Affiliate program terms; every text can use them as {rewardPercent}, {payoutCurrency}, … */
+  terms: AffiliateTerms
+  /** Applies a saved term at once; `null` brings back the default. */
+  setTerm: (name: TermName, value: string | null) => void
 }
 
 export const I18nContext = createContext<I18nValue | null>(null)

@@ -1,10 +1,12 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { saveText } from '../api/texts'
+import { TERM_FIELDS } from '../data/affiliate'
 import PageHeader from '../components/PageHeader'
 import { useI18n } from '../i18n/context'
 import { LONG_TEXTS } from '../i18n/dictionary'
 import textSections from '../i18n/textSections.json'
 import { defaultText, tr, type TextOverride } from '../i18n/translate'
+import TermsEditor from './TermsEditor'
 import './TextsPage.css'
 
 /** Parts of the site, in the order they are listed. Ids come from scripts/check-i18n.mjs. */
@@ -16,6 +18,7 @@ const SECTIONS = [
   { id: 'auth', label: tr('Вход, регистрация, лимит') },
   { id: 'faq', label: tr('Вопросы и ответы') },
   { id: 'affiliate', label: tr('Партнёрская программа') },
+  { id: 'terms', label: tr('Условия партнёрки') },
   { id: 'support', label: tr('Поддержка') },
   { id: 'calendar', label: tr('Экономический календарь') },
   { id: 'legal', label: tr('Правовая информация') },
@@ -33,6 +36,9 @@ type SectionId = (typeof SECTIONS)[number]['id']
 type TextEntry = { key: string; section: SectionId }
 
 const PAGE_SIZE = 40
+/** The section with numbers instead of texts. */
+const TERMS_SECTION = 'terms'
+const TERMS_COUNT = TERM_FIELDS.length
 const SECTION_ORDER = new Map<string, number>(SECTIONS.map((section, index) => [section.id, index]))
 
 /** Every editable text of the site, grouped by the part of the site it belongs to. */
@@ -73,7 +79,7 @@ export default function TextsPage({ onClose }: { onClose: () => void }) {
   const allEntries = useMemo(() => [...CATALOG, ...outdated], [outdated])
 
   const counts = useMemo(() => {
-    const result: Partial<Record<SectionId, number>> = { all: CATALOG.length }
+    const result: Partial<Record<SectionId, number>> = { all: CATALOG.length, [TERMS_SECTION]: TERMS_COUNT }
     for (const entry of allEntries) result[entry.section] = (result[entry.section] ?? 0) + 1
     return result
   }, [allEntries])
@@ -96,6 +102,21 @@ export default function TextsPage({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     setLimit(PAGE_SIZE)
   }, [section, query, changedOnly])
+
+  const sectionSelect = (
+    <select
+      className="texts-toolbar__section"
+      value={section}
+      onChange={event => setSection(event.target.value as SectionId)}
+      aria-label={t('Раздел сайта')}
+    >
+      {visibleSections.map(item => (
+        <option key={item.id} value={item.id}>
+          {t(item.label)} ({counts[item.id] ?? 0})
+        </option>
+      ))}
+    </select>
+  )
 
   const sectionLabel = (id: SectionId) => t(SECTIONS.find(item => item.id === id)?.label ?? '')
 
@@ -131,64 +152,70 @@ export default function TextsPage({ onClose }: { onClose: () => void }) {
 
         <div className="texts-page__scroll scrollable">
           <div className="texts-page__main">
-            <div className="texts-toolbar">
-              <label className="texts-toolbar__search">
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                  <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.4" />
-                  <path d="m12.2 12.2 3.3 3.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                </svg>
-                <input
-                  type="search"
-                  value={query}
-                  onChange={event => setQuery(event.target.value)}
-                  placeholder={t('Найти текст: вставьте кусок фразы с сайта')}
-                />
-              </label>
+            {section === TERMS_SECTION ? (
+              <>
+                <div className="texts-toolbar">{sectionSelect}</div>
+                <TermsEditor />
+              </>
+            ) : (
+              <>
+                <div className="texts-toolbar">
+                  <label className="texts-toolbar__search">
+                    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                      <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.4" />
+                      <path d="m12.2 12.2 3.3 3.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                    </svg>
+                    <input
+                      type="search"
+                      value={query}
+                      onChange={event => setQuery(event.target.value)}
+                      placeholder={t('Найти текст: вставьте кусок фразы с сайта')}
+                    />
+                  </label>
 
-              <select
-                className="texts-toolbar__section"
-                value={section}
-                onChange={event => setSection(event.target.value as SectionId)}
-                aria-label={t('Раздел сайта')}
-              >
-                {visibleSections.map(item => (
-                  <option key={item.id} value={item.id}>
-                    {t(item.label)} ({counts[item.id] ?? 0})
-                  </option>
-                ))}
-              </select>
+                  {sectionSelect}
 
-              <label className="texts-toolbar__toggle">
-                <input type="checkbox" checked={changedOnly} onChange={event => setChangedOnly(event.target.checked)} />
-                {t('Только изменённые ({count})', { count: changedCount })}
-              </label>
-            </div>
+                  <label className="texts-toolbar__toggle">
+                    <input
+                      type="checkbox"
+                      checked={changedOnly}
+                      onChange={event => setChangedOnly(event.target.checked)}
+                    />
+                    {t('Только изменённые ({count})', { count: changedCount })}
+                  </label>
+                </div>
 
-            <p className="texts-page__hint">
-              {t(
-                'У каждого текста два варианта: русский и английский. Пустое поле — вернётся исходный текст. Фрагменты в фигурных скобках, например {count}, сайт заменяет числами и именами — их нужно оставить. Сохранить: кнопка или Ctrl+Enter.',
-              )}
-            </p>
+                <p className="texts-page__hint">
+                  {t(
+                    'У каждого текста два варианта: русский и английский. Пустое поле — вернётся исходный текст. Фрагменты в фигурных скобках, например {count}, сайт заменяет числами и именами — их нужно оставить. Сохранить: кнопка или Ctrl+Enter.',
+                  )}
+                </p>
 
-            {filtered.length === 0 && <div className="texts-page__empty">{t('Ничего не найдено')}</div>}
+                {filtered.length === 0 && <div className="texts-page__empty">{t('Ничего не найдено')}</div>}
 
-            <div className="texts-list">
-              {filtered.slice(0, limit).map(entry => (
-                <TextEditor
-                  key={entry.key}
-                  textKey={entry.key}
-                  override={overrides[entry.key]}
-                  sectionLabel={section === 'all' || query ? sectionLabel(entry.section) : null}
-                  shared={entry.section === 'common'}
-                  outdated={entry.section === 'outdated'}
-                />
-              ))}
-            </div>
+                <div className="texts-list">
+                  {filtered.slice(0, limit).map(entry => (
+                    <TextEditor
+                      key={entry.key}
+                      textKey={entry.key}
+                      override={overrides[entry.key]}
+                      sectionLabel={section === 'all' || query ? sectionLabel(entry.section) : null}
+                      shared={entry.section === 'common'}
+                      outdated={entry.section === 'outdated'}
+                    />
+                  ))}
+                </div>
 
-            {filtered.length > limit && (
-              <button type="button" className="texts-page__more" onClick={() => setLimit(value => value + PAGE_SIZE)}>
-                {t('Показать ещё ({count})', { count: filtered.length - limit })}
-              </button>
+                {filtered.length > limit && (
+                  <button
+                    type="button"
+                    className="texts-page__more"
+                    onClick={() => setLimit(value => value + PAGE_SIZE)}
+                  >
+                    {t('Показать ещё ({count})', { count: filtered.length - limit })}
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

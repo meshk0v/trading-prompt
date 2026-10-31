@@ -47,8 +47,9 @@ tradingprompt.space/
 | `sessions.php` (GET) | —                                                | `{ ok, sessions }`                                                  |
 | `session-revoke.php` | `id`                                             | `{ ok }`                                                            |
 | `guide-complete.php` | `{}`                                             | `{ ok, user }`, обучение больше не покажется ни на одном устройстве |
-| `texts.php` (GET)    | —                                                | `{ ok, texts }` — тексты, изменённые в редакторе (публично)         |
+| `texts.php` (GET)    | —                                                | `{ ok, texts, terms }` — тексты и условия партнёрки, изменённые в редакторе (публично) |
 | `texts-save.php`     | `key, ru, en`                                    | `{ ok, text }`, только администраторы; пустые `ru` и `en` — удалить правку |
+| `terms-save.php`     | `name, value`                                    | `{ ok, name, value }`, только администраторы; условия партнёрской программы, пустое `value` — вернуть значение по умолчанию |
 | `market.php` (GET)   | `?pair=EUR/USD&timeframe=M1&limit=1440`          | `{ ok, symbol, price, bars, current }` — свечи `[время, O, H, L, C, объём]`; `current` — последняя ещё формируется |
 | `calendar.php` (GET) | `?pair=EUR/USD`                                  | `{ ok, currencies, events }` — экономический календарь              |
 
@@ -80,8 +81,8 @@ UPDATE users SET is_admin = 1 WHERE email = 'почта@администрато
 
 Снять права — то же с `is_admin = 0`. После назначения нужно выйти и войти снова (или обновить страницу).
 
-Изменённые тексты хранятся только в базе (таблица `site_texts`). Перед крупными правками и
-переездом хостинга делайте её копию: phpMyAdmin → `site_texts` → Экспорт.
+Изменённые тексты и условия партнёрки хранятся только в базе (таблицы `site_texts` и `site_settings`). Перед крупными правками и
+переездом хостинга делайте их копию: phpMyAdmin → `site_texts` и `site_settings` → Экспорт.
 
 ## Изменения базы данных
 

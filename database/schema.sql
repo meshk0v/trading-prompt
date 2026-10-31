@@ -59,3 +59,12 @@ CREATE TABLE IF NOT EXISTS market_candles (
   tick_volume INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (symbol, open_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Affiliate program terms changed by administrators; a missing row means "use the default from the code".
+CREATE TABLE IF NOT EXISTS site_settings (
+  name       VARCHAR(64)  NOT NULL,
+  value      VARCHAR(64)  NOT NULL,
+  updated_by INT UNSIGNED NULL,
+  updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
