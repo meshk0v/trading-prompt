@@ -562,6 +562,12 @@ export const en: Record<string, string> = {
   'Недостаточно свечей для расчёта: {count}.': 'Not enough candles to calculate: {count}.',
   'Котировки: последние {count} свечей, от старых к новым, volume — тиковый объём.':
     'Quotes: last {count} candles, oldest to newest, volume is tick volume.',
+  'На USDT-кошелёк в сети TRC-20, который вы указываете в кабинете.':
+    'To the USDT wallet on the TRC-20 network that you specify in your account.',
+  'Да, 50% начисляется с каждого пополнения приглашённого.':
+    'Yes, 50% is credited for every top-up made by the person you invited.',
+  'Комиссия сервиса составляет 0%. При переводе может применяться комиссия сети.':
+    'The service fee is 0%. A network fee may apply to the transfer.',
   'Не удалось собрать промпт для {pair}: {reason}': 'Could not build the prompt for {pair}: {reason}',
   'Промпт с рыночными данными готов. Скопируйте текст или скачайте файл для выбранного вами ИИ:':
     'The prompt with market data is ready. Copy the text or download the file for the AI of your choice:',

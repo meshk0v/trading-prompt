@@ -1,5 +1,3 @@
-import { AFFILIATE_TERMS } from './affiliate'
-
 export const FAQ_CATEGORIES = [
   'Начало работы',
   'Сигналы и AI',
@@ -134,19 +132,19 @@ export const FAQ_ITEMS: FaqItem[] = [
     id: 'affiliate-wallet',
     category: 'Партнёрская программа',
     question: 'Куда приходят выплаты?',
-    answer: `На ${AFFILIATE_TERMS.payoutCurrency}-кошелёк в сети ${AFFILIATE_TERMS.payoutNetwork}, который вы указываете в кабинете.`,
+    answer: 'На USDT-кошелёк в сети TRC-20, который вы указываете в кабинете.',
   },
   {
     id: 'affiliate-repeat',
     category: 'Партнёрская программа',
     question: 'Платят ли с повторных пополнений?',
-    answer: `Да, ${AFFILIATE_TERMS.rewardPercent}% начисляется с каждого пополнения приглашённого.`,
+    answer: 'Да, 50% начисляется с каждого пополнения приглашённого.',
   },
   {
     id: 'affiliate-fee',
     category: 'Партнёрская программа',
     question: 'Есть ли комиссия?',
-    answer: `Комиссия сервиса составляет ${AFFILIATE_TERMS.payoutFeePercent}%. При переводе может применяться комиссия сети.`,
+    answer: 'Комиссия сервиса составляет 0%. При переводе может применяться комиссия сети.',
   },
   {
     id: 'affiliate-refund',
