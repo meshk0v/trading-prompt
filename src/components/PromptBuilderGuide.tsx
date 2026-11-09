@@ -1,15 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useI18n } from '../i18n/context'
-import { tr } from '../i18n/translate'
-import './PromptBuilderGuide.css'
 
 type PromptBuilderGuideProps = {
   isAuthenticated: boolean
-  /** Signed-in users: the guide was already finished on some device (stored in the database). */
-  authGuideCompleted: boolean
-  /** Called when a signed-in user finishes or skips the guide. */
-  onAuthGuideComplete: () => void
   menuOpen: boolean
   mobileSettingsOpen: boolean
   onOpenMenu: () => void
@@ -25,85 +18,90 @@ type GuideStep = {
   beforeEnter?: 'open-settings' | 'close-settings' | 'open-menu' | 'close-menu'
 }
 
-const GUEST_GUIDE_STORAGE_KEY = 'trading-prompt-builder-guide-guest-v3'
-/** Older builds remembered the signed-in guide in the browser; such a mark is moved to the account once. */
-const LEGACY_AUTH_GUIDE_STORAGE_KEY = 'trading-prompt-builder-guide-auth-v1'
-
-/** localStorage can throw (private mode, blocked storage). */
-function readStorage(key: string): boolean {
-  try {
-    return Boolean(localStorage.getItem(key))
-  } catch {
-    return false
-  }
-}
+const GUEST_GUIDE_STORAGE_KEY = 'trading-prompt-builder-guide-guest-v4'
+const AUTH_GUIDE_STORAGE_KEY = 'trading-prompt-builder-guide-auth-v2'
 
 const FIELD_STEPS: GuideStep[] = [
   {
+    target: 'asset-search',
+    title: 'Быстрый поиск актива',
+    description: 'Введите тикер или название типа инструмента. Поиск покажет совпадения сразу по всем категориям и при выборе сам переключит нужный тип актива.',
+  },
+  {
     target: 'asset-type',
-    title: tr('Тип инструмента'),
-    description: tr('Выберите тип инструмента. Доступны валютные и криптопары.'),
+    title: 'Тип инструмента',
+    description: 'Выберите рынок: валюты, криптовалюты, акции, индексы, металлы, сырьё или другой доступный тип. От него зависят список инструментов и источник рыночных данных.',
   },
   {
     target: 'currency-pair',
-    title: tr('Инструмент'),
-    description: tr('Выберите инструмент из списка. Сбор промпта будет произведён по выбранному вами инструменту.'),
+    title: 'Инструмент',
+    description: 'Выберите конкретный актив для анализа. Все свечи, уровни, индикаторы, календарь и итоговый промпт будут рассчитаны именно для него.',
   },
   {
     target: 'bar-count',
-    title: tr('Объём данных в промпте'),
-    description: tr('Отдельно задайте глубину истории цены и индикаторов, затем выберите до трёх таймфреймов.'),
+    title: 'Баров в промпте',
+    description: 'Укажите от 0 до 100 последних свечей, которые нужно добавить в табличную часть промпта. Чем больше значение, тем подробнее контекст, но тем длиннее готовый промпт.',
   },
   {
     target: 'timeframe-1',
-    title: tr('Основной таймфрейм'),
-    description: tr('Главный период графика, который обязательно попадёт в готовый промпт.'),
+    title: 'Основной таймфрейм',
+    description: 'Обязательный рабочий период. По нему строятся основной график, уровни и индикаторы. Например, 15m подходит для внутридневного анализа, а 4h — для более широкого контекста.',
   },
   {
     target: 'timeframe-2',
-    title: tr('Дополнительный таймфрейм'),
-    description: tr('Необязательный период для сравнения движения цены на другом масштабе.'),
+    title: 'Второй таймфрейм',
+    description: 'Необязательный период для подтверждения тренда и уровней на другом масштабе. Оставьте поле пустым, если мультифреймовый анализ не нужен.',
   },
   {
     target: 'timeframe-3',
-    title: tr('Третий таймфрейм'),
-    description: tr('Ещё один необязательный период для расширенного мультифреймового контекста.'),
+    title: 'Третий таймфрейм',
+    description: 'Ещё один необязательный период. Используйте его, когда нужен контекст сразу на трёх масштабах, например 15m, 1h и 4h.',
   },
   {
     target: 'prompt-purpose',
-    title: tr('Дополнение к промпту'),
-    description: tr(
-      'В это поле можно заранее ввести начало промпта или добавить собственную задачу, сценарий, уровни, риски и желаемый формат ответа. Текст будет размещён в начале готового промпта. Например: «Сделай прогноз, куда цена пойдёт в ближайший час».',
-    ),
+    title: 'Дополнение к промпту',
+    description: 'Добавьте собственную задачу: горизонт прогноза, сценарий, интересующие уровни, допустимый риск или желаемый формат ответа. Например: «Оцени вероятность роста или падения в ближайший час». Поле можно оставить пустым.',
+  },
+  {
+    target: 'analysis-settings',
+    title: 'Настройки состава промпта',
+    description: 'Здесь настраивается содержание анализа. Ниже собраны уровни, основные и дополнительные индикаторы, рыночные данные и колонки таблицы свечей.',
+  },
+  {
+    target: 'analysis-blocks',
+    title: 'Блоки, уровни и индикаторы',
+    description: 'Галочка у каждого пункта определяет, попадёт ли он в готовый промпт. Под названием есть краткое описание расчёта. Отключайте лишнее, чтобы сделать результат короче и сфокусированнее.',
+  },
+  {
+    target: 'chart-visibility',
+    title: 'Отображение на графике',
+    description: 'Этот отдельный переключатель управляет только визуализацией показателя на графике. Он не исключает показатель из промпта: за содержание отвечает основная галочка выше.',
   },
 ]
 
 const CREATE_PROMPT_STEP: GuideStep = {
   target: 'create-prompt',
-  title: tr('Собрать промпт'),
-  description: tr('Когда параметры готовы, нажмите эту кнопку — система соберёт промпт со всеми необходимыми данными.'),
+  title: 'Собрать промпт',
+  description: 'Когда параметры готовы, нажмите кнопку. Сервис загрузит актуальные рыночные данные, рассчитает выбранные показатели и одновременно сформирует две версии результата.',
 }
 
 const READY_PROMPT_STEP: GuideStep = {
   target: 'prompt-result',
-  title: tr('Готовый промпт'),
-  description: tr(
-    'После нажатия кнопки «Собрать промпт» в этом окне появится структурированный промпт с рыночными данными. Вы можете скопировать его или скачать в виде файла и отправить в любую удобную для вас нейросеть, чтобы получить прогноз.',
-  ),
+  title: 'Два формата результата',
+  description: 'В «Для пользователя» появится читаемый отчёт с графиком, а в «Для ИИ» — компактный TP1-промпт. На телефоне переключайтесь между ними вкладками. Оба результата можно скопировать или скачать в CSV и TXT.',
 }
 
 function findVisibleTarget(target: string) {
-  return Array.from(document.querySelectorAll<HTMLElement>(`[data-prompt-guide="${target}"]`)).find(element => {
-    const rect = element.getBoundingClientRect()
-    const style = window.getComputedStyle(element)
-    return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden'
-  })
+  return Array.from(document.querySelectorAll<HTMLElement>(`[data-prompt-guide="${target}"]`))
+    .find(element => {
+      const rect = element.getBoundingClientRect()
+      const style = window.getComputedStyle(element)
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden'
+    })
 }
 
 export default function PromptBuilderGuide({
   isAuthenticated,
-  authGuideCompleted,
-  onAuthGuideComplete,
   menuOpen,
   mobileSettingsOpen,
   onOpenMenu,
@@ -111,7 +109,6 @@ export default function PromptBuilderGuide({
   onOpenMobileSettings,
   onCloseMobileSettings,
 }: PromptBuilderGuideProps) {
-  const { t } = useI18n()
   const [active, setActive] = useState(false)
   const [stepIndex, setStepIndex] = useState(0)
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
@@ -123,38 +120,34 @@ export default function PromptBuilderGuide({
     const menuSteps: GuideStep[] = [
       {
         target: 'main-menu',
-        title: tr('Кнопка меню'),
+        title: 'Кнопка меню',
         description: isAuthenticated
-          ? tr('Откройте меню, чтобы перейти к аккаунту, кредитам, настройкам и другим разделам сервиса.')
-          : tr('Откройте меню, чтобы войти в аккаунт и перейти к дополнительным разделам сайта.'),
+          ? 'Откройте меню, чтобы перейти к аккаунту, кредитам и другим разделам сервиса.'
+          : 'Откройте меню, чтобы войти в аккаунт и перейти к дополнительным разделам сайта.',
       },
       {
         target: isAuthenticated ? 'authorized-menu-items' : 'guest-menu-items',
-        title: isAuthenticated ? tr('Меню пользователя') : tr('Разделы сайта'),
+        title: isAuthenticated ? 'Меню пользователя' : 'Разделы сайта',
         description: isAuthenticated
-          ? tr(
-              'Здесь находятся аккаунт, кредиты, настройки промпта, партнёрская программа, поддержка, календарь и другие разделы.',
-            )
-          : tr(
-              'Здесь можно войти, открыть ссылки на нейросети, партнёрскую программу, ответы на вопросы и правовую информацию.',
-            ),
+          ? 'Здесь находятся аккаунт, кредиты, партнёрская программа, поддержка, календарь и другие разделы.'
+          : 'Здесь можно войти, открыть ссылки на нейросети, партнёрскую программу, ответы на вопросы и правовую информацию.',
         beforeEnter: 'open-menu',
       },
     ]
 
     const builderSteps: GuideStep[] = isMobile
       ? [
-          {
-            target: 'mobile-settings',
-            title: tr('Настройки конструктора'),
-            description: tr('Все параметры промпта находятся здесь. Нажмите «Далее», и мы откроем настройки.'),
-          },
-          { ...FIELD_STEPS[0], beforeEnter: 'open-settings' },
-          ...FIELD_STEPS.slice(1),
-          { ...CREATE_PROMPT_STEP, beforeEnter: 'close-settings' },
-          READY_PROMPT_STEP,
-        ]
-      : [...FIELD_STEPS, CREATE_PROMPT_STEP, READY_PROMPT_STEP]
+        { target: 'mobile-settings', title: 'Настройки конструктора', description: 'Все параметры промпта находятся здесь. Нажмите «Далее», и мы откроем настройки.', },
+        { ...FIELD_STEPS[0], beforeEnter: 'open-settings' },
+        ...FIELD_STEPS.slice(1),
+        { ...CREATE_PROMPT_STEP, beforeEnter: 'close-settings' },
+        READY_PROMPT_STEP,
+      ]
+    : [
+        ...FIELD_STEPS,
+        CREATE_PROMPT_STEP,
+        READY_PROMPT_STEP,
+      ]
 
     if (builderSteps[0]) {
       builderSteps[0] = { ...builderSteps[0], beforeEnter: 'close-menu' }
@@ -173,25 +166,27 @@ export default function PromptBuilderGuide({
     }
   }, [])
 
-  // Guests: remembered in this browser. Signed-in users: remembered in their account.
   useEffect(() => {
-    if (isAuthenticated) {
-      if (authGuideCompleted) return
-      if (readStorage(LEGACY_AUTH_GUIDE_STORAGE_KEY)) {
-        onAuthGuideComplete()
-        return
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const storageKey = isAuthenticated ? AUTH_GUIDE_STORAGE_KEY : GUEST_GUIDE_STORAGE_KEY
+    try {
+      if (!localStorage.getItem(storageKey)) {
+        timer = setTimeout(() => {
+          setStepIndex(0)
+          setTargetRect(null)
+          setActive(true)
+        }, 650)
       }
-    } else if (readStorage(GUEST_GUIDE_STORAGE_KEY)) {
-      return
+    } catch {
+      timer = setTimeout(() => {
+        setStepIndex(0)
+        setTargetRect(null)
+        setActive(true)
+      }, 650)
     }
 
-    const timer = setTimeout(() => {
-      setStepIndex(0)
-      setTargetRect(null)
-      setActive(true)
-    }, 650)
-    return () => clearTimeout(timer)
-  }, [isAuthenticated, authGuideCompleted, onAuthGuideComplete])
+    return () => { if (timer) clearTimeout(timer) }
+  }, [isAuthenticated])
 
   useLayoutEffect(() => {
     if (!active) return
@@ -212,17 +207,12 @@ export default function PromptBuilderGuide({
     const transitionTimer = setTimeout(updateTarget, 300)
     window.addEventListener('resize', updateTarget)
     window.addEventListener('scroll', updateTarget, true)
-    // Pinch zoom and panning on phones move the visual viewport without a window scroll or resize.
-    window.visualViewport?.addEventListener('resize', updateTarget)
-    window.visualViewport?.addEventListener('scroll', updateTarget)
     return () => {
       cancelAnimationFrame(frame)
       clearTimeout(transitionTimer)
       if (retryTimer) clearTimeout(retryTimer)
       window.removeEventListener('resize', updateTarget)
       window.removeEventListener('scroll', updateTarget, true)
-      window.visualViewport?.removeEventListener('resize', updateTarget)
-      window.visualViewport?.removeEventListener('scroll', updateTarget)
     }
   }, [active, menuOpen, mobileSettingsOpen, stepIndex, steps])
 
@@ -234,14 +224,13 @@ export default function PromptBuilderGuide({
   }, [active, cardHeight, stepIndex, targetRect])
 
   const finishGuide = () => {
-    if (isAuthenticated) {
-      onAuthGuideComplete()
-    } else {
-      try {
-        localStorage.setItem(GUEST_GUIDE_STORAGE_KEY, 'seen')
-      } catch {
-        // The tour can still be dismissed when storage is unavailable.
-      }
+    try {
+      localStorage.setItem(
+        isAuthenticated ? AUTH_GUIDE_STORAGE_KEY : GUEST_GUIDE_STORAGE_KEY,
+        'seen',
+      )
+    } catch {
+      // The tour can still be dismissed when storage is unavailable.
     }
     if (isMobile && mobileSettingsOpen) onCloseMobileSettings()
     if (menuOpen) onCloseMenu()
@@ -267,7 +256,9 @@ export default function PromptBuilderGuide({
   const step = steps[stepIndex]
   const cardWidth = Math.min(340, window.innerWidth - 24)
   const placeBelow = targetRect.bottom + cardHeight + 18 < window.innerHeight
-  const cardTop = placeBelow ? targetRect.bottom + 12 : Math.max(12, targetRect.top - cardHeight - 12)
+  const cardTop = placeBelow
+    ? targetRect.bottom + 12
+    : Math.max(12, targetRect.top - cardHeight - 12)
   const cardLeft = Math.min(
     window.innerWidth - cardWidth - 12,
     Math.max(12, targetRect.left + targetRect.width / 2 - cardWidth / 2),
@@ -291,27 +282,19 @@ export default function PromptBuilderGuide({
         role="dialog"
         aria-modal="true"
         aria-live="polite"
-        aria-label={t('Шаг {current} из {total}: {title}', {
-          current: stepIndex + 1,
-          total: steps.length,
-          title: t(step.title),
-        })}
+        aria-label={`Шаг ${stepIndex + 1} из ${steps.length}: ${step.title}`}
         style={{ top: cardTop, left: cardLeft, width: cardWidth }}
       >
         <div className="prompt-guide-progress">
-          <span>{isAuthenticated ? t('Знакомство с аккаунтом') : t('Знакомство с сервисом')}</span>
-          <span>
-            {stepIndex + 1}/{steps.length}
-          </span>
+          <span>{isAuthenticated ? 'Знакомство с аккаунтом' : 'Знакомство с сервисом'}</span>
+          <span>{stepIndex + 1}/{steps.length}</span>
         </div>
-        <h2>{t(step.title)}</h2>
-        <p>{t(step.description)}</p>
+        <h2>{step.title}</h2>
+        <p>{step.description}</p>
         <div className="prompt-guide-actions">
-          <button type="button" className="prompt-guide-skip" onClick={finishGuide}>
-            {t('Пропустить')}
-          </button>
+          <button type="button" className="prompt-guide-skip" onClick={finishGuide}>Пропустить</button>
           <button type="button" className="prompt-guide-next" onClick={goNext}>
-            {stepIndex === steps.length - 1 ? t('Готово') : t('Далее')}
+            {stepIndex === steps.length - 1 ? 'Готово' : 'Далее'}
           </button>
         </div>
       </div>

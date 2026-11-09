@@ -1,4 +1,5 @@
 import path from 'node:path'
+import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
@@ -7,7 +8,7 @@ const basePath = process.env.BASE_PATH ? `${process.env.BASE_PATH.replace(/\/$/,
 
 export default defineConfig({
   base: basePath,
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   build: {
     // flag-icons ships ~540 SVG flags; serve them as files instead of inlining all of them into the CSS.
     assetsInlineLimit: file => (file.endsWith('.svg') ? false : undefined),
