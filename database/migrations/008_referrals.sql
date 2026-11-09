@@ -1,0 +1,67 @@
+-- Referral program: links, partner wallet, demo/real payments, rewards and payout requests.
+-- Money is stored in cents (USD).
+
+ALTER TABLE users
+  ADD COLUMN referred_by_link_id INT UNSIGNED NULL DEFAULT NULL, -- link the user signed up with
+  ADD COLUMN payout_wallet       VARCHAR(128) NULL DEFAULT NULL,
+  ADD COLUMN payout_network      VARCHAR(16)  NULL DEFAULT NULL,
+  ADD COLUMN balance_cents       BIGINT       NOT NULL DEFAULT 0;
+
+CREATE TABLE IF NOT EXISTS referral_links (
+  id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id    INT UNSIGNED NOT NULL,
+  code       VARCHAR(16)  NOT NULL,
+  name       VARCHAR(60)  NOT NULL,
+  is_default TINYINT(1)   NOT NULL DEFAULT 0,
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  deleted_at DATETIME     NULL DEFAULT NULL, -- deleted links keep working for clients already attached
+  PRIMARY KEY (id),
+  UNIQUE KEY referral_links_code (code),
+  KEY referral_links_user (user_id),
+  CONSTRAINT referral_links_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS payments (
+  id           INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id      INT UNSIGNED NOT NULL,
+  amount_cents BIGINT       NOT NULL,
+  provider     VARCHAR(16)  NOT NULL, -- 'demo' until a payment system is connected
+  created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY payments_user (user_id),
+  CONSTRAINT payments_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- One reward per payment (payment_id is unique, so a repeated webhook cannot pay twice).
+CREATE TABLE IF NOT EXISTS referral_earnings (
+  id           INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  partner_id   INT UNSIGNED NOT NULL,
+  referral_id  INT UNSIGNED NOT NULL,
+  link_id      INT UNSIGNED NOT NULL,
+  payment_id   INT UNSIGNED NOT NULL,
+  amount_cents BIGINT       NOT NULL,
+  created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY referral_earnings_payment (payment_id),
+  KEY referral_earnings_partner (partner_id),
+  KEY referral_earnings_referral (referral_id),
+  CONSTRAINT referral_earnings_partner_fk FOREIGN KEY (partner_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT referral_earnings_referral_fk FOREIGN KEY (referral_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT referral_earnings_payment_fk FOREIGN KEY (payment_id) REFERENCES payments (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- fee_cents is the partner's share of the network fee; the partner receives amount_cents - fee_cents.
+CREATE TABLE IF NOT EXISTS payout_requests (
+  id           INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id      INT UNSIGNED NOT NULL,
+  amount_cents BIGINT       NOT NULL,
+  fee_cents    BIGINT       NOT NULL,
+  wallet       VARCHAR(128) NOT NULL,
+  network      VARCHAR(16)  NOT NULL,
+  status       VARCHAR(16)  NOT NULL DEFAULT 'processing', -- processing | completed | rejected
+  created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY payout_requests_user (user_id),
+  CONSTRAINT payout_requests_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -15,6 +15,8 @@ export type RegisterData = {
   telegram: string
   password: string
   termsAccepted: boolean
+  /** Code of the referral link the visitor came from. */
+  ref?: string
 }
 
 export type UserSession = {

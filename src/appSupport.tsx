@@ -1,6 +1,7 @@
 // @refresh reset
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { login, register, type AuthUser } from './api/auth'
+import { createReferralLink, deleteReferralLink, fetchReferral, requestPayout, saveWallet, storedReferral, type ReferralData } from './api/referral'
 import AccountSettings from './components/AccountSettings'
 import Binum_LOGO from './components/BinumLogo'
 import CustomSelect from './components/CustomSelect'
@@ -689,6 +690,7 @@ function AuthModal({ onClose, onAuth, onOpenLegal, initialTab = 'login' }: { onC
             telegram: telegram.trim(),
             password,
             termsAccepted,
+            ref: storedReferral(),
           })
         : login(email.trim(), password)
     request.then(onAuth, (reason: unknown) => setError(reason instanceof Error ? reason.message : 'Ошибка сервера')).finally(() => setLoading(false))
@@ -1006,20 +1008,6 @@ function AuthModal({ onClose, onAuth, onOpenLegal, initialTab = 'login' }: { onC
   )
 }
 
-const MOCK_PARTNERS = [
-  { id: 'p1', name: 'Александр К.', email: 'ale***@gmail.com', date: '12.07.2026', status: 'active', earned: '$8.50', plan: 'Premium 3м' },
-  { id: 'p2', name: 'Мария Т.', email: 'mar***@mail.ru', date: '18.07.2026', status: 'active', earned: '$3.20', plan: 'Premium 1м' },
-  { id: 'p3', name: 'Дмитрий Р.', email: 'dmi***@yandex.ru', date: '22.07.2026', status: 'pending', earned: '$0.00', plan: 'Ожидает оплаты' },
-  { id: 'p4', name: 'Светлана М.', email: 'sve***@gmail.com', date: '25.07.2026', status: 'active', earned: '$19.00', plan: 'Premium 1г' },
-  { id: 'p5', name: 'Игорь Л.', email: 'igo***@proton.me', date: '01.08.2026', status: 'active', earned: '$3.20', plan: 'Premium 1м' },
-  { id: 'p6', name: 'Анна С.', email: 'ann***@mail.ru', date: '03.08.2026', status: 'inactive', earned: '$0.00', plan: 'Отменён' },
-]
-
-const MOCK_WITHDRAWALS = [
-  { id: 'w1', date: '28.07.2026', amount: '$11.70', wallet: 'TRX···xQ8F', status: 'completed' },
-  { id: 'w2', date: '04.08.2026', amount: '$8.50', wallet: 'TRX···xQ8F', status: 'processing' },
-]
-
 function PageFooter({ onNavigate, onOpenSettings }: { onNavigate?: (id: string) => void; onOpenSettings?: (sec: string) => void }) {
   const navLinks = [
     { label: 'Аккаунт',              action: () => onOpenSettings?.('account') },
@@ -1088,44 +1076,59 @@ function EconomicCalendarPage({ onClose }: { onClose: () => void }) {
   )
 }
 
-type AffiliateLinkDemo = {
-  id: string
-  name: string
-  url: string
-  partnerIds: string[]
-  activePartners: number
-  earned: number
-  pendingPayout: number
-  removable: boolean
-}
+const money = (cents: number) => `$${(cents / 100).toFixed(2)}`
 
-function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => void; footer?: React.ReactNode }) {
+/** "2026-11-09 14:16:39" (UTC from the server) as "09.11.2026". */
+const formatReferralDate = (value: string) => value.slice(0, 10).split('-').reverse().join('.')
+
+const PAYOUT_STATUS_LABELS = { completed: 'Выплачено', processing: 'В обработке', rejected: 'Отклонено' } as const
+
+const errorMessage = (reason: unknown) => (reason instanceof Error ? reason.message : 'Ошибка сервера')
+
+function AffiliatePage({ onClose, footer }: { uid?: string; onClose: () => void; footer?: React.ReactNode }) {
   const [section, setSection] = useState<'partners' | 'funds'>('partners')
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null)
   const [selectedLinkId, setSelectedLinkId] = useState('all')
   const [addingLink, setAddingLink] = useState(false)
   const [newLinkName, setNewLinkName] = useState('')
-  const [affiliateLinks, setAffiliateLinks] = useState<AffiliateLinkDemo[]>([
-    {
-      id: 'standard',
-      name: 'Стандартная ссылка',
-      url: `https://binum.ai/ref/${uid}`,
-      partnerIds: MOCK_PARTNERS.map(partner => partner.id),
-      activePartners: MOCK_PARTNERS.filter(partner => partner.status === 'active').length,
-      earned: 34.90,
-      pendingPayout: 22.70,
-      removable: false,
-    },
-  ])
+  const [data, setData] = useState<ReferralData | null>(null)
+  const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null)
+  const [busy, setBusy] = useState(false)
   const [wallet, setWallet] = useState('')
   const [walletNetwork, setWalletNetwork] = useState('TRC20')
-  const [walletSaved, setWalletSaved] = useState(false)
-  const selectedLink = affiliateLinks.find(link => link.id === selectedLinkId)
-  const visiblePartners = selectedLink
-    ? MOCK_PARTNERS.filter(partner => selectedLink.partnerIds.includes(partner.id))
-    : MOCK_PARTNERS
+  const [editingWallet, setEditingWallet] = useState(false)
 
-  const handleCopy = (link: AffiliateLinkDemo) => {
+  const reload = useCallback(() => {
+    fetchReferral().then(setData, (reason: unknown) => setNotice({ ok: false, text: errorMessage(reason) }))
+  }, [])
+  useEffect(reload, [reload])
+
+  const savedWallet = data?.wallet ?? null
+  const walletSaved = Boolean(savedWallet) && !editingWallet
+  const terms = data?.terms
+  const referralUrl = (code: string) => `${window.location.origin}${import.meta.env.BASE_URL}?ref=${code}`
+  const affiliateLinks = (data?.links ?? [])
+    .filter(link => !link.deleted)
+    .map(link => ({ id: String(link.id), name: link.name, url: referralUrl(link.code), removable: !link.isDefault }))
+  const selectedLink = data?.links.find(link => String(link.id) === selectedLinkId)
+  const visiblePartners = (data?.partners ?? []).filter(partner => !selectedLink || partner.linkId === selectedLink.id)
+  const withdrawals = data?.withdrawals ?? []
+
+  /** Runs a request, then refreshes the page data; shows the server's error text if it fails. */
+  const act = (request: Promise<unknown>, success?: string) => {
+    setBusy(true)
+    request
+      .then(
+        () => {
+          setNotice(success ? { ok: true, text: success } : null)
+          reload()
+        },
+        (reason: unknown) => setNotice({ ok: false, text: errorMessage(reason) }),
+      )
+      .finally(() => setBusy(false))
+  }
+
+  const handleCopy = (link: { id: string; url: string }) => {
     navigator.clipboard.writeText(link.url).catch(() => {})
     setCopiedLinkId(link.id)
     setTimeout(() => setCopiedLinkId(current => current === link.id ? null : current), 2000)
@@ -1134,45 +1137,48 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
   const handleCreateLink = () => {
     const name = newLinkName.trim()
     if (!name) return
-    const id = `custom-${Date.now()}`
-    setAffiliateLinks(current => [
-      ...current,
-      {
-        id,
-        name,
-        url: `https://binum.ai/ref/${uid}-${current.length + 1}`,
-        partnerIds: [],
-        activePartners: 0,
-        earned: 0,
-        pendingPayout: 0,
-        removable: true,
-      },
-    ])
+    act(createReferralLink(name))
     setNewLinkName('')
     setAddingLink(false)
   }
 
   const handleDeleteLink = (id: string) => {
-    setAffiliateLinks(current => current.filter(link => link.id !== id || !link.removable))
+    act(deleteReferralLink(Number(id)))
     setSelectedLinkId(current => current === id ? 'all' : current)
     setCopiedLinkId(current => current === id ? null : current)
   }
 
   const handleSaveWallet = () => {
     if (!wallet.trim()) return
-    setWallet(wallet.trim())
-    setWalletSaved(true)
+    setBusy(true)
+    saveWallet(wallet.trim(), walletNetwork)
+      .then(
+        () => {
+          setEditingWallet(false)
+          setNotice({ ok: true, text: 'Кошелёк сохранён' })
+          reload()
+        },
+        (reason: unknown) => setNotice({ ok: false, text: errorMessage(reason) }),
+      )
+      .finally(() => setBusy(false))
   }
 
-  const totalEarned = selectedLink
-    ? selectedLink.earned
-    : affiliateLinks.reduce((total, link) => total + link.earned, 0)
-  const pendingPayout = selectedLink
-    ? selectedLink.pendingPayout
-    : affiliateLinks.reduce((total, link) => total + link.pendingPayout, 0)
-  const activePartners = selectedLink
-    ? selectedLink.activePartners
-    : affiliateLinks.reduce((total, link) => total + link.activePartners, 0)
+  const handlePayout = () => {
+    setBusy(true)
+    requestPayout()
+      .then(
+        result => {
+          setNotice({ ok: true, text: `Заявка создана: ${money(result.amountCents)}, комиссия сети ${money(result.feeCents)}, к получению ${money(result.netCents)}` })
+          reload()
+        },
+        (reason: unknown) => setNotice({ ok: false, text: errorMessage(reason) }),
+      )
+      .finally(() => setBusy(false))
+  }
+
+  const totalEarned = (selectedLink ? [selectedLink] : data?.links ?? []).reduce((total, link) => total + link.earnedCents / 100, 0)
+  const pendingPayout = (data?.availableCents ?? 0) / 100
+  const activePartners = visiblePartners.filter(partner => partner.status === 'active').length
 
   const menuItems = [
     {
@@ -1232,7 +1238,7 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
       <PageHeader
         icon={<svg width="20" height="20" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="12" cy="4" r="2.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M6.5 7L9.5 5M6.5 9L9.5 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>}
         title="Партнёрская программа"
-        description="Приглашайте друзей и получайте 20% от их оплаты"
+        description={`Приглашайте друзей и получайте ${terms?.rewardPercent ?? 50}% от их оплаты`}
         onClose={onClose}
       />
 
@@ -1308,6 +1314,11 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
 
         {/* Content */}
         <div className="page-body scrollable" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px', boxSizing: 'border-box', minWidth: 0 }}>
+          {notice && (
+            <div role={notice.ok ? 'status' : 'alert'} style={{ marginBottom: '16px', padding: '11px 16px', border: `1px solid ${notice.ok ? P.accentBrd : 'rgba(239,68,68,0.38)'}`, borderRadius: '8px', background: notice.ok ? 'rgba(139,124,255,0.1)' : 'rgba(239,68,68,0.08)', color: notice.ok ? P.text : '#FF8A6B', fontFamily: 'Inter, sans-serif', fontSize: '13px' }}>
+              {notice.text}
+            </div>
+          )}
 
           {/* PARTNERS */}
           {section === 'partners' && (
@@ -1455,6 +1466,9 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
                       <span key={h} style={{ fontSize: '10px', fontWeight: 600, color: P.mutedDim, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, sans-serif' }}>{h}</span>
                     ))}
                   </div>
+                  {visiblePartners.length === 0 && (
+                    <div style={{ padding: '32px', textAlign: 'center', color: P.mutedDim, fontSize: '13px', fontFamily: 'Inter, sans-serif' }}>Пока никто не зарегистрировался по вашим ссылкам</div>
+                  )}
                   {visiblePartners.map((p, i) => (
                     <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 110px 120px 160px', minWidth: '824px', padding: '11px 22px', borderBottom: i < visiblePartners.length - 1 ? `1px solid ${P.border2}` : 'none', alignItems: 'center', transition: 'background 0.1s' }}
                       onMouseEnter={e => { e.currentTarget.style.background = '#0F0F19' }}
@@ -1462,11 +1476,11 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
                     >
                       <span style={{ fontSize: '13px', color: P.text, fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>{p.name}</span>
                       <span style={{ fontSize: '12px', color: P.muted, fontFamily: 'JetBrains Mono, monospace' }}>{p.email}</span>
-                      <span style={{ fontSize: '12px', color: P.muted, fontFamily: 'JetBrains Mono, monospace' }}>{p.date}</span>
+                      <span style={{ fontSize: '12px', color: P.muted, fontFamily: 'JetBrains Mono, monospace' }}>{formatReferralDate(p.date)}</span>
                       <span style={{ fontSize: '12px', color: P.muted, fontFamily: 'JetBrains Mono, monospace' }}>
-                        ${(Number.parseFloat(p.earned.replace('$', '')) / 0.2).toFixed(2)}
+                        {money(p.depositedCents)}
                       </span>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: P.text, fontFamily: 'JetBrains Mono, monospace' }}>{p.earned}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: P.text, fontFamily: 'JetBrains Mono, monospace' }}>{money(p.earnedCents)}</span>
                     </div>
                   ))}
                 </div>
@@ -1490,8 +1504,8 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
                 </div>
                 <p style={{ margin: '0 0 14px', fontSize: '13px', color: P.muted, fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}>
                   {walletSaved
-                    ? 'Сохранённый кошелёк используется для автоматического получения выплат.'
-                    : `Укажите адрес кошелька USDT (${walletNetwork}) для автоматического получения выплат.`}
+                    ? 'Сохранённый кошелёк используется для получения выплат.'
+                    : `Укажите адрес кошелька USDT (${walletNetwork}) для получения выплат.`}
                 </p>
                 {walletSaved ? (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', padding: '16px', border: '1px solid rgba(76,201,240,0.35)', borderRadius: '8px', background: 'linear-gradient(135deg, rgba(76,201,240,0.12), rgba(76,201,240,0.035))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.035)' }}>
@@ -1505,19 +1519,20 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
                       </div>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                          <span style={{ color: '#8EDDF7', fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em' }}>USDT · {walletNetwork}</span>
+                          <span style={{ color: '#8EDDF7', fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em' }}>USDT · {savedWallet?.network}</span>
                           <span style={{ padding: '2px 6px', border: '1px solid rgba(76,201,240,0.35)', borderRadius: '3px', background: 'rgba(76,201,240,0.12)', color: '#8EDDF7', fontFamily: 'Inter, sans-serif', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em' }}>СОХРАНЁН</span>
                         </div>
-                        <div title={wallet} style={{ overflow: 'hidden', color: '#8EDDF7', fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {wallet}
+                        <div title={savedWallet?.address} style={{ overflow: 'hidden', color: '#8EDDF7', fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {savedWallet?.address}
                         </div>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => {
-                        setWalletSaved(false)
+                        setEditingWallet(true)
                         setWallet('')
+                        setWalletNetwork(savedWallet?.network ?? 'TRC20')
                       }}
                       style={{ display: 'inline-flex', height: 34, flexShrink: 0, alignItems: 'center', gap: '7px', padding: '0 11px', border: '1px solid rgba(139,124,255,0.3)', borderRadius: '6px', background: 'rgba(139,124,255,0.055)', color: '#8B7CFF', fontFamily: 'Inter, sans-serif', fontSize: '11px', fontWeight: 600, cursor: 'pointer', transition: 'background 0.15s, border-color 0.15s' }}
                       onMouseEnter={e => {
@@ -1532,7 +1547,7 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
                       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                         <path d="M2.5 4h9M5 4V2.5h4V4m-5.5 0 .6 8h5.8l.6-8M5.7 6.2v3.5M8.3 6.2v3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      Удалить
+                      Изменить
                     </button>
                   </div>
                 ) : (
@@ -1548,7 +1563,7 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
                           { label: 'TRC20 · TRON', value: 'TRC20' },
                           { label: 'ERC20 · Ethereum', value: 'ERC20' },
                           { label: 'BEP20 · BNB Smart Chain', value: 'BEP20' },
-                          { label: 'Polygon', value: 'Polygon' },
+                          { label: 'Polygon', value: 'POLYGON' },
                         ]}
                         dropDown
                         subdued
@@ -1562,7 +1577,7 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
                         onFocus={e => { e.target.style.borderColor = '#8B7CFF'; e.target.style.boxShadow = 'none' }}
                         onBlur={e => { e.target.style.borderColor = '#34344F'; e.target.style.boxShadow = 'none' }}
                       />
-                      <button onClick={handleSaveWallet}
+                      <button onClick={handleSaveWallet} disabled={busy}
                         style={{ height: 40, padding: '0 20px', flexShrink: 0, background: P.btnBg, border: `1px solid ${P.btnBord}`, borderRadius: '6px', color: P.btnText, fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.18s', whiteSpace: 'nowrap' }}
                         onMouseEnter={e => { e.currentTarget.style.background = P.btnHovBg; e.currentTarget.style.borderColor = P.btnHovBord }}
                         onMouseLeave={e => { e.currentTarget.style.background = P.btnBg; e.currentTarget.style.borderColor = P.btnBord }}
@@ -1585,7 +1600,7 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
                 <div>
                   <p style={{ margin: '0 0 8px', fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: '13px', color: P.text }}>Условия выплат</p>
                   <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                    {['Выплаты производятся автоматически в момент пополнения реферала', 'Минимальная сумма вывода — нет (выплаты автоматические)', 'Комиссия за вывод от $0.01 до $2 в зависимости от сети (TRC20, ERC20, BEP20, Polygon)', 'Валюта выплат — USDT', 'Ваш реферальный доход — 50% от каждой оплаты реферала'].map((line, i) => (
+                    {[`Ваш реферальный доход — ${terms?.rewardPercent ?? 50}% от каждой оплаты реферала`, `Вывод по заявке: минимальная сумма — ${money(terms?.minPayoutCents ?? 0)}`, `Комиссия сети делится: ${terms?.feeSharePercent ?? 50}% платите вы, остальное берёт на себя сервис`, 'Валюта выплат — USDT (TRC20, ERC20, BEP20, Polygon)'].map((line, i) => (
                       <li key={i} style={{ fontSize: '13px', color: P.muted, fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}>{line}</li>
                     ))}
                   </ul>
@@ -1594,15 +1609,23 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
 
               {/* Balance tiles */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                {[
-                  { label: 'Доступно к выводу', value: '$22.70' },
-                  { label: 'Следующая выплата', value: '11.08.2026' },
-                ].map(item => (
-                  <div key={item.label} style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: '8px', padding: '18px 20px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 600, color: P.mutedDim, fontFamily: 'Inter, sans-serif', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.09em' }}>{item.label}</div>
-                    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '24px', fontWeight: 700, color: P.text }}>{item.value}</div>
+                <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: '8px', padding: '18px 20px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: P.mutedDim, fontFamily: 'Inter, sans-serif', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.09em' }}>Доступно к выводу</div>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '24px', fontWeight: 700, color: P.text }}>{money(data?.availableCents ?? 0)}</div>
+                </div>
+                <div style={{ background: P.card, border: `1px solid ${P.border}`, borderRadius: '8px', padding: '18px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={handlePayout}
+                    disabled={busy || !data || data.availableCents < data.terms.minPayoutCents}
+                    style={{ height: 40, border: `1px solid ${P.btnBord}`, borderRadius: '6px', background: P.btnBg, color: P.btnText, fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer', opacity: busy || !data || data.availableCents < data.terms.minPayoutCents ? 0.5 : 1 }}
+                  >
+                    Вывести всё
+                  </button>
+                  <div style={{ fontSize: '11px', color: P.mutedDim, fontFamily: 'Inter, sans-serif', lineHeight: 1.4 }}>
+                    {savedWallet ? `Минимум ${money(terms?.minPayoutCents ?? 0)}. Выплата уходит на сохранённый кошелёк.` : 'Сначала сохраните кошелёк.'}
                   </div>
-                ))}
+                </div>
               </div>
 
               {/* Withdrawal history */}
@@ -1610,7 +1633,7 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
                 <div style={{ padding: '13px 22px', borderBottom: `1px solid ${P.border}`, background: P.surface }}>
                   <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: '14px', color: P.text }}>История выводов</span>
                 </div>
-                {MOCK_WITHDRAWALS.length === 0 ? (
+                {withdrawals.length === 0 ? (
                   <div style={{ padding: '32px', textAlign: 'center', color: P.mutedDim, fontSize: '13px', fontFamily: 'Inter, sans-serif' }}>Выводов пока не было</div>
                 ) : (
                   <>
@@ -1619,14 +1642,14 @@ function AffiliatePage({ uid, onClose, footer }: { uid: string; onClose: () => v
                         <span key={h} style={{ fontSize: '10px', fontWeight: 600, color: P.mutedDim, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, sans-serif' }}>{h}</span>
                       ))}
                     </div>
-                    {MOCK_WITHDRAWALS.map((w, i) => (
-                      <div key={w.id} style={{ display: 'grid', gridTemplateColumns: '110px 1fr 1fr 90px', padding: '12px 22px', borderBottom: i < MOCK_WITHDRAWALS.length - 1 ? `1px solid ${P.border2}` : 'none', alignItems: 'center' }}>
-                        <span style={{ fontSize: '12px', color: P.muted, fontFamily: 'JetBrains Mono, monospace' }}>{w.date}</span>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: P.positive, fontFamily: 'JetBrains Mono, monospace' }}>{w.amount}</span>
-                        <span style={{ fontSize: '12px', color: P.muted, fontFamily: 'JetBrains Mono, monospace' }}>{w.wallet}</span>
+                    {withdrawals.map((w, i) => (
+                      <div key={w.id} title={`Сумма ${money(w.amountCents)}, комиссия сети ${money(w.feeCents)}`} style={{ display: 'grid', gridTemplateColumns: '110px 1fr 1fr 90px', padding: '12px 22px', borderBottom: i < withdrawals.length - 1 ? `1px solid ${P.border2}` : 'none', alignItems: 'center' }}>
+                        <span style={{ fontSize: '12px', color: P.muted, fontFamily: 'JetBrains Mono, monospace' }}>{formatReferralDate(w.date)}</span>
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: P.positive, fontFamily: 'JetBrains Mono, monospace' }}>{money(w.netCents)}</span>
+                        <span style={{ fontSize: '12px', color: P.muted, fontFamily: 'JetBrains Mono, monospace' }}>{w.wallet} · {w.network}</span>
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontFamily: 'Inter, sans-serif', color: w.status === 'completed' ? P.positive : P.text }}>
                           <span style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: w.status === 'completed' ? P.accent : P.muted }} />
-                          {w.status === 'completed' ? 'Выплачено' : 'В обработке'}
+                          {PAYOUT_STATUS_LABELS[w.status]}
                         </span>
                       </div>
                     ))}

@@ -8,6 +8,7 @@ import PromptPanelResizeHandle from './components/PromptPanelResizeHandle'
 import PublicAffiliatePage from './components/PublicAffiliatePage'
 import ReviewsPage from './components/ReviewsPage'
 import AnalysisSettingsPanel from './components/AnalysisSettingsPanel'
+import { rememberReferralFromUrl } from './api/referral'
 import { completeGuide, fetchCurrentUser, logout, type AuthUser } from './api/auth'
 import { applyAppLanguage, type AppLanguage } from './i18n'
 import aiWorkspaceIcon from './imports/ai-workspace-icon.png'
@@ -456,6 +457,9 @@ export default function App() {
     setAuthOpen(false)
     setUserRequests(0)
   }, [])
+
+  // A visitor who came by a partner's link is attached to that partner at sign-up.
+  useEffect(rememberReferralFromUrl, [])
 
   // Restore the session of a returning visitor; a failed request just leaves the guest view.
   useEffect(() => {
@@ -1308,7 +1312,7 @@ export default function App() {
           const nav = (id: string) => { if (id === 'faq') setFaqInitialCategory('Все'); setActiveTab(id); setAffiliateOpen(id === 'affiliate'); setSupportOpen(id === 'support'); setLegalOpen(id === 'legal'); setFaqOpen(id === 'faq'); setReviewsOpen(id === 'reviews'); setCalendarOpen(false); setSettingsOpen(false) }
           return (<>
             {affiliateOpen && (user
-              ? <AffiliatePage uid={user.uid} onClose={() => { setAffiliateOpen(false); setActiveTab('chat') }} />
+              ? <AffiliatePage onClose={() => { setAffiliateOpen(false); setActiveTab('chat') }} />
               : <PublicAffiliatePage onClose={() => { setAffiliateOpen(false); setActiveTab('chat') }} onSignUp={() => setAuthOpen(true)} onOpenFaq={() => nav('faq')} />
             )}
             {legalOpen && <LegalPage onClose={() => { setLegalOpen(false); setActiveTab('chat') }} />}
