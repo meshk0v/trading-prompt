@@ -1179,6 +1179,7 @@ function AffiliatePage({ onClose, footer }: { uid?: string; onClose: () => void;
 
   const totalEarned = (selectedLink ? [selectedLink] : data?.links ?? []).reduce((total, link) => total + link.earnedCents / 100, 0)
   const pendingPayout = (data?.availableCents ?? 0) / 100
+  const partnerFeeCents = terms?.networks.find(network => network.id === savedWallet?.network)?.partnerFeeCents ?? 0
   const activePartners = visiblePartners.filter(partner => partner.status === 'active').length
 
   const menuItems = [
@@ -1601,7 +1602,7 @@ function AffiliatePage({ onClose, footer }: { uid?: string; onClose: () => void;
                 <div>
                   <p style={{ margin: '0 0 8px', fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: '13px', color: P.text }}>Условия выплат</p>
                   <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                    {[`Ваш реферальный доход — ${terms?.rewardPercent ?? 50}% от каждой оплаты реферала`, `Вывод по заявке: минимальная сумма — ${money(terms?.minPayoutCents ?? 0)}`, `Комиссия сети делится: ${terms?.feeSharePercent ?? 50}% платите вы, остальное берёт на себя сервис`, 'Валюта выплат — USDT (TRC20, ERC20, BEP20, Polygon)'].map((line, i) => (
+                    {[`Ваш реферальный доход — ${terms?.rewardPercent ?? 50}% от каждой оплаты реферала`, 'Выплата приходит на ваш кошелёк автоматически в момент пополнения реферала, без минимальной суммы', `Комиссия сети делится: ${terms?.feeSharePercent ?? 50}% платите вы, остальное берёт на себя сервис. Если вознаграждение меньше комиссии, оно копится и уходит со следующим`, 'Валюта выплат — USDT (TRC20, ERC20, BEP20, Polygon)'].map((line, i) => (
                       <li key={i} style={{ fontSize: '13px', color: P.muted, fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}>{line}</li>
                     ))}
                   </ul>
@@ -1618,13 +1619,13 @@ function AffiliatePage({ onClose, footer }: { uid?: string; onClose: () => void;
                   <button
                     type="button"
                     onClick={handlePayout}
-                    disabled={busy || !data || data.availableCents < data.terms.minPayoutCents}
-                    style={{ height: 40, border: `1px solid ${P.btnBord}`, borderRadius: '6px', background: P.btnBg, color: P.btnText, fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer', opacity: busy || !data || data.availableCents < data.terms.minPayoutCents ? 0.5 : 1 }}
+                    disabled={busy || !data || !savedWallet || data.availableCents <= partnerFeeCents}
+                    style={{ height: 40, border: `1px solid ${P.btnBord}`, borderRadius: '6px', background: P.btnBg, color: P.btnText, fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer', opacity: busy || !data || !savedWallet || data.availableCents <= partnerFeeCents ? 0.5 : 1 }}
                   >
                     Вывести всё
                   </button>
                   <div style={{ fontSize: '11px', color: P.mutedDim, fontFamily: 'Inter, sans-serif', lineHeight: 1.4 }}>
-                    {savedWallet ? `Минимум ${money(terms?.minPayoutCents ?? 0)}. Выплата уходит на сохранённый кошелёк.` : 'Сначала сохраните кошелёк.'}
+                    {savedWallet ? 'Новые вознаграждения уходят на кошелёк сами. Здесь можно вывести накопленный остаток.' : 'Сохраните кошелёк: накопленное уйдёт на него сразу.'}
                   </div>
                 </div>
               </div>

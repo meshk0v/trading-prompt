@@ -14,5 +14,9 @@ if (!preg_match(PAYOUT_NETWORKS[$network]['pattern'], $address)) {
     fail(422, 'Адрес кошелька не подходит для выбранной сети');
 }
 
-db()->prepare('UPDATE users SET payout_wallet = ?, payout_network = ? WHERE id = ?')->execute([$address, $network, $user['id']]);
-respond(200, ['ok' => true]);
+$pdo = db();
+$pdo->prepare('UPDATE users SET payout_wallet = ?, payout_network = ? WHERE id = ?')->execute([$address, $network, $user['id']]);
+
+// Rewards earned before the wallet was saved are paid out now.
+$payout = create_payout($pdo, $user['id']);
+respond(200, ['ok' => true, 'paidOutCents' => $payout['status'] === 'ok' ? $payout['netCents'] : 0]);

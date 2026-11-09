@@ -11,8 +11,6 @@ if (basename($_SERVER['SCRIPT_FILENAME'] ?? '') === basename(__FILE__)) {
 
 /** Partner reward, percent of every payment of an invited user. */
 const REFERRAL_REWARD_PERCENT = 50;
-/** Smallest payout request; must stay above the partner's share of the network fee. */
-const PAYOUT_MIN_CENTS = 500;
 /** Share of the network fee charged to the partner (the rest is covered by the service). */
 const PAYOUT_FEE_SHARE_PERCENT = 50;
 const MAX_LINKS_PER_USER = 20;
@@ -33,7 +31,6 @@ function referral_terms(): array
     }
     return [
         'rewardPercent' => REFERRAL_REWARD_PERCENT,
-        'minPayoutCents' => PAYOUT_MIN_CENTS,
         'feeSharePercent' => PAYOUT_FEE_SHARE_PERCENT,
         'networks' => $networks,
     ];
@@ -77,7 +74,48 @@ function available_cents(PDO $pdo, int $userId): int
 }
 
 /**
- * Records a successful payment: credits the balance and pays the partner who invited the user.
+ * Pays out everything the partner has earned to their saved wallet, as one payout request.
+ * Runs on its own or inside a transaction. Returns the amounts, or a reason why nothing was paid:
+ * 'no_wallet', or 'too_small' while the balance does not cover the partner's share of the network fee.
+ */
+function create_payout(PDO $pdo, int $userId): array
+{
+    $own = !$pdo->inTransaction();
+    if ($own) {
+        $pdo->beginTransaction();
+    }
+    try {
+        // Lock the user row so two parallel payments or requests cannot withdraw the same money.
+        $stmt = $pdo->prepare('SELECT payout_wallet, payout_network FROM users WHERE id = ? FOR UPDATE');
+        $stmt->execute([$userId]);
+        $row = $stmt->fetch();
+
+        $result = ['status' => 'no_wallet'];
+        if ($row && $row['payout_wallet'] !== null && isset(PAYOUT_NETWORKS[(string) $row['payout_network']])) {
+            $amount = available_cents($pdo, $userId);
+            $fee = partner_fee_cents($row['payout_network']);
+            if ($amount <= $fee) {
+                $result = ['status' => 'too_small', 'feeCents' => $fee];
+            } else {
+                $pdo->prepare('INSERT INTO payout_requests (user_id, amount_cents, fee_cents, wallet, network) VALUES (?, ?, ?, ?, ?)')
+                    ->execute([$userId, $amount, $fee, $row['payout_wallet'], $row['payout_network']]);
+                $result = ['status' => 'ok', 'amountCents' => $amount, 'feeCents' => $fee, 'netCents' => $amount - $fee];
+            }
+        }
+        if ($own) {
+            $pdo->commit();
+        }
+        return $result;
+    } catch (Throwable $e) {
+        if ($own && $pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $e;
+    }
+}
+
+/**
+ * Records a successful payment: credits the balance and rewards (and pays out) the partner who invited the user.
  * The payment provider webhook calls this too. Returns the partner reward in cents (0 if none).
  */
 function record_payment(PDO $pdo, int $userId, int $amountCents, string $provider): int
@@ -104,6 +142,8 @@ function record_payment(PDO $pdo, int $userId, int $amountCents, string $provide
                 $pdo->prepare(
                     'INSERT INTO referral_earnings (partner_id, referral_id, link_id, payment_id, amount_cents) VALUES (?, ?, ?, ?, ?)'
                 )->execute([$link['partner_id'], $userId, $link['link_id'], $paymentId, $reward]);
+                // The reward goes to the partner's wallet right away (or waits for a wallet / a larger balance).
+                create_payout($pdo, (int) $link['partner_id']);
             }
         }
         $pdo->commit();

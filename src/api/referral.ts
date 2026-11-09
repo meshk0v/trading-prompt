@@ -37,7 +37,6 @@ export type PayoutRequest = {
 
 export type ReferralTerms = {
   rewardPercent: number
-  minPayoutCents: number
   /** Share of the network fee charged to the partner. */
   feeSharePercent: number
   networks: { id: string; feeCents: number; partnerFeeCents: number }[]
