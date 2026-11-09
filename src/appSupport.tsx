@@ -1,6 +1,7 @@
 // @refresh reset
 import { useCallback, useEffect, useState } from 'react'
 import { login, register, type AuthUser } from './api/auth'
+import { createTicket, fetchTickets, type Ticket } from './api/tickets'
 import { createReferralLink, deleteReferralLink, fetchReferral, requestPayout, saveWallet, storedReferral, type ReferralData } from './api/referral'
 import AccountSettings from './components/AccountSettings'
 import Binum_LOGO from './components/BinumLogo'
@@ -1741,47 +1742,58 @@ function LegalPage({ onClose, footer }: { onClose: () => void; footer?: React.Re
   )
 }
 
-const MOCK_TICKETS = [
-  { id: 'TKT-001', date: '12.06.2026', subject: 'Как зарегистрироваться в партнёрской программе?', status: 'closed', reply: 'Для участия в партнёрской программе перейдите во вкладку «Партнёрская программа» и скопируйте реферальную ссылку. Никакой дополнительной регистрации не требуется.' },
-  { id: 'TKT-002', date: '18.06.2026', subject: 'Почему промпт долго собирается?', status: 'closed', reply: 'Сбор рыночных данных может занять несколько секунд. Если запрос завис — попробуйте повторить через минуту. Возможна временная нагрузка на серверы.' },
-  { id: 'TKT-003', date: '24.06.2026', subject: 'Хочу сменить email аккаунта', status: 'closed', reply: 'Смена email пока недоступна в самостоятельном режиме. Напишите нам в Telegram @binum_support с подтверждением личности, и мы изменим данные вручную.' },
-  { id: 'TKT-004', date: '01.07.2026', subject: 'Купил 100 кредитов — как активировать?', status: 'closed', reply: 'После оплаты кредиты начисляются автоматически в течение 5 минут. Если этого не произошло, пришлите чек об оплате в поддержку.' },
-  { id: 'TKT-005', date: '07.07.2026', subject: 'Хочу вернуть деньги за кредиты', status: 'closed', reply: 'Возврат средств возможен в течение 3 дней с момента покупки при условии, что купленные кредиты не были использованы. Заявка на возврат рассмотрена — средства возвращены.' },
-  { id: 'TKT-006', date: '10.07.2026', subject: 'Почему в данных есть оценка SELL?', status: 'closed', reply: 'Оценки индикаторов описывают состояние рынка в момент запроса и не являются торговой рекомендацией. Итоговый промпт предназначен для самостоятельного анализа.' },
-  { id: 'TKT-007', date: '15.07.2026', subject: 'Не отображается график в промпте', status: 'closed', reply: 'Попробуйте обновить страницу. Если проблема повторяется — очистите кеш браузера (Ctrl+Shift+Del). Графики загружаются динамически и могут не отображаться при слабом соединении.' },
-  { id: 'TKT-008', date: '18.07.2026', subject: 'Вопрос по партнёрской программе — задержка выплаты', status: 'closed', reply: 'Ваш вопрос решён. Выплата произведена согласно условиям. Следующая автоматическая выплата — каждый понедельник.' },
-  { id: 'TKT-009', date: '22.07.2026', subject: 'Хочу купить кредиты — как оплатить криптой?', status: 'answered', reply: 'Для оплаты в USDT (TRC-20) нажмите «Купить кредиты» и выберите способ оплаты «Криптовалюта». Адрес кошелька для перевода будет отображён автоматически.' },
-  { id: 'TKT-010', date: '25.07.2026', subject: 'Не могу войти в аккаунт — забыл пароль', status: 'answered', reply: 'Письмо для сброса пароля отправлено на ваш email. Проверьте папку «Спам», если письмо не пришло в течение 5 минут.' },
-  { id: 'TKT-011', date: '28.07.2026', subject: 'Можно ли использовать Trading Prompt на мобильном?', status: 'answered', reply: 'Да, сервис полностью адаптирован для мобильных устройств. Откройте сайт в браузере на смартфоне — всё работает без установки приложения.' },
-  { id: 'TKT-012', date: '01.08.2026', subject: 'Сколько промптов можно собрать?', status: 'answered', reply: 'Каждый готовый промпт списывает один кредит. Ограничений по времени нет, пока на балансе остаются кредиты.' },
-  { id: 'TKT-013', date: '05.08.2026', subject: 'Где посмотреть историю промптов?', status: 'open', reply: '' },
-  { id: 'TKT-014', date: '08.08.2026', subject: 'Когда появится история промптов?', status: 'open', reply: '' },
-  { id: 'TKT-015', date: '11.08.2026', subject: 'Хочу изменить реферальную ссылку', status: 'open', reply: '' },
-]
-
-function SupportPage({ onClose, footer }: { onClose: () => void; footer?: React.ReactNode }) {
+function SupportPage({ signedIn, onSignIn, onClose, footer }: { signedIn: boolean; onSignIn: () => void; onClose: () => void; footer?: React.ReactNode }) {
   const [section, setSection] = useState<'support' | 'history'>('support')
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
   const [sent, setSent] = useState(false)
-  const [tickets, setTickets] = useState(MOCK_TICKETS)
+  const [apiTickets, setApiTickets] = useState<Ticket[]>([])
+  const [sendError, setSendError] = useState('')
+  const [sending, setSending] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  const loadTickets = useCallback(() => {
+    fetchTickets().then(setApiTickets, () => undefined)
+  }, [])
+  // Answers arrive from Telegram at any time, so the history refreshes while it is open.
+  useEffect(() => {
+    if (!signedIn) {
+      setApiTickets([])
+      return
+    }
+    loadTickets()
+    if (section !== 'history') return
+    const timer = setInterval(loadTickets, 30000)
+    return () => clearInterval(timer)
+  }, [signedIn, section, loadTickets])
+
+  const tickets = apiTickets
+    .map(ticket => ({
+      key: String(ticket.id),
+      id: `TKT-${String(ticket.id).padStart(3, '0')}`,
+      date: formatReferralDate(ticket.date),
+      subject: ticket.subject,
+      status: ticket.status,
+      messages: ticket.messages,
+    }))
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault()
     if (!subject.trim() || !body.trim()) return
-    const newTicket = {
-      id: `TKT-00${tickets.length + 1}`,
-      date: new Date().toLocaleDateString('ru-RU').split('.').map((v, i) => i === 2 ? v.slice(-4) : v.padStart(2, '0')).join('.'),
-      subject: subject.trim(),
-      status: 'open',
-      reply: '',
-    }
-    setTickets(prev => [...prev, newTicket])
-    setSubject('')
-    setBody('')
-    setSent(true)
-    setTimeout(() => setSent(false), 3500)
+    setSending(true)
+    setSendError('')
+    createTicket(subject.trim(), body.trim())
+      .then(
+        () => {
+          setSubject('')
+          setBody('')
+          setSent(true)
+          setTimeout(() => setSent(false), 3500)
+          loadTickets()
+        },
+        (reason: unknown) => setSendError(errorMessage(reason)),
+      )
+      .finally(() => setSending(false))
   }
 
   const statusLabel: Record<string, string> = { open: 'Открыт', answered: 'Отвечен', closed: 'Закрыт' }
@@ -1882,15 +1894,15 @@ function SupportPage({ onClose, footer }: { onClose: () => void; footer?: React.
             <div className="support-contacts-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '10px' }}>
               {[
                 {
-                  label: 'Email', value: 'support@binum.ai', sub: 'Для подробных обращений',
+                  label: 'Email', value: 'support@tradingprompt.space', sub: 'Для подробных обращений',
                   icon: <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="3.5" width="13" height="9" rx="2" stroke="currentColor" strokeWidth="1.3"/><path d="M1.5 6l6.5 4 6.5-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
                 },
                 {
-                  label: 'Telegram', value: '@binum_support', sub: 'Оперативная связь',
+                  label: 'Telegram', value: '@tradingprompt', sub: 'Оперативная связь',
                   icon: <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M14.5 2.5L1.5 7.5c-.4.17-.4.67 0 .83l2.8 1.04 1.1 3.37c.1.33.53.43.77.18l1.56-1.5 2.87 2.1c.3.2.7.05.78-.3L14.9 3c.1-.45-.33-.8-.4-.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>,
                 },
                 {
-                  label: 'Сайт', value: 'binum.ai', sub: 'Работаем 9–21 МСК',
+                  label: 'Сайт', value: 'tradingprompt.space', sub: 'Работаем 9–21 МСК',
                   icon: <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3"/><ellipse cx="8" cy="8" rx="2.5" ry="6" stroke="currentColor" strokeWidth="1.1"/><path d="M2 8h12" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
                 },
               ].map(contact => (
@@ -1931,7 +1943,12 @@ function SupportPage({ onClose, footer }: { onClose: () => void; footer?: React.
               <h2 style={{ margin: '0 0 4px', fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '17px', color: '#EDEBFA' }}>Создать тикет</h2>
               <p style={{ margin: 0, fontSize: '13px', color: '#676582', fontFamily: 'Inter, sans-serif' }}>Опишите вашу проблему — мы ответим в течение 2 часов</p>
             </div>
-            {sent ? (
+            {!signedIn ? (
+              <div style={{ padding: '16px 20px', background: '#0F0F19', border: '1px solid #191926', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '14px', color: '#EDEBFA', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>Чтобы отправить обращение, войдите в аккаунт.</span>
+                <button type="button" onClick={onSignIn} style={{ height: 38, padding: '0 22px', background: '#8B7CFF', border: '1px solid #8B7CFF', borderRadius: '7px', color: '#0D0A24', fontSize: '13px', fontWeight: 700, fontFamily: 'Outfit, sans-serif', cursor: 'pointer' }}>Войти</button>
+              </div>
+            ) : sent ? (
               <div style={{ padding: '16px 20px', background: '#0F0F19', border: '1px solid #191926', borderRadius: '5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <svg width="20" height="20" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="#9A98B5" strokeWidth="1.4"/><path d="M5.5 9.5l2.5 2.5 4.5-5" stroke="#9A98B5" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 <span style={{ fontSize: '14px', color: '#EDEBFA', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>Тикет отправлен. Ответим в течение 2 часов.</span>
@@ -1952,8 +1969,10 @@ function SupportPage({ onClose, footer }: { onClose: () => void; footer?: React.
                     onBlur={e => { e.currentTarget.style.borderColor = '#34344F'; e.currentTarget.style.boxShadow = 'none' }}
                   />
                 </div>
+                {sendError && <div role="alert" style={{ color: '#FF8A6B', fontFamily: 'Inter, sans-serif', fontSize: '12px' }}>{sendError}</div>}
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button type="submit" style={{
+                  <button type="submit" disabled={sending} style={{
+                    opacity: sending ? 0.6 : 1,
                     height: 44, padding: '0 36px',
                     background: '#8B7CFF', border: '1px solid #8B7CFF', borderRadius: '7px',
                     color: '#0D0A24', fontSize: '14px', fontWeight: 700,
@@ -1998,15 +2017,15 @@ function SupportPage({ onClose, footer }: { onClose: () => void; footer?: React.
               {tickets.length === 0 ? (
                 <div style={{ padding: '48px', textAlign: 'center', color: '#676582', fontSize: '13px', fontFamily: 'Inter, sans-serif' }}>Обращений пока нет</div>
               ) : (
-                tickets.slice().reverse().map((t, i, arr) => (
-                  <div key={t.id}>
+                tickets.map((t, i, arr) => (
+                  <div key={t.key}>
                     <div
-                      onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
+                      onClick={() => setExpandedId(expandedId === t.key ? null : t.key)}
                       className="support-tbl-row"
                       style={{
                         display: 'grid', gridTemplateColumns: '90px 1fr 110px 100px 28px',
                         padding: '13px 28px', alignItems: 'center',
-                        borderBottom: i < arr.length - 1 || expandedId === t.id ? '1px solid #0F0F19' : 'none',
+                        borderBottom: i < arr.length - 1 || expandedId === t.key ? '1px solid #0F0F19' : 'none',
                         cursor: 'pointer', transition: 'background 0.1s',
                       }}
                       onMouseEnter={e => { e.currentTarget.style.background = '#0F0F19' }}
@@ -2019,17 +2038,23 @@ function SupportPage({ onClose, footer }: { onClose: () => void; footer?: React.
                         <span style={{ width: 5, height: 5, borderRadius: '50%', background: statusDot[t.status], flexShrink: 0 }} />
                         {statusLabel[t.status]}
                       </span>
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: '#676582', transition: 'transform 0.15s', transform: expandedId === t.id ? 'rotate(180deg)' : 'rotate(0deg)', justifySelf: 'end' }}>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: '#676582', transition: 'transform 0.15s', transform: expandedId === t.key ? 'rotate(180deg)' : 'rotate(0deg)', justifySelf: 'end' }}>
                         <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                       </svg>
                     </div>
-                    {expandedId === t.id && (
-                      <div style={{ padding: '14px 28px 16px', background: '#0F0F19', borderBottom: i < arr.length - 1 ? '1px solid #191926' : 'none' }}>
-                        <p style={{ margin: '0 0 6px', fontSize: '10px', fontWeight: 600, color: '#676582', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, sans-serif' }}>Ответ поддержки</p>
-                        {t.reply
-                          ? <p style={{ margin: 0, fontSize: '13px', color: '#9A98B5', fontFamily: 'Inter, sans-serif', lineHeight: 1.7 }}>{t.reply}</p>
-                          : <p style={{ margin: 0, fontSize: '13px', color: '#676582', fontFamily: 'Inter, sans-serif', fontStyle: 'italic' }}>Ожидает ответа...</p>
-                        }
+                    {expandedId === t.key && (
+                      <div style={{ padding: '14px 28px 16px', background: '#0F0F19', borderBottom: i < arr.length - 1 ? '1px solid #191926' : 'none', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {t.messages.map((message, index) => (
+                          <div key={index}>
+                            <p style={{ margin: '0 0 6px', fontSize: '10px', fontWeight: 600, color: message.author === 'staff' ? '#8B7CFF' : '#676582', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, sans-serif' }}>
+                              {message.author === 'staff' ? 'Ответ поддержки' : 'Ваше сообщение'} · {formatReferralDate(message.date)}
+                            </p>
+                            <p style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: '13px', color: message.author === 'staff' ? '#CFCDE3' : '#9A98B5', fontFamily: 'Inter, sans-serif', lineHeight: 1.7 }}>{message.body}</p>
+                          </div>
+                        ))}
+                        {!t.messages.some(message => message.author === 'staff') && (
+                          <p style={{ margin: 0, fontSize: '13px', color: '#676582', fontFamily: 'Inter, sans-serif', fontStyle: 'italic' }}>Ожидает ответа...</p>
+                        )}
                       </div>
                     )}
                   </div>

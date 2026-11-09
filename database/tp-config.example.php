@@ -6,4 +6,16 @@ return [
     'db_name' => 'tradingprompt',
     'db_user' => 'tradingprompt',
     'db_pass' => 'change-me',
+
+    // Support tickets (optional; without these the tickets are only stored on the site).
+    // 'tg_bot_token' => '123456:token-from-BotFather',
+    // 'tg_chat_id' => '-1001234567890',        // support group
+    // 'tg_forum' => true,                      // the group has topics enabled: one topic per ticket
+    // 'tg_webhook_secret' => 'long-random-string',
+    // Email copy of the answers to the user (optional).
+    // 'smtp' => ['host' => 'srv-plesk20.ps.kz', 'port' => 465, 'secure' => 'ssl',
+    //            'user' => 'support@tradingprompt.space', 'pass' => 'change-me', 'from_name' => 'Trading Prompt'],
+
+    // Test payments for trying the referral program. Never set on the live site.
+    // 'demo_payments' => true,
 ];

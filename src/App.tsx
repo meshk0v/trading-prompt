@@ -1316,7 +1316,7 @@ export default function App() {
               : <PublicAffiliatePage onClose={() => { setAffiliateOpen(false); setActiveTab('chat') }} onSignUp={() => setAuthOpen(true)} onOpenFaq={() => nav('faq')} />
             )}
             {legalOpen && <LegalPage onClose={() => { setLegalOpen(false); setActiveTab('chat') }} />}
-            {supportOpen && <SupportPage onClose={() => { setSupportOpen(false); setActiveTab('chat') }} />}
+            {supportOpen && <SupportPage signedIn={Boolean(user)} onSignIn={() => setAuthOpen(true)} onClose={() => { setSupportOpen(false); setActiveTab('chat') }} />}
             {settingsOpen && (
               <SettingsPage
                 user={user}

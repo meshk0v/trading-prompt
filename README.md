@@ -18,11 +18,12 @@
 | Что                              | Где                                                          |
 | -------------------------------- | ------------------------------------------------------------ |
 | Интерфейс, промпт, данные рынка  | `src/` — из Figma, правится в Figma и переносится целиком    |
-| Аккаунты, сессии, партнёрская программа | `public/api/*.php`, `src/api/auth.ts`, `src/api/referral.ts`, `database/` |
-| Подключение интерфейса к серверу | `src/App.tsx` (вход, выход, `fetchCurrentUser`), `AuthModal` и `AffiliatePage` в `src/appSupport.tsx`, `src/components/AccountSettings.tsx` |
+| Аккаунты, сессии, партнёрская программа | `public/api/*.php`, `src/api/auth.ts`, `src/api/referral.ts`, `src/api/tickets.ts`, `database/` |
+| Подключение интерфейса к серверу | `src/App.tsx` (вход, выход, `fetchCurrentUser`), `AuthModal`, `AffiliatePage` и `SupportPage` в `src/appSupport.tsx`, `src/components/AccountSettings.tsx` |
 
 Партнёрская программа (ссылки, партнёры, вознаграждения, кошелёк, заявки на вывод) работает на сервере; оплата
-пока тестовая (`payment-demo.php`), без платёжной системы. Только на интерфейсе, без сервера: обращения в поддержку.
+пока тестовая (`payment-demo.php`), без платёжной системы. Обращения в поддержку идут в Telegram-группу, ответы
+возвращаются на сайт и на почту (см. [DEPLOY.md](DEPLOY.md#поддержка-telegram-и-почта)).
 
 ## Стек
 
