@@ -3,6 +3,12 @@ import { createPortal } from 'react-dom'
 
 type PromptBuilderGuideProps = {
   isAuthenticated: boolean
+  /** The account was checked (guests included); the tour waits for it so a signed-in user never sees the guest tour. */
+  sessionChecked: boolean
+  /** The signed-in user already finished or skipped the tour on some device. */
+  guideCompleted: boolean
+  /** The tour was finished or skipped by a signed-in user; the server remembers it. */
+  onGuideFinished: () => void
   menuOpen: boolean
   mobileSettingsOpen: boolean
   onOpenMenu: () => void
@@ -19,7 +25,6 @@ type GuideStep = {
 }
 
 const GUEST_GUIDE_STORAGE_KEY = 'trading-prompt-builder-guide-guest-v4'
-const AUTH_GUIDE_STORAGE_KEY = 'trading-prompt-builder-guide-auth-v2'
 
 const FIELD_STEPS: GuideStep[] = [
   {
@@ -102,6 +107,9 @@ function findVisibleTarget(target: string) {
 
 export default function PromptBuilderGuide({
   isAuthenticated,
+  sessionChecked,
+  guideCompleted,
+  onGuideFinished,
   menuOpen,
   mobileSettingsOpen,
   onOpenMenu,
@@ -167,10 +175,20 @@ export default function PromptBuilderGuide({
   }, [])
 
   useEffect(() => {
+    if (!sessionChecked) return
     let timer: ReturnType<typeof setTimeout> | undefined
-    const storageKey = isAuthenticated ? AUTH_GUIDE_STORAGE_KEY : GUEST_GUIDE_STORAGE_KEY
+    if (isAuthenticated) {
+      if (!guideCompleted) {
+        timer = setTimeout(() => {
+          setStepIndex(0)
+          setTargetRect(null)
+          setActive(true)
+        }, 650)
+      }
+      return () => { if (timer) clearTimeout(timer) }
+    }
     try {
-      if (!localStorage.getItem(storageKey)) {
+      if (!localStorage.getItem(GUEST_GUIDE_STORAGE_KEY)) {
         timer = setTimeout(() => {
           setStepIndex(0)
           setTargetRect(null)
@@ -186,7 +204,7 @@ export default function PromptBuilderGuide({
     }
 
     return () => { if (timer) clearTimeout(timer) }
-  }, [isAuthenticated])
+  }, [isAuthenticated, sessionChecked, guideCompleted])
 
   useLayoutEffect(() => {
     if (!active) return
@@ -224,13 +242,14 @@ export default function PromptBuilderGuide({
   }, [active, cardHeight, stepIndex, targetRect])
 
   const finishGuide = () => {
-    try {
-      localStorage.setItem(
-        isAuthenticated ? AUTH_GUIDE_STORAGE_KEY : GUEST_GUIDE_STORAGE_KEY,
-        'seen',
-      )
-    } catch {
-      // The tour can still be dismissed when storage is unavailable.
+    if (isAuthenticated) {
+      onGuideFinished()
+    } else {
+      try {
+        localStorage.setItem(GUEST_GUIDE_STORAGE_KEY, 'seen')
+      } catch {
+        // The tour can still be dismissed when storage is unavailable.
+      }
     }
     if (isMobile && mobileSettingsOpen) onCloseMobileSettings()
     if (menuOpen) onCloseMenu()

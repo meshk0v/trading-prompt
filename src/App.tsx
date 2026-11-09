@@ -8,7 +8,7 @@ import PromptPanelResizeHandle from './components/PromptPanelResizeHandle'
 import PublicAffiliatePage from './components/PublicAffiliatePage'
 import ReviewsPage from './components/ReviewsPage'
 import AnalysisSettingsPanel from './components/AnalysisSettingsPanel'
-import { fetchCurrentUser, logout, type AuthUser } from './api/auth'
+import { completeGuide, fetchCurrentUser, logout, type AuthUser } from './api/auth'
 import { applyAppLanguage, type AppLanguage } from './i18n'
 import aiWorkspaceIcon from './imports/ai-workspace-icon.png'
 import telegramLogo from './imports/telegram-logo.png'
@@ -50,7 +50,7 @@ const ASSET_TYPE_OPTIONS = Object.keys(PAIR_CATEGORIES)
   .map(type => ({ label: type, value: type }))
 
 const DEFAULT_CHART_INDICATORS = new Set(['ind.ema', 'lvl.sr'])
-type SiteUser = { name: string; email: string; id: number; uid: string; avatarUrl: string; telegram: string }
+type SiteUser = { name: string; email: string; id: number; uid: string; avatarUrl: string; telegram: string; guideCompleted: boolean }
 
 const toSiteUser = (user: AuthUser): SiteUser => ({
   name: user.name,
@@ -59,6 +59,7 @@ const toSiteUser = (user: AuthUser): SiteUser => ({
   uid: `840-${String(user.id).padStart(6, '0')}`,
   avatarUrl: DEMO_USER_AVATAR_URL,
   telegram: user.telegram,
+  guideCompleted: user.guideCompleted,
 })
 
 const DEMO_USER_AVATAR_URL = 'https://images.unsplash.com/photo-1767175473698-859bc73e8e64?auto=format&fit=crop&crop=faces&w=160&h=160&q=82'
@@ -368,6 +369,7 @@ export default function App() {
   })
   const [settingsSection, setSettingsSection] = useState('account')
   const [user, setUser] = useState<SiteUser | null>(null)
+  const [sessionChecked, setSessionChecked] = useState(false)
   const [guestRequests, setGuestRequests] = useState(0)
   const [userRequests, setUserRequests] = useState(0)
   const [limitModal, setLimitModal] = useState<'guest' | 'user' | null>(null)
@@ -457,7 +459,14 @@ export default function App() {
 
   // Restore the session of a returning visitor; a failed request just leaves the guest view.
   useEffect(() => {
-    fetchCurrentUser().then(authUser => authUser && setUser(toSiteUser(authUser)), () => undefined)
+    fetchCurrentUser()
+      .then(authUser => authUser && setUser(toSiteUser(authUser)), () => undefined)
+      .finally(() => setSessionChecked(true))
+  }, [])
+
+  const handleGuideFinished = useCallback(() => {
+    setUser(current => (current ? { ...current, guideCompleted: true } : current))
+    completeGuide().catch(() => undefined)
   }, [])
 
   const handleLogout = useCallback(() => {
@@ -1944,6 +1953,9 @@ export default function App() {
 
       <PromptBuilderGuide
         isAuthenticated={Boolean(user)}
+        sessionChecked={sessionChecked}
+        guideCompleted={user?.guideCompleted ?? false}
+        onGuideFinished={handleGuideFinished}
         menuOpen={sidebarOpen}
         mobileSettingsOpen={mobilePromptSettingsOpen}
         onOpenMenu={() => setSidebarOpen(true)}
