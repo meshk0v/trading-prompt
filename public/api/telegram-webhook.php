@@ -59,11 +59,13 @@ $pdo->prepare('UPDATE tickets SET status = \'answered\' WHERE id = ?')->execute(
 $stmt = $pdo->prepare('SELECT email FROM users WHERE id = ?');
 $stmt->execute([$ticket['user_id']]);
 $email = (string) $stmt->fetchColumn();
+$link = rtrim((string) ($c['site_url'] ?? 'https://tradingprompt.space'), '/') . '/?support=history';
 $mailed = $email !== '' && send_mail(
     $email,
     "Ответ на заявку #$ticketId: " . $ticket['subject'],
     "Здравствуйте!\n\nОтвет службы поддержки Trading Prompt на вашу заявку «{$ticket['subject']}»:\n\n$text\n\n"
-    . 'Заявка и переписка доступны на сайте: ' . rtrim((string) ($c['site_url'] ?? 'https://tradingprompt.space'), '/') . "/?support=history\n"
+    . "Заявка и переписка доступны на сайте: $link\n",
+    mail_html("Ответ на заявку «{$ticket['subject']}»", 'Служба поддержки Trading Prompt ответила на ваше обращение:', $text, 'Открыть переписку', $link)
 );
 telegram_call('sendMessage', $params + ['text' => $mailed ? "Ответ отправлен: на сайт и на почту." : "Ответ сохранён на сайте (письмо не отправлено)."]);
 

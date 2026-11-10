@@ -16,7 +16,7 @@ function mail_configured(): bool
 }
 
 /** Sends a plain-text UTF-8 email. Returns false (and logs) on any failure; callers must not depend on it. */
-function send_mail(string $to, string $subject, string $body): bool
+function send_mail(string $to, string $subject, string $body, ?string $html = null): bool
 {
     if (!mail_configured()) {
         return false;
@@ -83,6 +83,7 @@ function send_mail(string $to, string $subject, string $body): bool
         $encode = static function (string $text): string {
             return '=?UTF-8?B?' . base64_encode($text) . '?=';
         };
+        $boundary = '=_tp_' . bin2hex(random_bytes(8));
         $headers = [
             'Date: ' . date('r'),
             'From: ' . $encode($fromName) . " <$from>",
@@ -90,10 +91,20 @@ function send_mail(string $to, string $subject, string $body): bool
             'Subject: ' . $encode($subject),
             'Message-ID: <' . bin2hex(random_bytes(12)) . '@' . (explode('@', $from)[1] ?? 'localhost') . '>',
             'MIME-Version: 1.0',
-            'Content-Type: text/plain; charset=UTF-8',
-            'Content-Transfer-Encoding: base64',
+            $html === null ? 'Content-Type: text/plain; charset=UTF-8' : "Content-Type: multipart/alternative; boundary=\"$boundary\"",
         ];
-        $message = implode("\r\n", $headers) . "\r\n\r\n" . chunk_split(base64_encode($body), 76, "\r\n");
+        $part = static function (string $type, string $content): string {
+            return "Content-Type: $type; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($content), 76, "\r\n");
+        };
+        if ($html === null) {
+            $headers[] = 'Content-Transfer-Encoding: base64';
+            $message = implode("\r\n", $headers) . "\r\n\r\n" . chunk_split(base64_encode($body), 76, "\r\n");
+        } else {
+            $message = implode("\r\n", $headers) . "\r\n\r\n"
+                . "--$boundary\r\n" . $part('text/plain', $body)
+                . "--$boundary\r\n" . $part('text/html', $html)
+                . "--$boundary--\r\n";
+        }
         fwrite($socket, $message . "\r\n.\r\n");
         $expect([250]);
         $send('QUIT', [221]);
@@ -106,4 +117,29 @@ function send_mail(string $to, string $subject, string $body): bool
         }
         return false;
     }
+}
+
+/** Branded HTML email: a heading, the message as a quote, one button. All values are escaped here. */
+function mail_html(string $heading, string $intro, string $quote, string $buttonText, string $url): string
+{
+    $e = static function (string $v): string {
+        return htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
+    };
+    return '<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+        . '<body style="margin:0;padding:0;background:#F3F2FA;">'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3F2FA;padding:28px 12px;"><tr><td align="center">'
+        . '<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#FFFFFF;border-radius:14px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;">'
+        . '<tr><td style="background:#14121F;padding:20px 28px;color:#FFFFFF;font-size:18px;font-weight:bold;letter-spacing:0.3px;">'
+        . 'Trading <span style="color:#A99BFF;">Prompt</span></td></tr>'
+        . '<tr><td style="padding:28px 28px 8px;color:#1B1930;">'
+        . '<h1 style="margin:0 0 12px;font-size:20px;line-height:1.3;color:#1B1930;">' . $e($heading) . '</h1>'
+        . '<p style="margin:0 0 18px;font-size:14px;line-height:1.6;color:#55536B;">' . $e($intro) . '</p>'
+        . '<div style="margin:0 0 24px;padding:14px 16px;background:#F6F5FD;border-left:4px solid #8B7CFF;border-radius:6px;font-size:15px;line-height:1.65;color:#1B1930;white-space:pre-wrap;">' . $e($quote) . '</div>'
+        . '<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#6D5BF0;border-radius:8px;">'
+        . '<a href="' . $e($url) . '" style="display:inline-block;padding:12px 24px;color:#FFFFFF;font-size:14px;font-weight:bold;text-decoration:none;">' . $e($buttonText) . '</a>'
+        . '</td></tr></table>'
+        . '</td></tr>'
+        . '<tr><td style="padding:22px 28px 26px;color:#8A889F;font-size:12px;line-height:1.6;">'
+        . 'Вы получили это письмо, потому что создали обращение в поддержку Trading Prompt. Ответить можно на сайте: Поддержка и контакты → История запросов.'
+        . '</td></tr></table></td></tr></table></body></html>';
 }
