@@ -1,6 +1,6 @@
 <?php
-// Receives Telegram updates (set with setWebhook and a secret_token, see DEPLOY.md). A staff message
-// in a ticket's topic (or a reply to the ticket's message) is saved as the answer and emailed to the user.
+// Receives Telegram updates (set with setWebhook and a secret_token, see DEPLOY.md). A staff reply to
+// a ticket message is saved as the answer and emailed to the user.
 require __DIR__ . '/_bootstrap.php';
 require __DIR__ . '/_telegram.php';
 require __DIR__ . '/_mail.php';
@@ -22,24 +22,23 @@ if ($text === '') {
     respond(200, ['ok' => true]);
 }
 
+// An answer is a reply to one of the ticket messages the bot posted (or to an earlier answer). Plain
+// messages in a topic are staff talking to each other and are ignored. In a topic Telegram marks every
+// message as a reply to the topic itself, so those are not real replies.
+$replyTo = $message['reply_to_message']['message_id'] ?? null;
+if (!$replyTo || (int) $replyTo === (int) ($message['message_thread_id'] ?? 0)) {
+    respond(200, ['ok' => true]);
+}
 $pdo = db();
-$ticket = null;
-if (!empty($message['message_thread_id'])) {
-    $stmt = $pdo->prepare('SELECT * FROM tickets WHERE tg_thread_id = ?');
-    $stmt->execute([$message['message_thread_id']]);
-    $ticket = $stmt->fetch() ?: null;
-}
-if (!$ticket && !empty($message['reply_to_message']['message_id'])) {
-    $stmt = $pdo->prepare('SELECT t.* FROM tickets t JOIN ticket_messages m ON m.ticket_id = t.id WHERE m.tg_message_id = ? LIMIT 1');
-    $stmt->execute([$message['reply_to_message']['message_id']]);
-    $ticket = $stmt->fetch() ?: null;
-}
+$stmt = $pdo->prepare('SELECT t.* FROM tickets t JOIN ticket_messages m ON m.ticket_id = t.id WHERE m.tg_message_id = ? LIMIT 1');
+$stmt->execute([$replyTo]);
+$ticket = $stmt->fetch() ?: null;
 if (!$ticket) {
     respond(200, ['ok' => true]);
 }
 
 $ticketId = (int) $ticket['id'];
-$params = ['chat_id' => $c['tg_chat_id']];
+$params = ['chat_id' => $c['tg_chat_id'], 'reply_to_message_id' => $message['message_id']];
 if (!empty($message['message_thread_id'])) {
     $params['message_thread_id'] = $message['message_thread_id'];
 }

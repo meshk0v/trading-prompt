@@ -28,17 +28,23 @@ $pdo->prepare('INSERT INTO ticket_messages (ticket_id, author, body) VALUES (?, 
 $messageId = (int) $pdo->lastInsertId();
 $pdo->commit();
 
-// Pass the ticket to the support chat. The ticket is already saved, so a Telegram outage loses nothing.
+// Pass the ticket to the support chat: one topic per client, one message per ticket. Staff answer by
+// replying to that message. The ticket is already saved, so a Telegram outage loses nothing.
 if (telegram_configured()) {
     $c = config();
     $chatId = $c['tg_chat_id'];
     $threadId = null;
     if (!empty($c['tg_forum'])) {
-        $topic = telegram_call('createForumTopic', [
-            'chat_id' => $chatId,
-            'name' => mb_substr("#$ticketId · $subject", 0, 128),
-        ]);
-        $threadId = $topic['message_thread_id'] ?? null;
+        $stmt = $pdo->prepare('SELECT tg_thread_id FROM tickets WHERE user_id = ? AND tg_thread_id IS NOT NULL ORDER BY id DESC LIMIT 1');
+        $stmt->execute([$user['id']]);
+        $threadId = $stmt->fetchColumn() ?: null;
+        if ($threadId === null) {
+            $topic = telegram_call('createForumTopic', [
+                'chat_id' => $chatId,
+                'name' => mb_substr("{$user['name']} (ID {$user['id']})", 0, 128),
+            ]);
+            $threadId = $topic['message_thread_id'] ?? null;
+        }
     }
 
     $params = [
@@ -47,7 +53,7 @@ if (telegram_configured()) {
             "Заявка #$ticketId\n"
             . "От: {$user['name']} (ID {$user['id']}), {$user['email']}, {$user['telegram']}\n"
             . "Тема: $subject\n\n$text"
-            . "\n\nОтветьте в этой теме, ответ уйдёт пользователю на сайт и на почту. /close — закрыть заявку."
+            . "\n\nОтветьте реплаем на это сообщение: ответ уйдёт пользователю на сайт и на почту. /close реплаем — закрыть заявку."
         ),
     ];
     if ($threadId !== null) {
