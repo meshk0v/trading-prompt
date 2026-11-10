@@ -355,7 +355,8 @@ export default function App() {
   const [authOpen, setAuthOpen] = useState(false)
   const [affiliateOpen, setAffiliateOpen] = useState(false)
   const [legalOpen, setLegalOpen] = useState(false)
-  const [supportOpen, setSupportOpen] = useState(false)
+  // Links from support emails open the ticket history directly: /?support=history
+  const [supportOpen, setSupportOpen] = useState(() => new URLSearchParams(window.location.search).has('support'))
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [faqOpen, setFaqOpen] = useState(false)

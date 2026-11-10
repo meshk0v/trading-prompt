@@ -1744,7 +1744,7 @@ function LegalPage({ onClose, footer }: { onClose: () => void; footer?: React.Re
 }
 
 function SupportPage({ signedIn, onSignIn, onClose, footer }: { signedIn: boolean; onSignIn: () => void; onClose: () => void; footer?: React.ReactNode }) {
-  const [section, setSection] = useState<'support' | 'history'>('support')
+  const [section, setSection] = useState<'support' | 'history'>(() => new URLSearchParams(window.location.search).get('support') === 'history' ? 'history' : 'support')
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
   const [sent, setSent] = useState(false)

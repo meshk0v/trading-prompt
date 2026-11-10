@@ -63,7 +63,7 @@ $mailed = $email !== '' && send_mail(
     $email,
     "Ответ на заявку #$ticketId: " . $ticket['subject'],
     "Здравствуйте!\n\nОтвет службы поддержки Trading Prompt на вашу заявку «{$ticket['subject']}»:\n\n$text\n\n"
-    . "Заявка и переписка доступны на сайте: Поддержка и контакты → История запросов.\n"
+    . 'Заявка и переписка доступны на сайте: ' . rtrim((string) ($c['site_url'] ?? 'https://tradingprompt.space'), '/') . "/?support=history\n"
 );
 telegram_call('sendMessage', $params + ['text' => $mailed ? "Ответ отправлен: на сайт и на почту." : "Ответ сохранён на сайте (письмо не отправлено)."]);
 
