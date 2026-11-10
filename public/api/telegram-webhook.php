@@ -54,7 +54,7 @@ if ($text[0] === '/') {
 
 $pdo->prepare('INSERT INTO ticket_messages (ticket_id, author, body, tg_message_id) VALUES (?, \'staff\', ?, ?)')
     ->execute([$ticketId, mb_substr($text, 0, 5000), $message['message_id'] ?? null]);
-$pdo->prepare('UPDATE tickets SET status = \'answered\' WHERE id = ?')->execute([$ticketId]);
+$pdo->prepare('UPDATE tickets SET status = \'answered\', updated_at = NOW() WHERE id = ?')->execute([$ticketId]);
 
 $stmt = $pdo->prepare('SELECT email FROM users WHERE id = ?');
 $stmt->execute([$ticket['user_id']]);

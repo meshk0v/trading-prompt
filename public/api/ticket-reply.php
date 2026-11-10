@@ -30,7 +30,7 @@ if ((int) $stmt->fetchColumn() >= 20) {
 
 $pdo->prepare('INSERT INTO ticket_messages (ticket_id, author, body) VALUES (?, \'user\', ?)')->execute([$ticketId, $text]);
 $messageId = (int) $pdo->lastInsertId();
-$pdo->prepare('UPDATE tickets SET status = \'open\' WHERE id = ?')->execute([$ticketId]);
+$pdo->prepare('UPDATE tickets SET status = \'open\', updated_at = NOW() WHERE id = ?')->execute([$ticketId]);
 
 // Post it into the ticket's topic as a reply to the latest message of the ticket, so the staff see the
 // whole thread. The message is already saved, so a Telegram outage loses nothing.

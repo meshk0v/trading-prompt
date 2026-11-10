@@ -12,17 +12,23 @@ export type Ticket = {
   subject: string
   status: 'open' | 'answered' | 'closed'
   date: string
+  /** A staff answer the user has not opened yet. */
+  unread: boolean
   messages: TicketMessage[]
 }
 
-export async function fetchTickets(): Promise<Ticket[]> {
-  return (await request<{ tickets: Ticket[] }>('tickets')).tickets
+export async function fetchTickets(): Promise<{ tickets: Ticket[]; unread: number }> {
+  return request<{ tickets: Ticket[]; unread: number }>('tickets')
 }
 
-export async function createTicket(subject: string, body: string): Promise<void> {
-  await post('ticket-create', { subject, body })
+export async function createTicket(subject: string, body: string): Promise<{ id: number }> {
+  return post<{ id: number }>('ticket-create', { subject, body })
 }
 
 export async function replyToTicket(id: number, body: string): Promise<void> {
   await post('ticket-reply', { id, body })
+}
+
+export async function markTicketRead(id: number): Promise<void> {
+  await post('ticket-read', { id })
 }

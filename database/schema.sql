@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS tickets (
   status       VARCHAR(16)  NOT NULL DEFAULT 'open', -- open | answered | closed
   tg_thread_id BIGINT       NULL DEFAULT NULL,       -- Telegram topic of the ticket
   tg_sent      TINYINT(1)   NOT NULL DEFAULT 0,      -- the ticket reached Telegram
+  seen_message_id INT UNSIGNED NOT NULL DEFAULT 0,   -- last staff message the user has seen
   created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),

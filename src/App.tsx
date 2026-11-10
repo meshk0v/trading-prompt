@@ -9,6 +9,7 @@ import PublicAffiliatePage from './components/PublicAffiliatePage'
 import ReviewsPage from './components/ReviewsPage'
 import AnalysisSettingsPanel from './components/AnalysisSettingsPanel'
 import UserAvatar from './components/UserAvatar'
+import { fetchTickets } from './api/tickets'
 import { rememberReferralFromUrl } from './api/referral'
 import { completeGuide, fetchCurrentUser, logout, type AuthUser } from './api/auth'
 import { applyAppLanguage, type AppLanguage } from './i18n'
@@ -356,6 +357,7 @@ export default function App() {
   const [affiliateOpen, setAffiliateOpen] = useState(false)
   const [legalOpen, setLegalOpen] = useState(false)
   // Links from support emails open the ticket history directly: /?support=history
+  const [supportUnread, setSupportUnread] = useState(0)
   const [supportOpen, setSupportOpen] = useState(() => new URLSearchParams(window.location.search).has('support'))
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [calendarOpen, setCalendarOpen] = useState(false)
@@ -461,6 +463,18 @@ export default function App() {
 
   // A visitor who came by a partner's link is attached to that partner at sign-up.
   useEffect(rememberReferralFromUrl, [])
+
+  // Answers from support arrive at any time: keep the unread counter of the menu fresh.
+  useEffect(() => {
+    if (!user) {
+      setSupportUnread(0)
+      return
+    }
+    const refresh = () => { if (!document.hidden) fetchTickets().then(({ unread }) => setSupportUnread(unread), () => undefined) }
+    refresh()
+    const timer = setInterval(refresh, 60000)
+    return () => clearInterval(timer)
+  }, [user])
 
   // Restore the session of a returning visitor; a failed request just leaves the guest view.
   useEffect(() => {
@@ -1034,6 +1048,9 @@ export default function App() {
                 >
                   <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>{item.icon}</span>
                   <span>{item.label}</span>
+                  {item.id === 'support' && supportUnread > 0 && (
+                    <span aria-label="Новые ответы поддержки" style={{ marginLeft: 'auto', minWidth: 18, height: 18, padding: '0 5px', borderRadius: 9, background: '#8B7CFF', color: '#0D0A24', fontSize: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{supportUnread}</span>
+                  )}
                 </div>
               ))}
 
@@ -1317,7 +1334,7 @@ export default function App() {
               : <PublicAffiliatePage onClose={() => { setAffiliateOpen(false); setActiveTab('chat') }} onSignUp={() => setAuthOpen(true)} onOpenFaq={() => nav('faq')} />
             )}
             {legalOpen && <LegalPage onClose={() => { setLegalOpen(false); setActiveTab('chat') }} />}
-            {supportOpen && <SupportPage signedIn={Boolean(user)} onSignIn={() => setAuthOpen(true)} onClose={() => { setSupportOpen(false); setActiveTab('chat') }} />}
+            {supportOpen && <SupportPage unread={supportUnread} onUnreadChange={setSupportUnread} signedIn={Boolean(user)} onSignIn={() => setAuthOpen(true)} onClose={() => { setSupportOpen(false); setActiveTab('chat') }} />}
             {settingsOpen && (
               <SettingsPage
                 user={user}

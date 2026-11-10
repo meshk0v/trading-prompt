@@ -1,7 +1,7 @@
 // @refresh reset
 import { useCallback, useEffect, useState } from 'react'
 import { login, register, type AuthUser } from './api/auth'
-import { createTicket, fetchTickets, replyToTicket, type Ticket } from './api/tickets'
+import SupportInbox from './components/SupportInbox'
 import { createReferralLink, deleteReferralLink, fetchReferral, requestPayout, saveWallet, storedReferral, type ReferralData } from './api/referral'
 import AccountSettings from './components/AccountSettings'
 import Binum_LOGO from './components/BinumLogo'
@@ -1743,90 +1743,18 @@ function LegalPage({ onClose, footer }: { onClose: () => void; footer?: React.Re
   )
 }
 
-function SupportPage({ signedIn, onSignIn, onClose, footer }: { signedIn: boolean; onSignIn: () => void; onClose: () => void; footer?: React.ReactNode }) {
-  const [section, setSection] = useState<'support' | 'history'>(() => new URLSearchParams(window.location.search).get('support') === 'history' ? 'history' : 'support')
-  const [subject, setSubject] = useState('')
-  const [body, setBody] = useState('')
-  const [sent, setSent] = useState(false)
-  const [apiTickets, setApiTickets] = useState<Ticket[]>([])
-  const [sendError, setSendError] = useState('')
-  const [sending, setSending] = useState(false)
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [replyText, setReplyText] = useState('')
-  const [replyError, setReplyError] = useState('')
-  const [replying, setReplying] = useState(false)
+function SupportPage({ signedIn, onSignIn, onClose, unread = 0, onUnreadChange, footer }: { signedIn: boolean; onSignIn: () => void; onClose: () => void; unread?: number; onUnreadChange?: (count: number) => void; footer?: React.ReactNode }) {
+  const [section, setSection] = useState<'tickets' | 'contacts'>('tickets')
 
-  const loadTickets = useCallback(() => {
-    fetchTickets().then(setApiTickets, () => undefined)
-  }, [])
-  // Answers arrive from Telegram at any time, so the history refreshes while it is open.
-  useEffect(() => {
-    if (!signedIn) {
-      setApiTickets([])
-      return
-    }
-    loadTickets()
-    if (section !== 'history') return
-    const timer = setInterval(loadTickets, 30000)
-    return () => clearInterval(timer)
-  }, [signedIn, section, loadTickets])
-
-  const tickets = apiTickets
-    .map(ticket => ({
-      key: String(ticket.id),
-      numericId: ticket.id,
-      id: `TKT-${String(ticket.id).padStart(3, '0')}`,
-      date: formatReferralDate(ticket.date),
-      subject: ticket.subject,
-      status: ticket.status,
-      messages: ticket.messages,
-    }))
-
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!subject.trim() || !body.trim()) return
-    setSending(true)
-    setSendError('')
-    createTicket(subject.trim(), body.trim())
-      .then(
-        () => {
-          setSubject('')
-          setBody('')
-          setSent(true)
-          setTimeout(() => setSent(false), 3500)
-          loadTickets()
-        },
-        (reason: unknown) => setSendError(errorMessage(reason)),
-      )
-      .finally(() => setSending(false))
-  }
-
-  const handleReply = (ticketId: number) => {
-    if (!replyText.trim()) return
-    setReplying(true)
-    setReplyError('')
-    replyToTicket(ticketId, replyText.trim())
-      .then(
-        () => {
-          setReplyText('')
-          loadTickets()
-        },
-        (reason: unknown) => setReplyError(errorMessage(reason)),
-      )
-      .finally(() => setReplying(false))
-  }
-
-  const statusLabel: Record<string, string> = { open: 'Открыт', answered: 'Отвечен', closed: 'Закрыт' }
-  const statusDot: Record<string, string> = { open: '#9A98B5', answered: '#CFCDE3', closed: '#676582' }
   const supportMenuItems = [
     {
-      id: 'support' as const,
-      label: 'Поддержка',
+      id: 'tickets' as const,
+      label: unread > 0 ? `Обращения (${unread})` : 'Обращения',
       icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 0 1 12 0v3a2 2 0 0 1-2 2h-1V8h3M2 8v5H1a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h1ZM11 13c0 1-1 1.5-3 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
     },
     {
-      id: 'history' as const,
-      label: 'История запросов',
+      id: 'contacts' as const,
+      label: 'Контакты',
       icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 4.5V1.8M2.5 1.8H5.2M2.5 1.8l2.1 2.1A5.5 5.5 0 1 1 2 8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><path d="M8 5v3.3l2.2 1.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
     },
   ]
@@ -1891,7 +1819,7 @@ function SupportPage({ signedIn, onSignIn, onClose, footer }: { signedIn: boolea
         <div className="scrollable page-body support-body" style={{ flex: 1, overflowY: 'auto', padding: '32px 40px', boxSizing: 'border-box', minWidth: 0 }}>
           <div style={{ maxWidth: 960, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {section === 'support' && (<>
+          {section === 'contacts' && (<>
 
           {/* Block 1: Контакты */}
           <div className="support-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(76,201,240,0.12) 0%, #12121C 48%)', border: '1px solid rgba(76,201,240,0.35)', borderRadius: '10px', padding: '24px 28px' }}>
@@ -1957,150 +1885,9 @@ function SupportPage({ signedIn, onSignIn, onClose, footer }: { signedIn: boolea
             </div>
           </div>
 
-          {/* Block 2: Создать тикет */}
-          <div className="support-card" style={{ background: '#12121C', border: '1px solid #191926', borderRadius: '8px', padding: '28px 32px' }}>
-            <div style={{ marginBottom: '20px' }}>
-              <h2 style={{ margin: '0 0 4px', fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '17px', color: '#EDEBFA' }}>Создать тикет</h2>
-              <p style={{ margin: 0, fontSize: '13px', color: '#676582', fontFamily: 'Inter, sans-serif' }}>Опишите вашу проблему — мы ответим в течение 2 часов</p>
-            </div>
-            {!signedIn ? (
-              <div style={{ padding: '16px 20px', background: '#0F0F19', border: '1px solid #191926', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '14px', color: '#EDEBFA', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>Чтобы отправить обращение, войдите в аккаунт.</span>
-                <button type="button" onClick={onSignIn} style={{ height: 38, padding: '0 22px', background: '#8B7CFF', border: '1px solid #8B7CFF', borderRadius: '7px', color: '#0D0A24', fontSize: '13px', fontWeight: 700, fontFamily: 'Outfit, sans-serif', cursor: 'pointer' }}>Войти</button>
-              </div>
-            ) : sent ? (
-              <div style={{ padding: '16px 20px', background: '#0F0F19', border: '1px solid #191926', borderRadius: '5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <svg width="20" height="20" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="#9A98B5" strokeWidth="1.4"/><path d="M5.5 9.5l2.5 2.5 4.5-5" stroke="#9A98B5" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                <span style={{ fontSize: '14px', color: '#EDEBFA', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>Тикет отправлен. Ответим в течение 2 часов.</span>
-              </div>
-            ) : (
-              <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#7C7A98', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '7px', fontFamily: 'Inter, sans-serif' }}>Тема</label>
-                  <input className="support-input" type="text" placeholder="Кратко опишите вопрос" value={subject} onChange={e => setSubject(e.target.value)} required style={{ ...inputStyle, height: 44 }}
-                    onFocus={e => { e.target.style.borderColor = '#8B7CFF'; e.target.style.boxShadow = 'none' }}
-                    onBlur={e => { e.target.style.borderColor = '#34344F'; e.target.style.boxShadow = 'none' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#7C7A98', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '7px', fontFamily: 'Inter, sans-serif' }}>Сообщение</label>
-                  <textarea className="support-input" rows={5} placeholder="Подробно опишите проблему или вопрос..." value={body} onChange={e => setBody(e.target.value)} required style={inputStyle}
-                    onFocus={e => { e.currentTarget.style.borderColor = '#8B7CFF'; e.currentTarget.style.boxShadow = 'none' }}
-                    onBlur={e => { e.currentTarget.style.borderColor = '#34344F'; e.currentTarget.style.boxShadow = 'none' }}
-                  />
-                </div>
-                {sendError && <div role="alert" style={{ color: '#FF8A6B', fontFamily: 'Inter, sans-serif', fontSize: '12px' }}>{sendError}</div>}
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button type="submit" disabled={sending} style={{
-                    opacity: sending ? 0.6 : 1,
-                    height: 44, padding: '0 36px',
-                    background: '#8B7CFF', border: '1px solid #8B7CFF', borderRadius: '7px',
-                    color: '#0D0A24', fontSize: '14px', fontWeight: 700,
-                    fontFamily: 'Outfit, sans-serif', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    transition: 'background 0.15s, border-color 0.15s, color 0.15s', letterSpacing: '0.02em',
-                  }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#A194FF'; e.currentTarget.style.borderColor = '#A194FF' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = '#8B7CFF'; e.currentTarget.style.borderColor = '#8B7CFF' }}
-                  >
-                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 6-12 6V8l8-1-8-1V1z" fill="currentColor"/></svg>
-                    Отправить тикет
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-
           </>)}
 
-          {section === 'history' && (<>
-          {/* Block 3: История тикетов */}
-          <div className="support-card" style={{ background: '#12121C', border: '1px solid #191926', borderRadius: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <div className="support-tickets-hdr" style={{ padding: '18px 28px', borderBottom: '1px solid #0F0F19', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-              <h2 style={{ margin: 0, fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '17px', color: '#EDEBFA' }}>История тикетов</h2>
-              <span style={{ fontSize: '12px', color: '#676582', fontFamily: 'Inter, sans-serif' }}>{tickets.length} обращений</span>
-            </div>
-
-            {/* Table header */}
-            <div className="support-tbl-hdr" style={{
-              display: 'grid', gridTemplateColumns: '90px 1fr 110px 100px 28px',
-              padding: '9px 28px', background: '#0F0F19',
-              borderBottom: '1px solid #191926', flexShrink: 0,
-            }}>
-              {['Номер', 'Тема', 'Дата', 'Статус', ''].map(h => (
-                <span key={h} style={{ fontSize: '10px', fontWeight: 600, color: '#676582', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, sans-serif' }}>{h}</span>
-              ))}
-            </div>
-
-            {/* Scrollable rows */}
-            <div className="scrollable" style={{ maxHeight: 340, overflowY: 'auto' }}>
-              {tickets.length === 0 ? (
-                <div style={{ padding: '48px', textAlign: 'center', color: '#676582', fontSize: '13px', fontFamily: 'Inter, sans-serif' }}>Обращений пока нет</div>
-              ) : (
-                tickets.map((t, i, arr) => (
-                  <div key={t.key}>
-                    <div
-                      onClick={() => { setExpandedId(expandedId === t.key ? null : t.key); setReplyText(''); setReplyError('') }}
-                      className="support-tbl-row"
-                      style={{
-                        display: 'grid', gridTemplateColumns: '90px 1fr 110px 100px 28px',
-                        padding: '13px 28px', alignItems: 'center',
-                        borderBottom: i < arr.length - 1 || expandedId === t.key ? '1px solid #0F0F19' : 'none',
-                        cursor: 'pointer', transition: 'background 0.1s',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.background = '#0F0F19' }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                    >
-                      <span className="support-tbl-num" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#676582' }}>{t.id}</span>
-                      <span style={{ fontSize: '13px', color: '#CFCDE3', fontFamily: 'Inter, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: '16px' }}>{t.subject}</span>
-                      <span className="support-tbl-date" style={{ fontSize: '12px', color: '#676582', fontFamily: 'JetBrains Mono, monospace' }}>{t.date}</span>
-                      <span className="support-tbl-status" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: statusDot[t.status], fontFamily: 'Inter, sans-serif' }}>
-                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: statusDot[t.status], flexShrink: 0 }} />
-                        {statusLabel[t.status]}
-                      </span>
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: '#676582', transition: 'transform 0.15s', transform: expandedId === t.key ? 'rotate(180deg)' : 'rotate(0deg)', justifySelf: 'end' }}>
-                        <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                      </svg>
-                    </div>
-                    {expandedId === t.key && (
-                      <div style={{ padding: '14px 28px 16px', background: '#0F0F19', borderBottom: i < arr.length - 1 ? '1px solid #191926' : 'none', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {t.messages.map((message, index) => (
-                          <div key={index}>
-                            <p style={{ margin: '0 0 6px', fontSize: '10px', fontWeight: 600, color: message.author === 'staff' ? '#8B7CFF' : '#676582', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, sans-serif' }}>
-                              {message.author === 'staff' ? 'Ответ поддержки' : 'Ваше сообщение'} · {formatReferralDate(message.date)}
-                            </p>
-                            <p style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: '13px', color: message.author === 'staff' ? '#CFCDE3' : '#9A98B5', fontFamily: 'Inter, sans-serif', lineHeight: 1.7 }}>{message.body}</p>
-                          </div>
-                        ))}
-                        {!t.messages.some(message => message.author === 'staff') && (
-                          <p style={{ margin: 0, fontSize: '13px', color: '#676582', fontFamily: 'Inter, sans-serif', fontStyle: 'italic' }}>Ожидает ответа...</p>
-                        )}
-                        {t.status === 'closed' ? (
-                          <p style={{ margin: 0, fontSize: '12px', color: '#676582', fontFamily: 'Inter, sans-serif' }}>Обращение закрыто. Если вопрос остался, создайте новое.</p>
-                        ) : (
-                          <form onSubmit={e => { e.preventDefault(); handleReply(t.numericId) }} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <textarea
-                              value={replyText}
-                              onChange={e => setReplyText(e.target.value)}
-                              maxLength={5000}
-                              rows={3}
-                              placeholder="Ваш ответ"
-                              style={inputStyle}
-                            />
-                            {replyError && <div role="alert" style={{ color: '#FF8A6B', fontFamily: 'Inter, sans-serif', fontSize: '12px' }}>{replyError}</div>}
-                            <button type="submit" disabled={replying || !replyText.trim()} style={{ alignSelf: 'flex-end', background: '#8B7CFF', color: '#0B0B12', border: 'none', borderRadius: '7px', padding: '8px 16px', fontFamily: 'Inter, sans-serif', fontSize: '13px', fontWeight: 600, cursor: replying || !replyText.trim() ? 'default' : 'pointer', opacity: replying || !replyText.trim() ? 0.5 : 1 }}>
-                              {replying ? 'Отправка…' : 'Ответить'}
-                            </button>
-                          </form>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-          </>)}
+          {section === 'tickets' && <SupportInbox signedIn={signedIn} onSignIn={onSignIn} onUnreadChange={onUnreadChange} />}
 
           {footer}
         </div>
