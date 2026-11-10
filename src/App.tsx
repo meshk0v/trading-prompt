@@ -469,6 +469,16 @@ export default function App() {
   // A visitor who came by a partner's link is attached to that partner at sign-up.
   useEffect(rememberReferralFromUrl, [])
 
+  // The support link has done its job once the page is open: drop it from the address, otherwise a
+  // reload would jump back to support from any other page.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (!params.has('support')) return
+    params.delete('support')
+    const query = params.toString()
+    window.history.replaceState(null, '', window.location.pathname + (query ? `?${query}` : '') + window.location.hash)
+  }, [])
+
   // Simulated purchases are kept per account in this browser.
   useEffect(() => {
     setPurchases(user ? loadPurchases(user.id) : [])

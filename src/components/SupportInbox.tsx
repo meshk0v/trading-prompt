@@ -259,7 +259,7 @@ export default function SupportInbox({ signedIn, onSignIn, onUnreadChange }: Sup
   } else {
     detail = (
       <div className="support-inbox-detail" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#676582', fontSize: '13px', fontFamily: 'Inter, sans-serif' }}>
-        Выберите обращение или создайте новое
+        {loaded ? 'Выберите обращение или создайте новое' : 'Загрузка…'}
       </div>
     )
   }
