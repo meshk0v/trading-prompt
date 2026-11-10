@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type CSSProperties, type FormEvent } from 'react'
+import UserAvatar from './UserAvatar'
 import { changePassword, fetchSessions, revokeSession, updateProfile, type UserSession } from '../api/auth'
 
 type AccountSettingsProps = {
@@ -192,10 +193,11 @@ export default function AccountSettings({ user, onAvatarChange }: AccountSetting
           <SectionHeader>Профиль</SectionHeader>
           <form onSubmit={saveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px', border: '1px solid #2E2E46', borderRadius: '8px', background: '#0F0F19' }}>
-              <img
-                src={user?.avatarUrl}
-                alt="Фото профиля"
-                style={{ width: 64, height: 64, flexShrink: 0, border: '1px solid rgba(139,124,255,0.38)', borderRadius: '12px', objectFit: 'cover', objectPosition: 'center 28%' }}
+              <UserAvatar
+                src={user?.avatarUrl ?? ''}
+                name={user?.name ?? ''}
+                size={64}
+                style={{ border: '1px solid rgba(139,124,255,0.38)', borderRadius: '12px', objectPosition: 'center 28%' }}
               />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ color: '#EDEBFA', fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 700 }}>Личное фото</div>

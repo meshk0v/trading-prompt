@@ -8,6 +8,7 @@ import PromptPanelResizeHandle from './components/PromptPanelResizeHandle'
 import PublicAffiliatePage from './components/PublicAffiliatePage'
 import ReviewsPage from './components/ReviewsPage'
 import AnalysisSettingsPanel from './components/AnalysisSettingsPanel'
+import UserAvatar from './components/UserAvatar'
 import { rememberReferralFromUrl } from './api/referral'
 import { completeGuide, fetchCurrentUser, logout, type AuthUser } from './api/auth'
 import { applyAppLanguage, type AppLanguage } from './i18n'
@@ -58,12 +59,11 @@ const toSiteUser = (user: AuthUser): SiteUser => ({
   email: user.email,
   id: user.id,
   uid: `840-${String(user.id).padStart(6, '0')}`,
-  avatarUrl: DEMO_USER_AVATAR_URL,
+  avatarUrl: '',
   telegram: user.telegram,
   guideCompleted: user.guideCompleted,
 })
 
-const DEMO_USER_AVATAR_URL = 'https://images.unsplash.com/photo-1767175473698-859bc73e8e64?auto=format&fit=crop&crop=faces&w=160&h=160&q=82'
 
 type AssetSearchOption = {
   pair: string
@@ -1005,11 +1005,11 @@ export default function App() {
             <div data-prompt-guide="authorized-menu-items" className="account-menu-icons" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
               <AccountBalanceSummary remaining={remainingPrompts} className="account-balance-summary--mobile" />
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '4px 2px 8px', padding: '11px 12px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)' }}>
-                <img
+                <UserAvatar
                   src={user.avatarUrl}
-                  alt="Фото пользователя"
-                  title="Демонстрационное фото"
-                  style={{ width: 48, height: 48, flexShrink: 0, border: '1px solid color-mix(in srgb, var(--accent) 46%, var(--border))', borderRadius: '12px', objectFit: 'cover', objectPosition: 'center 28%', boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent)' }}
+                  name={user.name}
+                  size={48}
+                  style={{ border: '1px solid color-mix(in srgb, var(--accent) 46%, var(--border))', borderRadius: '12px', objectPosition: 'center 28%', boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent)' }}
                 />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ overflow: 'hidden', color: 'var(--text)', fontSize: '13px', fontWeight: 700, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>UID: {user.uid}</div>
