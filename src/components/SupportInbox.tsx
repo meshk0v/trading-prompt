@@ -252,7 +252,6 @@ export default function SupportInbox({ signedIn, onSignIn, onUnreadChange }: Sup
               <textarea rows={2} placeholder="Напишите сообщение…" value={reply} onChange={e => setReply(e.target.value)} onKeyDown={onEnter(submitReply)} maxLength={5000} style={{ ...fieldStyle, flex: 1 }} />
               <button type="submit" disabled={busy || !reply.trim()} style={primaryButton(busy || !reply.trim())}>{busy ? '…' : 'Отправить'}</button>
             </div>
-            <div style={{ fontSize: '10px', color: '#676582', fontFamily: 'Inter, sans-serif' }}>Enter — отправить, Shift+Enter — новая строка</div>
           </form>
         )}
       </div>
