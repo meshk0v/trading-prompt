@@ -14,8 +14,18 @@ if ($secret === '' || !hash_equals($secret, $given)) {
 
 $update = json_decode((string) file_get_contents('php://input'), true);
 $message = is_array($update) ? ($update['message'] ?? null) : null;
-if (!is_array($message) || (string) ($message['chat']['id'] ?? '') !== (string) $c['tg_chat_id'] || !empty($message['from']['is_bot'])) {
+if (!is_array($message) || (string) ($message['chat']['id'] ?? '') !== (string) $c['tg_chat_id']) {
     respond(200, ['ok' => true]); // not for us; answer 200 so Telegram does not resend
+}
+
+// An admin closed a topic in Telegram: close its tickets on the site too. Closing is idempotent, so
+// the event caused by our own /close handling below does no harm.
+if (isset($message['forum_topic_closed']) && !empty($message['message_thread_id'])) {
+    db()->prepare('UPDATE tickets SET status = \'closed\' WHERE tg_thread_id = ?')->execute([(int) $message['message_thread_id']]);
+    respond(200, ['ok' => true]);
+}
+if (!empty($message['from']['is_bot'])) {
+    respond(200, ['ok' => true]);
 }
 $text = trim((string) ($message['text'] ?? ''));
 if ($text === '') {
@@ -46,6 +56,12 @@ if (!empty($message['message_thread_id'])) {
 if (preg_match('/^\/close(@\w+)?$/', $text)) {
     $pdo->prepare('UPDATE tickets SET status = \'closed\' WHERE id = ?')->execute([$ticketId]);
     telegram_call('sendMessage', $params + ['text' => "Заявка #$ticketId закрыта."]);
+    // Close the topic too, unless an older ticket still shares it (topics used to be per client).
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM tickets WHERE tg_thread_id = ? AND status <> \'closed\'');
+    $stmt->execute([$ticket['tg_thread_id']]);
+    if (!empty($ticket['tg_thread_id']) && !empty($c['tg_forum']) && (int) $stmt->fetchColumn() === 0) {
+        telegram_call('closeForumTopic', ['chat_id' => $c['tg_chat_id'], 'message_thread_id' => (int) $ticket['tg_thread_id']]);
+    }
     respond(200, ['ok' => true]);
 }
 if ($text[0] === '/') {

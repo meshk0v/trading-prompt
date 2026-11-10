@@ -28,23 +28,19 @@ $pdo->prepare('INSERT INTO ticket_messages (ticket_id, author, body) VALUES (?, 
 $messageId = (int) $pdo->lastInsertId();
 $pdo->commit();
 
-// Pass the ticket to the support chat: one topic per client, one message per ticket. Staff answer by
-// replying to that message. The ticket is already saved, so a Telegram outage loses nothing.
+// Pass the ticket to the support chat: one topic per ticket, with the ticket as its first message.
+// Staff answer by replying to a ticket message. The ticket is already saved, so a Telegram outage
+// loses nothing.
 if (telegram_configured()) {
     $c = config();
     $chatId = $c['tg_chat_id'];
     $threadId = null;
     if (!empty($c['tg_forum'])) {
-        $stmt = $pdo->prepare('SELECT tg_thread_id FROM tickets WHERE user_id = ? AND tg_thread_id IS NOT NULL ORDER BY id DESC LIMIT 1');
-        $stmt->execute([$user['id']]);
-        $threadId = $stmt->fetchColumn() ?: null;
-        if ($threadId === null) {
-            $topic = telegram_call('createForumTopic', [
-                'chat_id' => $chatId,
-                'name' => mb_substr("{$user['name']} (ID {$user['id']})", 0, 128),
-            ]);
-            $threadId = $topic['message_thread_id'] ?? null;
-        }
+        $topic = telegram_call('createForumTopic', [
+            'chat_id' => $chatId,
+            'name' => mb_substr("#$ticketId {$user['name']}: $subject", 0, 128),
+        ]);
+        $threadId = $topic['message_thread_id'] ?? null;
     }
 
     $params = [
