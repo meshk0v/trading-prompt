@@ -10,6 +10,7 @@ import ReviewsPage from './components/ReviewsPage'
 import AnalysisSettingsPanel from './components/AnalysisSettingsPanel'
 import UserAvatar from './components/UserAvatar'
 import { fetchTickets } from './api/tickets'
+import { loadPurchases, reportDemoPayment, savePurchases, type Purchase } from './api/purchases'
 import { rememberReferralFromUrl } from './api/referral'
 import { completeGuide, fetchCurrentUser, logout, type AuthUser } from './api/auth'
 import { applyAppLanguage, type AppLanguage } from './i18n'
@@ -358,6 +359,7 @@ export default function App() {
   const [legalOpen, setLegalOpen] = useState(false)
   // Links from support emails open the ticket history directly: /?support=history
   const [supportUnread, setSupportUnread] = useState(0)
+  const [purchases, setPurchases] = useState<Purchase[]>([])
   const [supportOpen, setSupportOpen] = useState(() => new URLSearchParams(window.location.search).has('support'))
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [calendarOpen, setCalendarOpen] = useState(false)
@@ -449,8 +451,11 @@ export default function App() {
   }, [selectedAssetType]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const FREE_LIMIT = 3
+  const purchasedCredits = user ? purchases.reduce((sum, purchase) => sum + purchase.credits, 0) : 0
+  // Free prompts plus bought credits (simulated for now).
+  const promptAllowance = FREE_LIMIT + purchasedCredits
   const usedPrompts = user ? userRequests : guestRequests
-  const remainingPrompts = Math.max(0, FREE_LIMIT - usedPrompts)
+  const remainingPrompts = Math.max(0, promptAllowance - usedPrompts)
   const timeframeFields: { label: string; value: string; onChange: (value: string) => void; placeholder?: string }[] = [
     { label: 'Таймфрейм', value: selectedTimeframe, onChange: setSelectedTimeframe },
   ]
@@ -463,6 +468,22 @@ export default function App() {
 
   // A visitor who came by a partner's link is attached to that partner at sign-up.
   useEffect(rememberReferralFromUrl, [])
+
+  // Simulated purchases are kept per account in this browser.
+  useEffect(() => {
+    setPurchases(user ? loadPurchases(user.id) : [])
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleBuyCredits = useCallback((credits: number, amountUsd: number) => {
+    if (!user) return
+    const purchase: Purchase = { id: `${Date.now()}`, date: new Date().toISOString(), credits, amountUsd }
+    setPurchases(current => {
+      const next = [purchase, ...current]
+      savePurchases(user.id, next)
+      return next
+    })
+    void reportDemoPayment(amountUsd)
+  }, [user])
 
   // Answers from support arrive at any time: keep the unread counter of the menu fresh.
   useEffect(() => {
@@ -556,7 +577,7 @@ export default function App() {
 
   const handleGeneratePrompt = async () => {
     if (analysisLoading) return
-    if (usedPrompts >= FREE_LIMIT) {
+    if (usedPrompts >= promptAllowance) {
       setLimitModal(user ? 'user' : 'guest')
       return
     }
@@ -710,7 +731,7 @@ export default function App() {
       setCopyErrorId(null)
       if (user) {
         setUserRequests(userRequests + 1)
-        if (userRequests + 1 === FREE_LIMIT) setLimitModal('user')
+        if (userRequests + 1 === promptAllowance) setLimitModal('user')
       } else {
         setGuestRequests(guestRequests + 1)
         if (guestRequests + 1 === FREE_LIMIT) setLimitModal('guest')
@@ -1202,7 +1223,7 @@ export default function App() {
                   email={user.email}
                   emailHidden={emailHidden}
                   onToggleEmail={() => setEmailHidden(v => !v)}
-                  remaining={Math.max(0, FREE_LIMIT - userRequests)}
+                  remaining={Math.max(0, promptAllowance - userRequests)}
                   plan={userPlan}
                   onCyclePlan={() => setUserPlan(p => PLAN_CYCLE[(PLAN_CYCLE.indexOf(p) + 1) % PLAN_CYCLE.length])}
                   onLogout={handleLogout}
@@ -1340,6 +1361,9 @@ export default function App() {
                 user={user}
                 initialSection={settingsSection}
                 onAvatarChange={handleAvatarChange}
+                purchases={purchases}
+                onBuyCredits={handleBuyCredits}
+                onSignIn={() => setAuthOpen(true)}
                 onClose={() => { setSettingsOpen(false); setActiveTab('chat') }}
               />
             )}
@@ -1736,7 +1760,7 @@ export default function App() {
               </button>
               </div>
               <div className="mobile-prompt-usage mt-2.5 hidden h-[30px] w-full items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--card2)] px-3 text-center text-sm text-[var(--muted)]">
-                <span>Доступно промптов <span className="font-mono font-semibold text-accent">{remainingPrompts}/{FREE_LIMIT}</span></span>
+                <span>Доступно промптов <span className="font-mono font-semibold text-accent">{remainingPrompts}/{promptAllowance}</span></span>
               </div>
 
               {/* Persistent prompt addition panel replaces the former modal flow. */}

@@ -1,7 +1,8 @@
 // @refresh reset
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { login, register, type AuthUser } from './api/auth'
 import SupportInbox from './components/SupportInbox'
+import type { Purchase } from './api/purchases'
 import { createReferralLink, deleteReferralLink, fetchReferral, requestPayout, saveWallet, storedReferral, type ReferralData } from './api/referral'
 import AccountSettings from './components/AccountSettings'
 import Binum_LOGO from './components/BinumLogo'
@@ -2198,7 +2199,7 @@ function HistoryPage({ onClose }: { onClose: () => void }) {
   )
 }
 
-function CreditsPage({ footer }: { footer?: React.ReactNode }) {
+function CreditsPage({ signedIn, purchases, onBuy, onSignIn, footer }: { signedIn: boolean; purchases: Purchase[]; onBuy: (credits: number, amountUsd: number) => void; onSignIn: () => void; footer?: React.ReactNode }) {
   const MIN_CREDITS = 100
   const MAX_CREDITS = 10000
   const CREDIT_STEP = 100
@@ -2207,11 +2208,25 @@ function CreditsPage({ footer }: { footer?: React.ReactNode }) {
   const price = credits / 10
   const progress = ((credits - MIN_CREDITS) / (MAX_CREDITS - MIN_CREDITS)) * 100
   const quickAmounts = [100, 500, 1000, 3000, 5000, 10000]
-  const purchases = [
-    { date: '01.07.2026', description: 'Пополнение баланса', credits: '+3 000', amount: '$300', status: 'Оплачено' },
-    { date: '01.04.2026', description: 'Пополнение баланса', credits: '+1 000', amount: '$100', status: 'Оплачено' },
-    { date: '01.01.2026', description: 'Пополнение баланса', credits: '+100', amount: '$10', status: 'Оплачено' },
-  ]
+  // Simulated checkout: confirm, then "processing", then done. Nothing is charged.
+  const [checkout, setCheckout] = useState<'closed' | 'confirm' | 'processing' | 'done'>('closed')
+  const paying = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  useEffect(() => () => clearTimeout(paying.current), [])
+  const startBuy = () => {
+    if (!signedIn) {
+      onSignIn()
+      return
+    }
+    setCheckout('confirm')
+  }
+  const pay = () => {
+    setCheckout('processing')
+    paying.current = setTimeout(() => {
+      onBuy(credits, price)
+      setCheckout('done')
+    }, 1400)
+  }
+  const formatPurchaseDate = (iso: string) => new Date(iso).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
   const tabs = [
     {
       id: 'credits' as const,
@@ -2349,7 +2364,7 @@ function CreditsPage({ footer }: { footer?: React.ReactNode }) {
               <span>Итого</span>
               <strong>${price.toLocaleString('en-US')}</strong>
             </div>
-            <button type="button" className="credits-buy-button">
+            <button type="button" className="credits-buy-button" onClick={startBuy}>
               Купить {credits.toLocaleString('ru-RU')} кредитов
               <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -2401,16 +2416,19 @@ function CreditsPage({ footer }: { footer?: React.ReactNode }) {
               <div className="credits-history-title">История пополнений</div>
               <div className="credits-history-caption">Последние операции с вашим балансом</div>
             </div>
-            <div className="credits-history-count">{purchases.length} операции</div>
+            <div className="credits-history-count">{purchases.length} {purchases.length === 1 ? 'операция' : 'операций'}</div>
           </div>
           <div className="credits-history-list">
+            {purchases.length === 0 && (
+              <div style={{ padding: '28px 8px', textAlign: 'center', color: '#676582', fontSize: '13px', fontFamily: 'Inter, sans-serif' }}>Пополнений пока нет</div>
+            )}
             {purchases.map(purchase => (
-              <div className="credits-history-row" key={purchase.date}>
-                <span>{purchase.date}</span>
-                <span>{purchase.description}</span>
-                <strong>{purchase.credits}</strong>
-                <span>{purchase.amount}</span>
-                <span>{purchase.status}</span>
+              <div className="credits-history-row" key={purchase.id}>
+                <span>{formatPurchaseDate(purchase.date)}</span>
+                <span>Пополнение баланса</span>
+                <strong>+{purchase.credits.toLocaleString('ru-RU')}</strong>
+                <span>${purchase.amountUsd.toLocaleString('en-US')}</span>
+                <span>Оплачено (демо)</span>
               </div>
             ))}
           </div>
@@ -2420,11 +2438,44 @@ function CreditsPage({ footer }: { footer?: React.ReactNode }) {
           {footer}
         </div>
       </div>
+      {checkout !== 'closed' && (
+        <div role="dialog" aria-modal="true" aria-label="Оплата" onClick={() => { if (checkout !== 'processing') setCheckout('closed') }} style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(5,5,10,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 400, background: '#12121C', border: '1px solid #2E2E46', borderRadius: 12, padding: '24px 24px 20px', fontFamily: 'Inter, sans-serif', color: '#EDEBFA' }}>
+            {checkout === 'done' ? (
+              <>
+                <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 18 }}>Кредиты зачислены</div>
+                <p style={{ margin: '10px 0 18px', fontSize: 13, lineHeight: 1.6, color: '#9A98B5' }}>
+                  На баланс добавлено {credits.toLocaleString('ru-RU')} кредитов. Это тестовая покупка: деньги не списывались.
+                </p>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button type="button" onClick={() => { setCheckout('closed'); setActiveTab('history') }} style={{ flex: 1, height: 40, background: 'transparent', border: '1px solid #34344F', borderRadius: 8, color: '#CFCDE3', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>История</button>
+                  <button type="button" onClick={() => setCheckout('closed')} style={{ flex: 1, height: 40, background: '#8B7CFF', border: '1px solid #8B7CFF', borderRadius: 8, color: '#0D0A24', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Готово</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 18 }}>Подтверждение оплаты</div>
+                <div style={{ margin: '14px 0 12px', padding: '12px 14px', background: '#0F0F19', border: '1px solid #191926', borderRadius: 8, fontSize: 13, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#7C7A98' }}>Кредиты</span><strong>{credits.toLocaleString('ru-RU')}</strong></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#7C7A98' }}>К оплате</span><strong style={{ color: '#B9AFFF' }}>${price.toLocaleString('en-US')}</strong></div>
+                </div>
+                <p style={{ margin: '0 0 16px', fontSize: 12, lineHeight: 1.6, color: '#7C7A98' }}>Тестовый режим: платёжная система пока не подключена, деньги не списываются, кредиты зачислятся сразу.</p>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button type="button" disabled={checkout === 'processing'} onClick={() => setCheckout('closed')} style={{ flex: 1, height: 40, background: 'transparent', border: '1px solid #34344F', borderRadius: 8, color: '#CFCDE3', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: checkout === 'processing' ? 0.5 : 1 }}>Отмена</button>
+                  <button type="button" disabled={checkout === 'processing'} onClick={pay} style={{ flex: 1.4, height: 40, background: '#8B7CFF', border: '1px solid #8B7CFF', borderRadius: 8, color: '#0D0A24', fontSize: 13, fontWeight: 700, cursor: checkout === 'processing' ? 'default' : 'pointer', opacity: checkout === 'processing' ? 0.7 : 1 }}>
+                    {checkout === 'processing' ? 'Обработка…' : `Оплатить $${price.toLocaleString('en-US')}`}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-function SettingsPage({ user, initialSection, onAvatarChange, onClose, footer }: { user: { name: string; email: string; uid: string; avatarUrl: string } | null; initialSection?: string; onAvatarChange: (avatarUrl: string) => void; onClose: () => void; footer?: React.ReactNode }) {
+function SettingsPage({ user, initialSection, onAvatarChange, purchases, onBuyCredits, onSignIn, onClose, footer }: { user: { name: string; email: string; uid: string; avatarUrl: string } | null; initialSection?: string; onAvatarChange: (avatarUrl: string) => void; purchases: Purchase[]; onBuyCredits: (credits: number, amountUsd: number) => void; onSignIn: () => void; onClose: () => void; footer?: React.ReactNode }) {
   type Section = 'account' | 'subscription'
   const [section, setSection] = useState<Section>((initialSection as Section) || 'account')
 
@@ -2468,7 +2519,7 @@ function SettingsPage({ user, initialSection, onAvatarChange, onClose, footer }:
             {section === 'account' && <AccountSettings user={user} onAvatarChange={onAvatarChange} />}
 
             {/* ── CREDITS ──────────────────────────────────────── */}
-            {section === 'subscription' && <CreditsPage footer={footer} />}
+            {section === 'subscription' && <CreditsPage signedIn={Boolean(user)} purchases={purchases} onBuy={onBuyCredits} onSignIn={onSignIn} footer={footer} />}
 
 
         </div>
