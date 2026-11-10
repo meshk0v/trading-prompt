@@ -1,7 +1,7 @@
 // @refresh reset
 import { useCallback, useEffect, useState } from 'react'
 import { login, register, type AuthUser } from './api/auth'
-import { createTicket, fetchTickets, type Ticket } from './api/tickets'
+import { createTicket, fetchTickets, replyToTicket, type Ticket } from './api/tickets'
 import { createReferralLink, deleteReferralLink, fetchReferral, requestPayout, saveWallet, storedReferral, type ReferralData } from './api/referral'
 import AccountSettings from './components/AccountSettings'
 import Binum_LOGO from './components/BinumLogo'
@@ -1752,6 +1752,9 @@ function SupportPage({ signedIn, onSignIn, onClose, footer }: { signedIn: boolea
   const [sendError, setSendError] = useState('')
   const [sending, setSending] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [replyText, setReplyText] = useState('')
+  const [replyError, setReplyError] = useState('')
+  const [replying, setReplying] = useState(false)
 
   const loadTickets = useCallback(() => {
     fetchTickets().then(setApiTickets, () => undefined)
@@ -1771,6 +1774,7 @@ function SupportPage({ signedIn, onSignIn, onClose, footer }: { signedIn: boolea
   const tickets = apiTickets
     .map(ticket => ({
       key: String(ticket.id),
+      numericId: ticket.id,
       id: `TKT-${String(ticket.id).padStart(3, '0')}`,
       date: formatReferralDate(ticket.date),
       subject: ticket.subject,
@@ -1795,6 +1799,21 @@ function SupportPage({ signedIn, onSignIn, onClose, footer }: { signedIn: boolea
         (reason: unknown) => setSendError(errorMessage(reason)),
       )
       .finally(() => setSending(false))
+  }
+
+  const handleReply = (ticketId: number) => {
+    if (!replyText.trim()) return
+    setReplying(true)
+    setReplyError('')
+    replyToTicket(ticketId, replyText.trim())
+      .then(
+        () => {
+          setReplyText('')
+          loadTickets()
+        },
+        (reason: unknown) => setReplyError(errorMessage(reason)),
+      )
+      .finally(() => setReplying(false))
   }
 
   const statusLabel: Record<string, string> = { open: 'Открыт', answered: 'Отвечен', closed: 'Закрыт' }
@@ -2021,7 +2040,7 @@ function SupportPage({ signedIn, onSignIn, onClose, footer }: { signedIn: boolea
                 tickets.map((t, i, arr) => (
                   <div key={t.key}>
                     <div
-                      onClick={() => setExpandedId(expandedId === t.key ? null : t.key)}
+                      onClick={() => { setExpandedId(expandedId === t.key ? null : t.key); setReplyText(''); setReplyError('') }}
                       className="support-tbl-row"
                       style={{
                         display: 'grid', gridTemplateColumns: '90px 1fr 110px 100px 28px',
@@ -2055,6 +2074,24 @@ function SupportPage({ signedIn, onSignIn, onClose, footer }: { signedIn: boolea
                         ))}
                         {!t.messages.some(message => message.author === 'staff') && (
                           <p style={{ margin: 0, fontSize: '13px', color: '#676582', fontFamily: 'Inter, sans-serif', fontStyle: 'italic' }}>Ожидает ответа...</p>
+                        )}
+                        {t.status === 'closed' ? (
+                          <p style={{ margin: 0, fontSize: '12px', color: '#676582', fontFamily: 'Inter, sans-serif' }}>Обращение закрыто. Если вопрос остался, создайте новое.</p>
+                        ) : (
+                          <form onSubmit={e => { e.preventDefault(); handleReply(t.numericId) }} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <textarea
+                              value={replyText}
+                              onChange={e => setReplyText(e.target.value)}
+                              maxLength={5000}
+                              rows={3}
+                              placeholder="Ваш ответ"
+                              style={inputStyle}
+                            />
+                            {replyError && <div role="alert" style={{ color: '#FF8A6B', fontFamily: 'Inter, sans-serif', fontSize: '12px' }}>{replyError}</div>}
+                            <button type="submit" disabled={replying || !replyText.trim()} style={{ alignSelf: 'flex-end', background: '#8B7CFF', color: '#0B0B12', border: 'none', borderRadius: '7px', padding: '8px 16px', fontFamily: 'Inter, sans-serif', fontSize: '13px', fontWeight: 600, cursor: replying || !replyText.trim() ? 'default' : 'pointer', opacity: replying || !replyText.trim() ? 0.5 : 1 }}>
+                              {replying ? 'Отправка…' : 'Ответить'}
+                            </button>
+                          </form>
                         )}
                       </div>
                     )}

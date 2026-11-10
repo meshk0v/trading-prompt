@@ -22,3 +22,7 @@ export async function fetchTickets(): Promise<Ticket[]> {
 export async function createTicket(subject: string, body: string): Promise<void> {
   await post('ticket-create', { subject, body })
 }
+
+export async function replyToTicket(id: number, body: string): Promise<void> {
+  await post('ticket-reply', { id, body })
+}
