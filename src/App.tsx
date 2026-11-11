@@ -61,7 +61,7 @@ const toSiteUser = (user: AuthUser): SiteUser => ({
   email: user.email,
   id: user.id,
   uid: `840-${String(user.id).padStart(6, '0')}`,
-  avatarUrl: '',
+  avatarUrl: user.avatarUrl,
   telegram: user.telegram,
   guideCompleted: user.guideCompleted,
 })

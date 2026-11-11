@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
   payout_wallet VARCHAR(128) NULL DEFAULT NULL,
   payout_network VARCHAR(16) NULL DEFAULT NULL,
   balance_cents BIGINT       NOT NULL DEFAULT 0,
+  avatar_version INT UNSIGNED NOT NULL DEFAULT 0,  -- profile photo upload counter, 0 = no photo
   created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY users_email_unique (email)

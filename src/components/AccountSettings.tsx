@@ -1,10 +1,37 @@
 import { useCallback, useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import UserAvatar from './UserAvatar'
-import { changePassword, fetchSessions, revokeSession, updateProfile, type UserSession } from '../api/auth'
+import { changePassword, fetchSessions, revokeSession, updateProfile, uploadAvatar, type UserSession } from '../api/auth'
 
 type AccountSettingsProps = {
   user: { name: string; email: string; uid: string; avatarUrl: string; telegram?: string } | null
   onAvatarChange: (avatarUrl: string) => void
+}
+
+const AVATAR_SIZE = 256
+
+/** Crops the picture to a centred square and shrinks it to a small JPEG so the upload stays light. */
+function shrinkImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const image = new Image()
+    image.onload = () => {
+      URL.revokeObjectURL(url)
+      const side = Math.min(image.naturalWidth, image.naturalHeight)
+      const canvas = document.createElement('canvas')
+      canvas.width = canvas.height = AVATAR_SIZE
+      const context = canvas.getContext('2d')
+      if (!context || side === 0) return reject(new Error('canvas'))
+      context.fillStyle = '#fff'
+      context.fillRect(0, 0, AVATAR_SIZE, AVATAR_SIZE)
+      context.drawImage(image, (image.naturalWidth - side) / 2, (image.naturalHeight - side) / 2, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE)
+      resolve(canvas.toDataURL('image/jpeg', 0.88))
+    }
+    image.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('image'))
+    }
+    image.src = url
+  })
 }
 
 const inputStyle: CSSProperties = {
@@ -147,14 +174,18 @@ export default function AccountSettings({ user, onAvatarChange }: AccountSetting
       setAvatarError('Размер изображения не должен превышать 5 МБ')
       return
     }
-    const reader = new FileReader()
-    reader.onload = () => {
-      if (typeof reader.result !== 'string') return
-      onAvatarChange(reader.result)
-      setAvatarError('')
-    }
-    reader.onerror = () => setAvatarError('Не удалось прочитать изображение')
-    reader.readAsDataURL(file)
+    const previous = user?.avatarUrl ?? ''
+    shrinkImage(file)
+      .then(dataUrl => {
+        onAvatarChange(dataUrl)
+        setAvatarError('')
+        return uploadAvatar(dataUrl).then(saved => onAvatarChange(saved.avatarUrl))
+          .catch(error => {
+            onAvatarChange(previous)
+            setAvatarError(error instanceof Error ? error.message : 'Не удалось сохранить фото')
+          })
+      })
+      .catch(() => setAvatarError('Не удалось прочитать изображение'))
   }
 
   const focusInput = (element: HTMLInputElement) => {
@@ -201,7 +232,7 @@ export default function AccountSettings({ user, onAvatarChange }: AccountSetting
               />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ color: '#EDEBFA', fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 700 }}>Личное фото</div>
-                <div style={{ marginTop: '3px', color: '#676582', fontFamily: 'Inter, sans-serif', fontSize: '10px', lineHeight: 1.45 }}>JPG, PNG или WEBP до 5 МБ. Фото появится в меню аккаунта.</div>
+                <div style={{ marginTop: '3px', color: '#676582', fontFamily: 'Inter, sans-serif', fontSize: '10px', lineHeight: 1.45 }}>JPG, PNG или WEBP до 5 МБ. Фото сохраняется в аккаунте и появится в меню на любом устройстве.</div>
                 <label style={{ display: 'inline-flex', height: 30, alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '9px', padding: '0 11px', border: '1px solid rgba(139,124,255,0.38)', borderRadius: '6px', background: 'rgba(139,124,255,0.1)', color: '#B9AFFF', fontFamily: 'Inter, sans-serif', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}>
                   <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                     <path d="M8 11V3m0 0L5 6m3-3 3 3M3 10v3h10v-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />

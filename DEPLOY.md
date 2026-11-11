@@ -12,7 +12,8 @@ tradingprompt.space/
     ├── index.html
     ├── assets/     ← JS, CSS, флаги
     ├── images/
-    └── api/        ← PHP-обработчики
+    ├── api/        ← PHP-обработчики
+    └── uploads/    ← фото профилей (avatars/<id>.jpg); создаётся сайтом сам, при обновлении не удалять
 ```
 
 - База данных: `tradinx_prompt`, пользователь `tradinx_app` (MySQL/MariaDB, управляется через phpMyAdmin).
@@ -43,6 +44,7 @@ tradingprompt.space/
 | `logout.php`         | `{}`                                             | `{ ok }`                                                            |
 | `me.php` (GET)       | —                                                | `{ ok, user \| null }`                                              |
 | `profile.php`        | `name`                                           | `{ ok, user }`                                                      |
+| `avatar.php`         | `image` (data URL, JPEG/PNG/WEBP до 300 КБ)      | `{ ok, user }` — фото пересохраняется квадратом 256×256 (JPEG)      |
 | `password.php`       | `currentPassword, newPassword`                   | `{ ok }`, завершает сессии на других устройствах                    |
 | `sessions.php` (GET) | —                                                | `{ ok, sessions }`                                                  |
 | `session-revoke.php` | `id`                                             | `{ ok }`                                                            |

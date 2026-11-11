@@ -189,6 +189,12 @@ function log_out(): void
 
 // ── Users ───────────────────────────────────────────────────────────────
 
+/** Public address of the profile photo; the version in the query string defeats browser caching. */
+function avatar_url(int $userId, int $version): string
+{
+    return $version > 0 ? "/uploads/avatars/{$userId}.jpg?v={$version}" : '';
+}
+
 function public_user(array $row): array
 {
     return [
@@ -198,6 +204,7 @@ function public_user(array $row): array
         'telegram' => $row['telegram'],
         'guideCompleted' => !empty($row['guide_completed_at']),
         'isAdmin' => !empty($row['is_admin']),
+        'avatarUrl' => avatar_url((int) $row['id'], (int) ($row['avatar_version'] ?? 0)),
     ];
 }
 
@@ -207,7 +214,7 @@ function current_user(): ?array
     if (!$session) {
         return null;
     }
-    $stmt = db()->prepare('SELECT id, name, email, telegram, guide_completed_at, is_admin FROM users WHERE id = ?');
+    $stmt = db()->prepare('SELECT id, name, email, telegram, guide_completed_at, is_admin, avatar_version FROM users WHERE id = ?');
     $stmt->execute([$session['user_id']]);
     $row = $stmt->fetch();
     return $row ? public_user($row) : null;

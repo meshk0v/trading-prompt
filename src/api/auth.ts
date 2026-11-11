@@ -7,6 +7,8 @@ export type AuthUser = {
   guideCompleted: boolean
   /** May edit site texts. */
   isAdmin: boolean
+  /** Address of the profile photo, empty when there is none. */
+  avatarUrl: string
 }
 
 export type RegisterData = {
@@ -78,6 +80,11 @@ export async function logout(): Promise<void> {
 
 export async function updateProfile(name: string): Promise<AuthUser> {
   return (await post<{ user: AuthUser }>('profile', { name })).user
+}
+
+/** Sends the profile photo (a data URL of an already shrunk image) and returns the updated user. */
+export async function uploadAvatar(image: string): Promise<AuthUser> {
+  return (await post<{ user: AuthUser }>('avatar', { image })).user
 }
 
 /** Marks the onboarding guide as seen for this account. */
