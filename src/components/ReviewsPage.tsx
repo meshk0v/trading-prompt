@@ -351,7 +351,7 @@ export default function ReviewsPage({ onClose, user, onSignUp }: ReviewsPageProp
               <div className="group relative">
                 <div className="pointer-events-none absolute bottom-4 left-1/2 h-16 w-2/3 -translate-x-1/2 rounded-full bg-coral/15 blur-2xl" />
                 <img
-                  src="/images/reviews-hero.png"
+                  src="/images/reviews-hero.webp"
                   alt="Смартфон с отзывами пользователей, звёздами и жестом одобрения"
                   className="relative aspect-[3/2] w-full object-contain drop-shadow-[0_18px_24px_rgba(255,138,107,.16)] transition-transform duration-700 group-hover:scale-[1.025]"
                 />
@@ -441,7 +441,7 @@ export default function ReviewsPage({ onClose, user, onSignUp }: ReviewsPageProp
               <div className="group relative">
                 <div className="pointer-events-none absolute bottom-5 left-1/2 h-16 w-3/4 -translate-x-1/2 rounded-full bg-coral/15 blur-2xl" />
                 <img
-                  src="/images/reviews-cta-trading.png"
+                  src="/images/reviews-cta-trading.webp"
                   alt="Торговый график с индикаторами, таймфреймами и экспортом TP1"
                   className="relative aspect-[3/2] w-full object-contain drop-shadow-[0_18px_28px_rgba(255,107,55,.18)] transition-transform duration-700 group-hover:scale-[1.025]"
                 />
