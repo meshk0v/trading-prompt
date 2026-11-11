@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent } from 'react'
+import { noteTickets } from '../supportAlerts'
 import { createTicket, fetchTickets, markTicketRead, replyToTicket, type Ticket } from '../api/tickets'
 
 type SupportInboxProps = {
@@ -49,6 +50,7 @@ export default function SupportInbox({ signedIn, onSignIn, onUnreadChange }: Sup
   const load = useCallback(() => {
     fetchTickets().then(
       ({ tickets: list, unread }) => {
+        noteTickets(list)
         setTickets(list)
         setLoaded(true)
         onUnreadChange?.(unread)

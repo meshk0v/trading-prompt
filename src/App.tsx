@@ -10,6 +10,7 @@ import ReviewsPage from './components/ReviewsPage'
 import AnalysisSettingsPanel from './components/AnalysisSettingsPanel'
 import UserAvatar from './components/UserAvatar'
 import { fetchTickets } from './api/tickets'
+import { noteTickets, resetTicketAlerts, SUPPORT_ANSWER_EVENT } from './supportAlerts'
 import { loadPurchases, reportDemoPayment, savePurchases, type Purchase } from './api/purchases'
 import { rememberReferralFromUrl } from './api/referral'
 import { completeGuide, fetchCurrentUser, logout, type AuthUser } from './api/auth'
@@ -499,13 +500,36 @@ export default function App() {
   useEffect(() => {
     if (!user) {
       setSupportUnread(0)
+      resetTicketAlerts()
       return
     }
-    const refresh = () => { if (!document.hidden) fetchTickets().then(({ unread }) => setSupportUnread(unread), () => undefined) }
+    const refresh = () => {
+      if (!document.hidden) fetchTickets().then(({ tickets, unread }) => { noteTickets(tickets); setSupportUnread(unread) }, () => undefined)
+    }
     refresh()
-    const timer = setInterval(refresh, 60000)
+    const timer = setInterval(refresh, 30000)
     return () => clearInterval(timer)
   }, [user])
+
+  // A new answer: the sound comes from noteTickets, here a notice that opens the conversation.
+  const [answerToast, setAnswerToast] = useState(false)
+  useEffect(() => {
+    let hide: ReturnType<typeof setTimeout> | undefined
+    const show = () => {
+      if (supportOpen) return
+      setAnswerToast(true)
+      clearTimeout(hide)
+      hide = setTimeout(() => setAnswerToast(false), 9000)
+    }
+    window.addEventListener(SUPPORT_ANSWER_EVENT, show)
+    return () => { window.removeEventListener(SUPPORT_ANSWER_EVENT, show); clearTimeout(hide) }
+  }, [supportOpen])
+
+  // The browser tab shows how many answers are waiting.
+  const baseTitle = useRef(document.title)
+  useEffect(() => {
+    document.title = supportUnread > 0 ? `(${supportUnread}) ${baseTitle.current}` : baseTitle.current
+  }, [supportUnread])
 
   // Restore the session of a returning visitor; a failed request just leaves the guest view.
   useEffect(() => {
@@ -1366,6 +1390,18 @@ export default function App() {
             )}
             {legalOpen && <LegalPage onClose={() => { setLegalOpen(false); setActiveTab('chat') }} />}
             {supportOpen && <SupportPage unread={supportUnread} onUnreadChange={setSupportUnread} signedIn={Boolean(user)} onSignIn={() => setAuthOpen(true)} onClose={() => { setSupportOpen(false); setActiveTab('chat') }} />}
+            {answerToast && !supportOpen && (
+              <button
+                type="button"
+                role="status"
+                onClick={() => { setAnswerToast(false); setSupportOpen(true); setSettingsOpen(false); setAffiliateOpen(false); setLegalOpen(false); setCalendarOpen(false); setFaqOpen(false); setSidebarOpen(false) }}
+                style={{ position: 'fixed', right: 20, bottom: 20, zIndex: 1000, display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', border: '1px solid rgba(139,124,255,0.5)', borderRadius: '10px', background: '#191926', boxShadow: '0 10px 32px rgba(0,0,0,0.45)', color: '#EDEBFA', fontFamily: 'Inter, sans-serif', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+              >
+                <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#8B7CFF', boxShadow: '0 0 10px #8B7CFF' }} />
+                Новый ответ поддержки
+                <span style={{ color: '#B9AFFF', fontWeight: 700 }}>Открыть</span>
+              </button>
+            )}
             {settingsOpen && (
               <SettingsPage
                 user={user}
