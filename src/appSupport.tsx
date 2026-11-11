@@ -2205,7 +2205,7 @@ function CreditsPage({ signedIn, purchases, onBuy, onSignIn, footer }: { signedI
   const CREDIT_STEP = 100
   const [credits, setCredits] = useState(1000)
   const [activeTab, setActiveTab] = useState<'credits' | 'history'>('credits')
-  const price = credits / 10
+  const price = credits / 100
   const progress = ((credits - MIN_CREDITS) / (MAX_CREDITS - MIN_CREDITS)) * 100
   const quickAmounts = [100, 500, 1000, 3000, 5000, 10000]
   // Simulated checkout: confirm, then "processing", then done. Nothing is charged.
@@ -2289,7 +2289,7 @@ function CreditsPage({ signedIn, purchases, onBuy, onSignIn, footer }: { signedI
           </div>
           <div className="credits-rate">
             <div className="credits-rate-label">Стоимость одного промпта</div>
-            <div className="credits-rate-value">0,10 $</div>
+            <div className="credits-rate-value">0,01 $</div>
             <div className="credits-rate-caption">1 промпт = 1 кредит</div>
           </div>
         </div>
@@ -2322,8 +2322,8 @@ function CreditsPage({ signedIn, purchases, onBuy, onSignIn, footer }: { signedI
                 style={{ '--credits-range-progress': `${progress}%` } as React.CSSProperties}
               />
               <div className="credits-slider-scale">
-                <span><strong>100</strong><small>$10</small></span>
-                <span><strong>10 000</strong><small>$1 000</small></span>
+                <span><strong>100</strong><small>$1</small></span>
+                <span><strong>10 000</strong><small>$100</small></span>
               </div>
             </div>
 
@@ -2357,7 +2357,7 @@ function CreditsPage({ signedIn, purchases, onBuy, onSignIn, footer }: { signedI
             </div>
             <div className="credits-summary-row">
               <span>Стоимость кредита</span>
-              <strong>$0.10</strong>
+              <strong>$0.01</strong>
             </div>
             <div className="credits-summary-divider" />
             <div className="credits-summary-total">
@@ -2884,7 +2884,7 @@ const NAV_ITEMS = [
 ]
 
 function AccountBalanceSummary({ remaining, className }: { remaining: number; className?: string }) {
-  const balance = (remaining * 0.1).toLocaleString('en-US', {
+  const balance = (remaining * 0.01).toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
   })

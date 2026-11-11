@@ -282,7 +282,7 @@ const RU_TO_EN: Record<string, string> = {
   'Как правильно запросить сигнал и что значит BUY / SELL / NEUTRAL?': 'How should I request a signal, and what do BUY / SELL / NEUTRAL mean?',
   'Укажите инструмент, таймфреймы и цель анализа как можно точнее. BUY означает сценарий роста, SELL — снижения, а NEUTRAL — отсутствие достаточно сильного направления.': 'Specify the instrument, timeframes and analysis goal as precisely as possible. BUY indicates an upward scenario, SELL a downward one, and NEUTRAL no sufficiently strong direction.',
   'Сколько стоят кредиты?': 'How much do credits cost?',
-  'Один готовый промпт стоит 1 кредит, стоимость одного кредита — 0,10 $. Вы можете выбрать объём от 100 до 10 000 кредитов.': 'One final prompt costs 1 credit, and one credit costs $0.10. You can purchase from 100 to 10,000 credits.',
+  'Один готовый промпт стоит 1 кредит, стоимость одного кредита — 0,01 $. Вы можете выбрать объём от 100 до 10 000 кредитов.': 'One final prompt costs 1 credit, and one credit costs $0.01. You can purchase from 100 to 10,000 credits.',
   'Когда истекают кредиты?': 'When do credits expire?',
   'Купленные кредиты не сгорают и остаются на балансе, пока вы их не используете.': 'Purchased credits do not expire and stay in your balance until used.',
   'Какие способы оплаты доступны?': 'Which payment methods are available?',
