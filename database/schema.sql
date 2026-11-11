@@ -1,4 +1,4 @@
--- Trading Prompt: users, sessions, login throttling, referral links, payments, rewards, payout requests and support tickets.
+-- Trading Prompt: users, sessions, login throttling, referral links, payments, rewards, payout requests, support tickets and the mailbox reader state.
 -- Import once via Plesk → Databases → phpMyAdmin → Import.
 
 CREATE TABLE IF NOT EXISTS users (
@@ -127,4 +127,10 @@ CREATE TABLE IF NOT EXISTS ticket_messages (
   KEY ticket_messages_ticket (ticket_id),
   KEY ticket_messages_tg (tg_message_id),
   CONSTRAINT ticket_messages_ticket_fk FOREIGN KEY (ticket_id) REFERENCES tickets (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mail_state (
+  name  VARCHAR(32) NOT NULL,   -- last_uid, uidvalidity: where the support mailbox reader stopped
+  value VARCHAR(64) NOT NULL,
+  PRIMARY KEY (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

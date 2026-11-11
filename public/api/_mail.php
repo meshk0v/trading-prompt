@@ -9,6 +9,9 @@ if (basename($_SERVER['SCRIPT_FILENAME'] ?? '') === basename(__FILE__)) {
     exit;
 }
 
+/** Everything below this line in a reply is our own quote and is cut off when the answer comes back. */
+const MAIL_REPLY_MARKER = '— Чтобы ответить, напишите выше этой строки —';
+
 function mail_configured(): bool
 {
     $smtp = config()['smtp'] ?? null;
@@ -16,7 +19,7 @@ function mail_configured(): bool
 }
 
 /** Sends a plain-text UTF-8 email. Returns false (and logs) on any failure; callers must not depend on it. */
-function send_mail(string $to, string $subject, string $body, ?string $html = null): bool
+function send_mail(string $to, string $subject, string $body, ?string $html = null, array $extraHeaders = []): bool
 {
     if (!mail_configured()) {
         return false;
@@ -91,6 +94,7 @@ function send_mail(string $to, string $subject, string $body, ?string $html = nu
             'Subject: ' . $encode($subject),
             'Message-ID: <' . bin2hex(random_bytes(12)) . '@' . (explode('@', $from)[1] ?? 'localhost') . '>',
             'MIME-Version: 1.0',
+            ...$extraHeaders,
             $html === null ? 'Content-Type: text/plain; charset=UTF-8' : "Content-Type: multipart/alternative; boundary=\"$boundary\"",
         ];
         $part = static function (string $type, string $content): string {
@@ -132,6 +136,7 @@ function mail_html(string $heading, string $intro, string $quote, string $button
         . '<tr><td style="background:#14121F;padding:20px 28px;color:#FFFFFF;font-size:18px;font-weight:bold;letter-spacing:0.3px;">'
         . 'Trading <span style="color:#A99BFF;">Prompt</span></td></tr>'
         . '<tr><td style="padding:28px 28px 8px;color:#1B1930;">'
+        . '<p style="margin:0 0 14px;font-size:11px;color:#9A98B5;">' . $e(MAIL_REPLY_MARKER) . '</p>'
         . '<h1 style="margin:0 0 12px;font-size:20px;line-height:1.3;color:#1B1930;">' . $e($heading) . '</h1>'
         . '<p style="margin:0 0 18px;font-size:14px;line-height:1.6;color:#55536B;">' . $e($intro) . '</p>'
         . '<div style="margin:0 0 24px;padding:14px 16px;background:#F6F5FD;border-left:4px solid #8B7CFF;border-radius:6px;font-size:15px;line-height:1.65;color:#1B1930;white-space:pre-wrap;">' . $e($quote) . '</div>'
@@ -140,6 +145,6 @@ function mail_html(string $heading, string $intro, string $quote, string $button
         . '</td></tr></table>'
         . '</td></tr>'
         . '<tr><td style="padding:22px 28px 26px;color:#8A889F;font-size:12px;line-height:1.6;">'
-        . 'Вы получили это письмо, потому что создали обращение в поддержку Trading Prompt. Ответить можно на сайте: Поддержка и контакты → История запросов.'
+        . 'Вы получили это письмо, потому что создали обращение в поддержку Trading Prompt. Ответить можно на сайте (Поддержка и контакты → История запросов) или просто ответом на это письмо.'
         . '</td></tr></table></td></tr></table></body></html>';
 }

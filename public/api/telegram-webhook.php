@@ -4,6 +4,7 @@
 require __DIR__ . '/_bootstrap.php';
 require __DIR__ . '/_telegram.php';
 require __DIR__ . '/_mail.php';
+require __DIR__ . '/_tickets.php';
 
 $c = config();
 $secret = (string) ($c['tg_webhook_secret'] ?? '');
@@ -78,9 +79,9 @@ $email = (string) $stmt->fetchColumn();
 $link = rtrim((string) ($c['site_url'] ?? 'https://tradingprompt.space'), '/') . '/?support=history';
 $mailed = $email !== '' && send_mail(
     $email,
-    "Ответ на заявку #$ticketId: " . $ticket['subject'],
-    "Здравствуйте!\n\nОтвет службы поддержки Trading Prompt на вашу заявку «{$ticket['subject']}»:\n\n$text\n\n"
-    . "Заявка и переписка доступны на сайте: $link\n",
+    ticket_mail_subject($ticketId, 'Ответ на заявку: ' . $ticket['subject']),
+    MAIL_REPLY_MARKER . "\n\nЗдравствуйте!\n\nОтвет службы поддержки Trading Prompt на вашу заявку «{$ticket['subject']}»:\n\n$text\n\n"
+    . "Ответить можно письмом на этот адрес или на сайте: $link\n",
     mail_html("Ответ на заявку «{$ticket['subject']}»", 'Служба поддержки Trading Prompt ответила на ваше обращение:', $text, 'Открыть переписку', $link)
 );
 telegram_call('sendMessage', $params + ['text' => $mailed ? "Ответ отправлен: на сайт и на почту." : "Ответ сохранён на сайте (письмо не отправлено)."]);

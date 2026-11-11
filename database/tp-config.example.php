@@ -16,6 +16,9 @@ return [
     // 'smtp' => ['host' => 'srv-plesk20.ps.kz', 'port' => 465, 'secure' => 'ssl',
     //            'user' => 'support@tradingprompt.space', 'pass' => 'change-me', 'from_name' => 'Trading Prompt'],
 
+    // Replies by email are read from the same mailbox; only needed when it differs from `smtp`.
+    // 'imap' => ['host' => 'srv-plesk20.ps.kz', 'port' => 993, 'secure' => 'ssl', 'user' => 'support@tradingprompt.space', 'pass' => 'change-me'],
+
     // Test payments for trying the referral program. Never set on the live site.
     // 'demo_payments' => true,
 ];
